@@ -1,26 +1,74 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ── DEDSTOK Brand Colors ─────────────────────────── */
+  --bg:          #0c0a09;
+  --bg-dark:     #0a0804;
+  --walnut:      #1C1917;
+  --walnut-mid:  #2c1f12;
+  --walnut-warm: #3d2b1a;
+  --gold:        #CA8A04;
+  --gold-light:  #e8b830;
+  --gold-dim:    rgba(202, 138, 4, 0.5);
+  --cream:       #f5ede0;
+  --cream-dim:   rgba(245, 237, 224, 0.55);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Map CSS vars into Tailwind tokens */
+  --color-bg:           var(--bg);
+  --color-bg-dark:      var(--bg-dark);
+  --color-walnut:       var(--walnut);
+  --color-walnut-mid:   var(--walnut-mid);
+  --color-walnut-warm:  var(--walnut-warm);
+  --color-gold:         var(--gold);
+  --color-gold-light:   var(--gold-light);
+  --color-cream:        var(--cream);
+  --color-cream-dim:    var(--cream-dim);
+
+  /* Typography tokens */
+  --font-serif:   var(--font-bodoni);
+  --font-sans:    var(--font-jost);
+  --font-mono:    var(--font-dm-mono);
+  --font-display: var(--font-bebas);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--cream);
+  font-family: var(--font-jost), sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Selection ──────────────────────────────────────── */
+::selection {
+  background-color: var(--gold);
+  color: var(--bg);
+}
+
+/* ── Scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--walnut-mid);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-dim);
 }
