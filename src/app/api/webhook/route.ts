@@ -80,48 +80,46 @@ export async function POST(request: NextRequest) {
   }
 
   // 5. Send confirmation email via Resend
-  const { data: drop } = await supabase
-    .from('drops')
-    .select('item_name, draw_date, total_spots, entry_price')
-    .eq('id', drop_id)
-    .single()
+  // Use customer email from Stripe session directly — no extra DB query needed
+  const customerEmail = session.customer_details?.email ?? null
+  const itemName = session.metadata?.item_name ?? 'your item'
 
-  const { data: userProfile } = await supabase
-    .from('users')
-    .select('email')
-    .eq('id', user_id)
-    .single()
+  console.log('[webhook] Sending email to:', customerEmail)
 
-  if (drop && userProfile) {
-    await getResend().emails.send({
-      from: FROM_EMAIL,
-      to: userProfile.email,
-      subject: `You're in — ${drop.item_name}`,
-      html: `
-        <div style="background:#0c0a09;color:#f5ede0;font-family:sans-serif;padding:40px;max-width:500px;margin:0 auto;">
-          <h1 style="color:#CA8A04;font-size:28px;margin-bottom:8px;">DEDSTOK</h1>
-          <p style="color:rgba(245,237,224,0.55);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:32px;">
-            Entry Confirmed
-          </p>
-          <h2 style="font-size:22px;margin-bottom:16px;">${drop.item_name}</h2>
-          <p style="color:rgba(245,237,224,0.7);margin-bottom:8px;">
-            Spots purchased: <strong style="color:#f5ede0;">${spotsNum}</strong>
-          </p>
-          <p style="color:rgba(245,237,224,0.7);margin-bottom:8px;">
-            Odds: <strong style="color:#f5ede0;">1 in ${drop.total_spots}</strong> per spot
-          </p>
-          <p style="color:rgba(245,237,224,0.7);margin-bottom:8px;">
-            Points earned: <strong style="color:#CA8A04;">+${pointsEarned} STOK</strong>
-          </p>
-          <p style="color:rgba(245,237,224,0.7);margin-bottom:32px;">
-            Draw: <strong style="color:#f5ede0;">${new Date(drop.draw_date).toDateString()}</strong>
-          </p>
-          <p style="color:rgba(245,237,224,0.4);font-size:11px;">
-            One drop. One winner. Every week.
-          </p>
-        </div>
-      `,
-    })
+  if (customerEmail) {
+    try {
+      const { data: emailData, error: emailError } = await getResend().emails.send({
+        from: FROM_EMAIL,
+        to: customerEmail,
+        subject: `You're in — DEDSTOK`,
+        html: `
+          <div style="background:#0c0a09;color:#f5ede0;font-family:sans-serif;padding:40px;max-width:500px;margin:0 auto;">
+            <h1 style="color:#CA8A04;font-size:28px;margin-bottom:8px;">DEDSTOK</h1>
+            <p style="color:rgba(245,237,224,0.55);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:32px;">
+              Entry Confirmed
+            </p>
+            <p style="color:rgba(245,237,224,0.7);margin-bottom:8px;">
+              Spots purchased: <strong style="color:#f5ede0;">${spotsNum}</strong>
+            </p>
+            <p style="color:rgba(245,237,224,0.7);margin-bottom:8px;">
+              Points earned: <strong style="color:#CA8A04;">+${pointsEarned} STOK</strong>
+            </p>
+            <p style="color:rgba(245,237,224,0.4);font-size:11px;margin-top:32px;">
+              One drop. One winner. Every week.
+            </p>
+          </div>
+        `,
+      })
+      if (emailError) {
+        console.error('[webhook] Resend error:', emailError)
+      } else {
+        console.log('[webhook] Email sent:', emailData?.id)
+      }
+    } catch (err) {
+      console.error('[webhook] Email exception:', err)
+    }
+  } else {
+    console.warn('[webhook] No customer email found in session')
   }
 
   return NextResponse.json({ received: true })
