@@ -4,12 +4,12 @@ import { NextResponse, type NextRequest } from 'next/server'
 // Routes that require authentication
 const PROTECTED_ROUTES = ['/account', '/enter']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder_anon_key',
     {
       cookies: {
         getAll() {
