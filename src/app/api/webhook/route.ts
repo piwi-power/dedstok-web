@@ -49,18 +49,21 @@ export async function POST(request: NextRequest) {
     { onConflict: 'id', ignoreDuplicates: true }
   )
 
-  // 1. Write entry to Supabase
-  const { error: entryError } = await supabase.from('entries').insert({
-    drop_id,
-    user_id,
-    spots_count: spotsNum,
-    total_paid: totalPaid,
-    stripe_payment_id: session.payment_intent as string,
-    influencer_code: influencer_code || null,
-  })
+  // 1. Write entry to Supabase (idempotent — ignore duplicate stripe_payment_id)
+  const { error: entryError } = await supabase.from('entries').upsert(
+    {
+      drop_id,
+      user_id,
+      spots_count: spotsNum,
+      total_paid: totalPaid,
+      stripe_payment_id: session.payment_intent as string,
+      influencer_code: influencer_code || null,
+    },
+    { onConflict: 'stripe_payment_id', ignoreDuplicates: true }
+  )
 
   if (entryError) {
-    console.error('[webhook] Entry insert failed', entryError)
+    console.error('[webhook] Entry upsert failed', entryError)
     return NextResponse.json({ error: 'Entry insert failed' }, { status: 500 })
   }
 
