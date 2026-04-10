@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Bodoni_Moda, Jost, DM_Mono, Bebas_Neue } from 'next/font/google'
+import { headers } from 'next/headers'
 import './globals.css'
 import Nav from '@/components/Nav'
 
@@ -52,11 +53,15 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const headersList = await headers()
+  const pathname = headersList.get('x-invoke-path') ?? headersList.get('next-url') ?? ''
+  const isAdmin = pathname.startsWith('/admin')
+
   return (
     <html
       lang="en"
@@ -69,8 +74,8 @@ export default function RootLayout({
       `}
     >
       <body className="min-h-full bg-[var(--bg)] text-[var(--cream)] antialiased">
-        <Nav />
-        <div style={{ paddingTop: '56px' }}>
+        {!isAdmin && <Nav />}
+        <div style={isAdmin ? {} : { paddingTop: '56px' }}>
           {children}
         </div>
       </body>
