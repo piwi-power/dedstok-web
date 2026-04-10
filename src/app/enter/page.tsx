@@ -3,54 +3,56 @@ export const dynamic = 'force-dynamic'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { getSanityClient } from '@/lib/sanity/client'
+import { DROP_BY_SLUG_QUERY } from '@/lib/sanity/queries'
+import EntryConfirm from '@/components/EntryConfirm'
+import type { SanityDrop } from '@/types'
 
-export const metadata: Metadata = {
-  title: 'Enter',
-}
+export const metadata: Metadata = { title: 'Enter' }
 
-// Entry is initiated from the drop page / raffle case
-// This page handles the post-auth redirect and Stripe checkout continuation
 export default async function EnterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ drop?: string; spots?: string; code?: string }>
+  searchParams: Promise<{ drop?: string; spots?: string; code?: string; id?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/?auth=required')
 
-  const { drop, spots, code } = await searchParams
+  const { drop: slug, spots, code, id } = await searchParams
 
-  if (!drop) redirect('/')
+  if (!slug || !id) redirect('/')
 
-  // TODO: validate drop is active, check 2-spot cap, initiate Stripe checkout
+  const spotsCount = Math.min(2, Math.max(1, parseInt(spots ?? '1')))
+
+  // Fetch drop name + price from Sanity for display
+  const sanityDrop = await getSanityClient().fetch<SanityDrop>(DROP_BY_SLUG_QUERY, { slug })
+
+  if (!sanityDrop) redirect('/')
+
+  // Verify drop is still active in Supabase
+  const { data: liveDrop } = await supabase
+    .from('drops')
+    .select('status, spots_sold, total_spots')
+    .eq('id', id)
+    .single()
+
+  if (!liveDrop || liveDrop.status !== 'active') redirect(`/drops/${slug}`)
+
+  const spotsRemaining = liveDrop.total_spots - liveDrop.spots_sold
+  if (spotsRemaining < spotsCount) redirect(`/drops/${slug}`)
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6">
-      <div className="max-w-md w-full bg-[var(--walnut)] border border-[var(--gold-dim)] rounded p-8">
-        <p
-          style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.3em' }}
-          className="text-[var(--gold)] text-[10px] uppercase mb-6"
-        >
-          Confirm Entry
-        </p>
-        <p className="text-[var(--cream-dim)] text-sm mb-8">
-          Drop: <span className="text-[var(--cream)]">{drop}</span>
-          <br />
-          Spots: <span className="text-[var(--cream)]">{spots ?? 1}</span>
-          {code && (
-            <>
-              <br />
-              Code: <span className="text-[var(--gold)]">{code}</span>
-            </>
-          )}
-        </p>
-        {/* TODO: wire to /api/enter */}
-        <button className="w-full bg-[var(--gold)] hover:bg-[var(--gold-light)] text-[var(--bg)] font-semibold py-4 rounded-full transition-colors">
-          Proceed to Payment
-        </button>
-      </div>
+    <main className="min-h-screen flex items-center justify-center px-6 py-24">
+      <EntryConfirm
+        dropId={id}
+        dropSlug={slug}
+        spots={spotsCount}
+        code={code}
+        entryPrice={sanityDrop.entry_price}
+        itemName={sanityDrop.item_name}
+      />
     </main>
   )
 }

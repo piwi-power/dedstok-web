@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Account',
@@ -15,29 +16,66 @@ export default async function AccountPage() {
 
   if (!user) redirect('/?auth=required')
 
-  // TODO: fetch user profile, entry history, points balance from Supabase
+  // Fetch user profile and entry history in parallel
+  const [profileResult, entriesResult] = await Promise.all([
+    supabase
+      .from('users')
+      .select('points_balance, total_entries, total_wins')
+      .eq('id', user.id)
+      .single(),
+    supabase
+      .from('entries')
+      .select('id, spots_count, total_paid, created_at, drop_id, drops(item_name, slug, draw_date, status)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20),
+  ])
+
+  const profile = profileResult.data
+  const entries = entriesResult.data ?? []
+
+  async function signOut() {
+    'use server'
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+    redirect('/')
+  }
 
   return (
     <main className="min-h-screen px-6 py-24 max-w-4xl mx-auto">
-      <p
-        style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.4em' }}
-        className="text-[var(--gold)] text-xs uppercase mb-4"
-      >
-        Account
-      </p>
-      <h1
-        style={{ fontFamily: 'var(--font-serif)' }}
-        className="text-[var(--cream)] text-5xl font-bold mb-2"
-      >
-        Your Profile
-      </h1>
-      <p className="text-[var(--cream-dim)] text-sm mb-12">{user.email}</p>
+      <div className="flex items-start justify-between mb-12">
+        <div>
+          <p
+            style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.4em' }}
+            className="text-[var(--gold)] text-xs uppercase mb-4"
+          >
+            Account
+          </p>
+          <h1
+            style={{ fontFamily: 'var(--font-serif)' }}
+            className="text-[var(--cream)] text-5xl font-bold mb-2"
+          >
+            Your Profile
+          </h1>
+          <p className="text-[var(--cream-dim)] text-sm">{user.email}</p>
+        </div>
+        <form action={signOut}>
+          <button
+            type="submit"
+            style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.15em' }}
+            className="text-[var(--cream-dim)] text-[10px] uppercase hover:text-[var(--cream)] transition-colors mt-4"
+          >
+            Sign Out
+          </button>
+        </form>
+      </div>
 
       <div className="grid grid-cols-3 gap-4 mb-16">
         {[
-          { label: 'STOK Points', value: '0' },
-          { label: 'Drops Entered', value: '0' },
-          { label: 'Streak', value: '0 weeks' },
+          { label: 'STOK Points', value: profile?.points_balance?.toLocaleString() ?? '0' },
+          { label: 'Drops Entered', value: profile?.total_entries?.toString() ?? entries.length.toString() },
+          { label: 'Wins', value: profile?.total_wins?.toString() ?? '0' },
         ].map((stat) => (
           <div
             key={stat.label}
@@ -65,7 +103,58 @@ export default async function AccountPage() {
       >
         Entry History
       </h2>
-      <p className="text-[var(--cream-dim)] text-sm">No entries yet.</p>
+
+      {entries.length === 0 ? (
+        <div className="text-center py-16 border border-[var(--gold-dim)] rounded">
+          <p className="text-[var(--cream-dim)] text-sm mb-4">No entries yet.</p>
+          <Link
+            href="/"
+            style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
+            className="text-[var(--gold)] text-xs uppercase hover:text-[var(--gold-light)] transition-colors"
+          >
+            View Current Drop
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {entries.map((entry) => {
+            const drop = (entry.drops as unknown as { item_name: string; slug: string; draw_date: string; status: string } | null)
+            return (
+              <div
+                key={entry.id}
+                className="bg-[var(--walnut)] border border-[var(--gold-dim)] p-5 rounded flex items-center justify-between"
+              >
+                <div>
+                  <p className="text-[var(--cream)] text-sm font-medium mb-1">
+                    {drop?.item_name ?? 'Drop'}
+                  </p>
+                  <p
+                    style={{ fontFamily: 'var(--font-dm-mono)' }}
+                    className="text-[var(--cream-dim)] text-[10px]"
+                  >
+                    {entry.spots_count} spot{entry.spots_count > 1 ? 's' : ''} &middot; ${entry.total_paid} &middot;{' '}
+                    {new Date(entry.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span
+                    style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.15em' }}
+                    className={`text-[10px] uppercase px-2 py-1 rounded ${
+                      drop?.status === 'drawn'
+                        ? 'bg-[var(--gold-dim)] text-[var(--gold)]'
+                        : drop?.status === 'active'
+                        ? 'bg-green-900/30 text-green-400'
+                        : 'text-[var(--cream-dim)]'
+                    }`}
+                  >
+                    {drop?.status ?? 'pending'}
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </main>
   )
 }
