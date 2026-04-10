@@ -43,6 +43,12 @@ export async function POST(request: NextRequest) {
   const spotsNum = parseInt(spots_count)
   const totalPaid = parseFloat(total_amount)
 
+  // 0. Ensure user row exists (handles users who signed up before migration)
+  await supabase.from('users').upsert(
+    { id: user_id, email: session.customer_details?.email ?? '' },
+    { onConflict: 'id', ignoreDuplicates: true }
+  )
+
   // 1. Write entry to Supabase
   const { error: entryError } = await supabase.from('entries').insert({
     drop_id,
