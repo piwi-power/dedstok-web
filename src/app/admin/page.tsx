@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createServiceClient } from '@/lib/supabase/server'
 import AdminDrawButton from '@/components/AdminDrawButton'
 import AdminAnnounceButton from '@/components/AdminAnnounceButton'
+import AdminResendSmsButton from '@/components/AdminResendSmsButton'
 
 export default async function AdminPage() {
   // Auth check
@@ -235,11 +236,10 @@ export default async function AdminPage() {
                         Drawn: {new Date(w.drawn_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
-                    {!w.announced && (
-                      <div style={{ marginLeft: '24px', flexShrink: 0 }}>
-                        <AdminAnnounceButton winnerId={w.id} />
-                      </div>
-                    )}
+                    <div style={{ marginLeft: '24px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+                      {!w.announced && <AdminAnnounceButton winnerId={w.id} />}
+                      <AdminResendSmsButton winnerId={w.id} />
+                    </div>
                   </div>
                 </div>
               )
