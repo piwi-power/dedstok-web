@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe/client'
 import type { ApiResponse, EntryCheckoutResponse } from '@/types'
 
@@ -14,6 +14,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: 'Authentication required' },
         { status: 401 }
+      )
+    }
+
+    // Require phone verification before any entry
+    const service = createServiceClient()
+    const { data: userRecord } = await service
+      .from('users')
+      .select('phone_verified')
+      .eq('id', user.id)
+      .single()
+
+    if (!userRecord?.phone_verified) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'Phone verification required before entering a drop' },
+        { status: 403 }
       )
     }
 

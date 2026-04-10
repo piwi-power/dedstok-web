@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Bodoni_Moda, Jost, DM_Mono, Bebas_Neue } from 'next/font/google'
 import './globals.css'
+import Nav from '@/components/Nav'
 
 const bodoni = Bodoni_Moda({
   variable: '--font-bodoni',
@@ -68,7 +69,10 @@ export default function RootLayout({
       `}
     >
       <body className="min-h-full bg-[var(--bg)] text-[var(--cream)] antialiased">
-        {children}
+        <Nav />
+        <div style={{ paddingTop: '56px' }}>
+          {children}
+        </div>
       </body>
     </html>
   )

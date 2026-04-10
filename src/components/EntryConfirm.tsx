@@ -33,6 +33,10 @@ export default function EntryConfirm({ dropId, dropSlug, spots, code, entryPrice
     const data = await res.json()
 
     if (!res.ok || !data.success) {
+      if (res.status === 403 && data.error?.includes('Phone verification')) {
+        window.location.href = '/account/verify-phone'
+        return
+      }
       setError(data.error ?? 'Something went wrong. Try again.')
       setLoading(false)
       return
