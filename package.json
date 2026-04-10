@@ -11,6 +11,7 @@
   "dependencies": {
     "@sanity/client": "^7.20.0",
     "@sanity/image-url": "^2.1.1",
+    "@sanity/vision": "^5.20.0",
     "@splinetool/react-spline": "^4.1.0",
     "@splinetool/runtime": "^1.12.78",
     "@stripe/stripe-js": "^9.1.0",
@@ -21,6 +22,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "resend": "^6.10.0",
+    "sanity": "^5.20.0",
     "stripe": "^22.0.1"
   },
   "devDependencies": {
