@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
@@ -15,6 +16,7 @@ export default async function WinnersPage() {
     .from('winners')
     .select(`
       id,
+      drop_id,
       drawn_at,
       total_tickets,
       winning_ticket,
@@ -97,9 +99,15 @@ export default async function WinnersPage() {
                         <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '2px' }}>
                           SHA-256 verification hash
                         </p>
-                        <p style={{ color: 'rgba(245,237,224,0.6)', fontFamily: 'monospace', fontSize: '10px', wordBreak: 'break-all' }}>
+                        <p style={{ color: 'rgba(245,237,224,0.6)', fontFamily: 'monospace', fontSize: '10px', wordBreak: 'break-all', marginBottom: '8px' }}>
                           {w.verification_hash as string}
                         </p>
+                        <Link
+                          href={`/verify/${w.drop_id}`}
+                          style={{ color: '#CA8A04', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none' }}
+                        >
+                          Verify this draw &rarr;
+                        </Link>
                       </div>
                     )}
                   </div>
