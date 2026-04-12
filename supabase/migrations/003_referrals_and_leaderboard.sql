@@ -156,7 +156,6 @@ as $$
   from public.users u
   left join public.points_transactions pt
     on pt.user_id = u.id
-    and pt.amount > 0
     and extract(year from pt.created_at) = p_year
     and extract(month from pt.created_at) = p_month
   where exists(select 1 from public.entries e where e.user_id = u.id)

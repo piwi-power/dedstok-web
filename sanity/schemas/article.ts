@@ -59,6 +59,12 @@ export const articleSchema = defineType({
       validation: (r) => r.required(),
     }),
     defineField({
+      name: 'author',
+      title: 'Author',
+      type: 'string',
+      description: 'Full name of the writer (e.g. Ziad El Bitar)',
+    }),
+    defineField({
       name: 'published_at',
       title: 'Published At',
       type: 'datetime',

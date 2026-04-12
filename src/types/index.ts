@@ -100,6 +100,7 @@ export interface SanityArticle {
   body: unknown          // Portable Text blocks
   cover_image: SanityImage
   category: string
+  author?: string
   published_at: string
 }
 

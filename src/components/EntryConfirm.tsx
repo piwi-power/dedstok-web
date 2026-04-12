@@ -156,6 +156,12 @@ export default function EntryConfirm({ dropId, dropSlug, spots, code, entryPrice
               </button>
             )}
           </div>
+
+          {pointsSpots > 0 && (
+            <p style={{ fontFamily: 'sans-serif', fontSize: '11px', color: 'rgba(202,138,4,0.6)', marginTop: '12px', lineHeight: 1.5 }}>
+              Heads up: redeeming points reduces your rank on this month&apos;s leaderboard. The monthly #1 earns 2x tickets in the next drop.
+            </p>
+          )}
         </div>
       )}
 

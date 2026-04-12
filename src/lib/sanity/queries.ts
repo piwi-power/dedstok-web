@@ -59,6 +59,7 @@ export const ARTICLE_BY_SLUG_QUERY = groq`
     body,
     cover_image,
     category,
+    author,
     published_at
   }
 `

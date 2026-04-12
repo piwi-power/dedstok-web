@@ -36,10 +36,10 @@ export default async function LeaderboardPage() {
         Leaderboard
       </h1>
       <p style={{ color: 'rgba(245,237,224,0.4)', fontSize: '13px', marginBottom: '12px' }}>
-        Ranked by total STOK points earned. The monthly #1 earns double tickets on every spot they purchase the following month.
+        The monthly #1 earns double tickets on every spot they purchase the following month.
       </p>
       <p style={{ color: 'rgba(245,237,224,0.25)', fontSize: '12px', marginBottom: '48px' }}>
-        Enter at least one drop to appear on the leaderboard.
+        Points accumulate month to month — your balance never resets. Monthly rankings measure points earned and spent within that calendar month only. Enter at least one drop to appear.
       </p>
 
       <LeaderboardClient

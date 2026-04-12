@@ -96,6 +96,13 @@ export default function LeaderboardClient({ allTime, thisMonth, prevMonth, month
   const data = filter === 'alltime' ? allTime : filter === 'thismonth' ? thisMonth : prevMonth
   const label = filter === 'alltime' ? 'All Time' : filter === 'thismonth' ? monthName : lastMonthName
 
+  const tabDescription =
+    filter === 'alltime'
+      ? 'Total STOK points earned since joining. Spending points does not lower this score.'
+      : filter === 'thismonth'
+      ? `Points earned minus points redeemed in ${monthName}. Spend less, rank higher. The #1 at month end earns 2x tickets in ${new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleString('en-US', { month: 'long' })}.`
+      : `Final standings for ${lastMonthName}. The #1 earned a 2x ticket boost this month.`
+
   const filterBtn = (f: Filter, label: string) => (
     <button
       key={f}
@@ -121,11 +128,14 @@ export default function LeaderboardClient({ allTime, thisMonth, prevMonth, month
   return (
     <div>
       {/* Filter tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
         {filterBtn('alltime', 'All Time')}
         {filterBtn('thismonth', monthName)}
         {filterBtn('lastmonth', lastMonthName)}
       </div>
+      <p style={{ color: 'rgba(245,237,224,0.25)', fontSize: '11px', fontFamily: 'sans-serif', lineHeight: 1.5, marginBottom: '28px' }}>
+        {tabDescription}
+      </p>
 
       {data.length === 0 ? (
         <p style={{ color: 'rgba(245,237,224,0.3)', fontSize: '14px' }}>No data for {label} yet.</p>
@@ -163,6 +173,7 @@ export default function LeaderboardClient({ allTime, thisMonth, prevMonth, month
                         {maskEmail(entry.email)}
                         {isCurrentUser && <span style={{ color: '#CA8A04', fontSize: '10px', marginLeft: '8px', letterSpacing: '0.1em' }}>YOU</span>}
                         {isTop1 && filter === 'thismonth' && <span style={{ color: '#CA8A04', fontSize: '10px', marginLeft: '8px', letterSpacing: '0.1em' }}>2x TICKETS NEXT MONTH</span>}
+                        {isTop1 && filter === 'lastmonth' && <span style={{ background: 'rgba(202,138,4,0.15)', color: '#CA8A04', fontSize: '10px', marginLeft: '8px', letterSpacing: '0.1em', padding: '2px 6px', borderRadius: '2px', border: '1px solid rgba(202,138,4,0.3)' }}>2x BOOST ACTIVE</span>}
                       </p>
                       {entry.total_referrals && entry.total_referrals > 0 ? (
                         <p style={{ color: 'rgba(245,237,224,0.3)', fontSize: '11px' }}>
@@ -174,7 +185,7 @@ export default function LeaderboardClient({ allTime, thisMonth, prevMonth, month
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ color: isCurrentUser ? '#CA8A04' : 'rgba(245,237,224,0.6)', fontFamily: 'monospace', fontSize: '16px', fontWeight: 700 }}>
                       {entry.total_points.toLocaleString()}
-                      <span style={{ color: 'rgba(245,237,224,0.3)', fontSize: '11px', fontWeight: 400, marginLeft: '4px' }}>STOK</span>
+                      <span style={{ color: 'rgba(245,237,224,0.3)', fontSize: '11px', fontWeight: 400, marginLeft: '4px' }}>STOK earned</span>
                     </p>
                   </div>
                 </div>

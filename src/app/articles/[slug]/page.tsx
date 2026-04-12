@@ -42,11 +42,21 @@ export default async function ArticlePage({ params }: Props) {
       <h1 style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '36px', fontWeight: 700, lineHeight: 1.2, marginBottom: '16px' }}>
         {article.title}
       </h1>
-      <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '11px', letterSpacing: '0.1em', marginBottom: '48px' }}>
-        {new Date(article.published_at).toLocaleDateString('en-US', {
-          year: 'numeric', month: 'long', day: 'numeric',
-        })}
-      </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '48px' }}>
+        <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '11px', letterSpacing: '0.1em' }}>
+          {new Date(article.published_at).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric',
+          })}
+        </p>
+        {article.author && (
+          <>
+            <span style={{ color: 'rgba(245,237,224,0.15)', fontSize: '11px' }}>·</span>
+            <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '11px', letterSpacing: '0.1em' }}>
+              Written by {article.author}
+            </p>
+          </>
+        )}
+      </div>
 
       <div style={{ color: 'rgba(245,237,224,0.75)', fontFamily: 'sans-serif', fontSize: '15px', lineHeight: 1.8 }}>
         {article.body ? (
