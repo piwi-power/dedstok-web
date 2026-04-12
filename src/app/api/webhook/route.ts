@@ -28,21 +28,51 @@ function buildEmailHtml(spotsNum: number, pointsEarned: number): string {
   `
 }
 
-async function sendConfirmationEmail(
-  customerEmail: string,
-  spotsNum: number,
-  pointsEarned: number
-) {
+async function sendConfirmationEmail(customerEmail: string, spotsNum: number, pointsEarned: number) {
   const { data: emailData, error: emailError } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: customerEmail,
     subject: `You're in — DEDSTOK`,
     html: buildEmailHtml(spotsNum, pointsEarned),
   })
-  if (emailError) {
-    console.error('[webhook] Resend error:', emailError)
+  if (emailError) console.error('[webhook] Resend error:', emailError)
+  else console.log('[webhook] Email sent:', emailData?.id)
+}
+
+async function handleReferral(supabase: ReturnType<typeof createServiceClient>, user_id: string, pointsEarned: number) {
+  // Get user's referrer
+  const { data: user } = await supabase
+    .from('users')
+    .select('referrer_id, first_referral_credited')
+    .eq('id', user_id)
+    .single()
+
+  if (!user?.referrer_id) return
+
+  // First purchase by this user — credit the one-time 50pt bonus + 50% ongoing
+  if (!user.first_referral_credited) {
+    const firstBonus = 50 + Math.floor(pointsEarned * 0.5)
+    await supabase.rpc('credit_referrer', {
+      referrer_id: user.referrer_id,
+      amount: firstBonus,
+      source_user_id: user_id,
+    })
+    // Mark first referral credited + increment referrer's total_referrals
+    await supabase
+      .from('users')
+      .update({ first_referral_credited: true })
+      .eq('id', user_id)
+    await supabase.rpc('increment_total_referrals', { p_user_id: user.referrer_id })
   } else {
-    console.log('[webhook] Email sent:', emailData?.id)
+    // Ongoing 50% of points earned
+    const ongoingBonus = Math.floor(pointsEarned * 0.5)
+    if (ongoingBonus > 0) {
+      await supabase.rpc('credit_referrer', {
+        referrer_id: user.referrer_id,
+        amount: ongoingBonus,
+        source_user_id: user_id,
+      })
+    }
   }
 }
 
@@ -68,7 +98,7 @@ export async function POST(request: NextRequest) {
   }
 
   const session = event.data.object as Stripe.Checkout.Session
-  const { drop_id, user_id, spots_count, influencer_code, total_amount } =
+  const { drop_id, user_id, spots_count, influencer_code, total_amount, points_spots } =
     session.metadata ?? {}
 
   if (!drop_id || !user_id || !spots_count) {
@@ -77,13 +107,15 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = createServiceClient()
-  const spotsNum = parseInt(spots_count)
+  const cashSpots = parseInt(spots_count)
+  const pointsSpots = parseInt(points_spots ?? '0')
+  const totalSpots = cashSpots + pointsSpots
   const totalPaid = parseFloat(total_amount)
   const paymentIntent = session.payment_intent as string
   const customerEmail = session.customer_details?.email ?? null
-  const pointsEarned = Math.floor(totalPaid)
+  const pointsEarned = Math.floor(totalPaid) // points only on cash paid amount
 
-  // 0. Idempotency — if this payment was already processed, just resend the email
+  // 0. Idempotency
   const { data: existingEntry } = await supabase
     .from('entries')
     .select('id')
@@ -93,11 +125,7 @@ export async function POST(request: NextRequest) {
   if (existingEntry) {
     console.log('[webhook] Already processed, skipping to email')
     if (customerEmail) {
-      try {
-        await sendConfirmationEmail(customerEmail, spotsNum, pointsEarned)
-      } catch (err) {
-        console.error('[webhook] Email exception (retry):', err)
-      }
+      try { await sendConfirmationEmail(customerEmail, totalSpots, pointsEarned) } catch {}
     }
     return NextResponse.json({ received: true })
   }
@@ -108,11 +136,13 @@ export async function POST(request: NextRequest) {
     { onConflict: 'id', ignoreDuplicates: true }
   )
 
-  // 2. Write entry to Supabase
+  // 2. Write entry (total spots = cash + points spots)
   const { error: entryError } = await supabase.from('entries').insert({
     drop_id,
     user_id,
-    spots_count: spotsNum,
+    spots_count: totalSpots,
+    cash_spots: cashSpots,
+    points_spots: pointsSpots,
     total_paid: totalPaid,
     stripe_payment_id: paymentIntent,
     influencer_code: influencer_code || null,
@@ -123,31 +153,33 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Entry insert failed' }, { status: 500 })
   }
 
-  // 3. Increment spots_sold on the drop
-  await supabase.rpc('increment_spots_sold', { drop_id, amount: spotsNum })
+  // 3. Increment spots_sold
+  await supabase.rpc('increment_spots_sold', { drop_id, amount: totalSpots })
 
-  // 4. Credit points to user (1 point per $1 spent)
-  await supabase.rpc('add_points', { user_id, amount: pointsEarned, drop_id })
-
-  // 5. Credit influencer commission if code was used
-  if (influencer_code) {
-    await supabase.rpc('credit_influencer', {
-      code: influencer_code,
-      tickets: spotsNum,
-    })
+  // 4. Credit earned points (cash spots only)
+  if (pointsEarned > 0) {
+    await supabase.rpc('add_points', { user_id, amount: pointsEarned, drop_id })
   }
 
-  // 6. Send confirmation email
-  console.log('[webhook] Sending email to:', customerEmail)
+  // 5. Deduct redeemed points (points spots)
+  if (pointsSpots > 0) {
+    const dropData = await supabase.from('drops').select('entry_price').eq('id', drop_id).single()
+    const entryPrice = dropData.data?.entry_price ?? 0
+    const pointCost = pointsSpots * entryPrice * 5 // 5:1 rate
+    await supabase.rpc('redeem_points', { p_user_id: user_id, p_amount: pointCost, p_drop_id: drop_id })
+  }
 
+  // 6. Handle referral crediting
+  await handleReferral(supabase, user_id, pointsEarned)
+
+  // 7. Credit influencer commission
+  if (influencer_code) {
+    await supabase.rpc('credit_influencer', { code: influencer_code, tickets: totalSpots })
+  }
+
+  // 8. Confirmation email
   if (customerEmail) {
-    try {
-      await sendConfirmationEmail(customerEmail, spotsNum, pointsEarned)
-    } catch (err) {
-      console.error('[webhook] Email exception:', err)
-    }
-  } else {
-    console.warn('[webhook] No customer email found in session')
+    try { await sendConfirmationEmail(customerEmail, totalSpots, pointsEarned) } catch {}
   }
 
   return NextResponse.json({ received: true })

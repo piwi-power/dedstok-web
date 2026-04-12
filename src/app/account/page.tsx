@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import ReferralCopy from '@/components/ReferralCopy'
 
 export const metadata: Metadata = {
   title: 'Account',
@@ -20,7 +21,7 @@ export default async function AccountPage() {
   const [profileResult, entriesResult] = await Promise.all([
     supabase
       .from('users')
-      .select('points_balance, total_entries, total_wins')
+      .select('points_balance, total_entries, total_wins, referral_code, total_referrals')
       .eq('id', user.id)
       .single(),
     supabase
@@ -70,6 +71,19 @@ export default async function AccountPage() {
           </button>
         </form>
       </div>
+
+      {/* Referral link */}
+      {profile?.referral_code && (
+        <div style={{ background: 'rgba(202,138,4,0.06)', border: '1px solid rgba(202,138,4,0.2)', borderRadius: '4px', padding: '20px', marginBottom: '32px' }}>
+          <p style={{ color: 'rgba(245,237,224,0.4)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: 'sans-serif', marginBottom: '8px' }}>
+            Your Referral Link — {profile.total_referrals ?? 0} referral{profile.total_referrals !== 1 ? 's' : ''}
+          </p>
+          <p style={{ color: 'rgba(245,237,224,0.35)', fontSize: '12px', fontFamily: 'sans-serif', marginBottom: '12px' }}>
+            When someone signs up and enters their first drop, you earn 50 STOK points + 50% of their points on every purchase they make forever.
+          </p>
+          <ReferralCopy code={profile.referral_code} />
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-4 mb-16">
         {[

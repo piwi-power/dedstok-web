@@ -35,6 +35,7 @@ export default async function Nav() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
         <Link href="/drops" style={linkStyle}>Drops</Link>
         <Link href="/winners" style={linkStyle}>Winners</Link>
+        <Link href="/leaderboard" style={linkStyle}>Leaderboard</Link>
         <Link href="/articles" style={linkStyle}>Articles</Link>
         {user ? (
           <Link href="/account" style={{ ...linkStyle, color: '#CA8A04' }}>Account</Link>
