@@ -165,10 +165,10 @@ export async function POST(request: NextRequest) {
   // 6. Handle referral crediting
   await handleReferral(supabase, user_id, pointsEarned)
 
-  // 7. Credit influencer commission + 10pt buyer bonus
+  // 7. Credit influencer commission + 10pt buyer bonus per spot
   if (influencer_code) {
     await supabase.rpc('credit_influencer', { code: influencer_code, tickets: totalSpots })
-    await supabase.rpc('add_points', { user_id, amount: 10, drop_id })
+    await supabase.rpc('add_points', { user_id, amount: 10 * totalSpots, drop_id })
   }
 
   // 8. Confirmation email
