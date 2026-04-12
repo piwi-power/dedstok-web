@@ -79,7 +79,7 @@ export default async function AccountPage() {
             Your Referral Link — {profile.total_referrals ?? 0} referral{profile.total_referrals !== 1 ? 's' : ''}
           </p>
           <p style={{ color: 'rgba(245,237,224,0.35)', fontSize: '12px', fontFamily: 'sans-serif', marginBottom: '12px' }}>
-            When someone signs up and enters their first drop, you earn 50 STOK points + 50% of their points on every purchase they make forever.
+            Every time someone you referred buys a spot, you earn 50% of their points — forever. The more they enter, the more you earn.
           </p>
           <ReferralCopy code={profile.referral_code} />
         </div>

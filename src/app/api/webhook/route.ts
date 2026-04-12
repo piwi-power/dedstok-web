@@ -49,30 +49,23 @@ async function handleReferral(supabase: ReturnType<typeof createServiceClient>, 
 
   if (!user?.referrer_id) return
 
-  // First purchase by this user — credit the one-time 50pt bonus + 50% ongoing
-  if (!user.first_referral_credited) {
-    const firstBonus = 50 + Math.floor(pointsEarned * 0.5)
+  // Always credit 50% of buyer's earned points to their referrer, forever
+  const bonus = Math.floor(pointsEarned * 0.5)
+  if (bonus > 0) {
     await supabase.rpc('credit_referrer', {
       referrer_id: user.referrer_id,
-      amount: firstBonus,
+      amount: bonus,
       source_user_id: user_id,
     })
-    // Mark first referral credited + increment referrer's total_referrals
+  }
+
+  // Increment total_referrals counter only on first purchase
+  if (!user.first_referral_credited) {
     await supabase
       .from('users')
       .update({ first_referral_credited: true })
       .eq('id', user_id)
     await supabase.rpc('increment_total_referrals', { p_user_id: user.referrer_id })
-  } else {
-    // Ongoing 50% of points earned
-    const ongoingBonus = Math.floor(pointsEarned * 0.5)
-    if (ongoingBonus > 0) {
-      await supabase.rpc('credit_referrer', {
-        referrer_id: user.referrer_id,
-        amount: ongoingBonus,
-        source_user_id: user_id,
-      })
-    }
   }
 }
 
@@ -172,9 +165,10 @@ export async function POST(request: NextRequest) {
   // 6. Handle referral crediting
   await handleReferral(supabase, user_id, pointsEarned)
 
-  // 7. Credit influencer commission
+  // 7. Credit influencer commission + 10pt buyer bonus
   if (influencer_code) {
     await supabase.rpc('credit_influencer', { code: influencer_code, tickets: totalSpots })
+    await supabase.rpc('add_points', { user_id, amount: 10, drop_id })
   }
 
   // 8. Confirmation email

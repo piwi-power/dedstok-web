@@ -134,6 +134,7 @@ export async function POST(request: NextRequest) {
 
       if (influencer_code && validCode) {
         await service.rpc('credit_influencer', { code: validCode.code, tickets: totalSpots })
+        await service.rpc('add_points', { user_id: user.id, amount: 10, drop_id })
       }
 
       // Send confirmation email
