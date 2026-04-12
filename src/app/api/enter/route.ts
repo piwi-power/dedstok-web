@@ -133,7 +133,11 @@ export async function POST(request: NextRequest) {
       await service.rpc('redeem_points', { p_user_id: user.id, p_amount: pointCost, p_drop_id: drop_id })
 
       if (influencer_code && validCode) {
-        await service.rpc('credit_influencer', { code: validCode.code, tickets: totalSpots })
+        await service.rpc('credit_influencer', {
+          p_code: validCode.code,
+          p_tickets: totalSpots,
+          p_entry_price: drop.entry_price,
+        })
         await service.rpc('add_points', { user_id: user.id, amount: 10 * totalSpots, drop_id })
       }
 
@@ -189,6 +193,7 @@ export async function POST(request: NextRequest) {
         points_spots: String(points_spots),
         influencer_code: validCode?.code ?? '',
         total_amount: String(cashTotal),
+        entry_price: String(drop.entry_price),
       },
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/enter/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/drops/${drop.slug}`,

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ReferralCopy from '@/components/ReferralCopy'
+import InfluencerEarningsCard from '@/components/InfluencerEarningsCard'
 
 export const metadata: Metadata = {
   title: 'Account',
@@ -17,8 +18,8 @@ export default async function AccountPage() {
 
   if (!user) redirect('/?auth=required')
 
-  // Fetch user profile and entry history in parallel
-  const [profileResult, entriesResult] = await Promise.all([
+  // Fetch user profile, entry history, and influencer code in parallel
+  const [profileResult, entriesResult, influencerResult] = await Promise.all([
     supabase
       .from('users')
       .select('points_balance, total_entries, total_wins, referral_code, total_referrals')
@@ -30,10 +31,16 @@ export default async function AccountPage() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(20),
+    supabase
+      .from('influencer_codes')
+      .select('code, influencer_name, instagram_handle, commission_rate, total_tickets_credited, total_commission_earned, total_pending_payout, last_payout_date, is_active')
+      .eq('user_id', user.id)
+      .single(),
   ])
 
   const profile = profileResult.data
   const entries = entriesResult.data ?? []
+  const influencerCode = influencerResult.data ?? null
 
   async function signOut() {
     'use server'
@@ -71,6 +78,9 @@ export default async function AccountPage() {
           </button>
         </form>
       </div>
+
+      {/* Creator earnings — only visible if account is linked to an influencer code */}
+      {influencerCode && <InfluencerEarningsCard code={influencerCode} />}
 
       {/* Referral link */}
       {profile?.referral_code && (

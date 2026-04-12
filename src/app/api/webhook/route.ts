@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
   }
 
   const session = event.data.object as Stripe.Checkout.Session
-  const { drop_id, user_id, spots_count, influencer_code, total_amount, points_spots } =
+  const { drop_id, user_id, spots_count, influencer_code, total_amount, points_spots, entry_price } =
     session.metadata ?? {}
 
   if (!drop_id || !user_id || !spots_count) {
@@ -104,6 +104,7 @@ export async function POST(request: NextRequest) {
   const pointsSpots = parseInt(points_spots ?? '0')
   const totalSpots = cashSpots + pointsSpots
   const totalPaid = parseFloat(total_amount)
+  const entryPriceNum = parseFloat(entry_price ?? '0')
   const paymentIntent = session.payment_intent as string
   const customerEmail = session.customer_details?.email ?? null
   const pointsEarned = Math.floor(totalPaid) // points only on cash paid amount
@@ -165,9 +166,13 @@ export async function POST(request: NextRequest) {
   // 6. Handle referral crediting
   await handleReferral(supabase, user_id, pointsEarned)
 
-  // 7. Credit influencer commission + 10pt buyer bonus per spot
+  // 7. Credit influencer commission (10% of entry_price × spots) + 10pt buyer bonus per spot
   if (influencer_code) {
-    await supabase.rpc('credit_influencer', { code: influencer_code, tickets: totalSpots })
+    await supabase.rpc('credit_influencer', {
+      p_code: influencer_code,
+      p_tickets: totalSpots,
+      p_entry_price: entryPriceNum,
+    })
     await supabase.rpc('add_points', { user_id, amount: 10 * totalSpots, drop_id })
   }
 

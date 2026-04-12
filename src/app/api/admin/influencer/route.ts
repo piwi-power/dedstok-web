@@ -15,10 +15,9 @@ export async function POST(request: NextRequest) {
   const supabase = createServiceClient()
 
   if (action === 'create') {
-    const { name, instagram, commission } = payload
+    const { name, instagram, commission_rate = 0.10 } = payload
     if (!name) return NextResponse.json({ error: 'Name required' }, { status: 400 })
 
-    // Generate code from name
     const code = name.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10)
 
     const { data, error } = await supabase
@@ -27,7 +26,7 @@ export async function POST(request: NextRequest) {
         code,
         influencer_name: name,
         instagram_handle: instagram ?? null,
-        commission_per_ticket: parseFloat(commission ?? '1'),
+        commission_rate: parseFloat(commission_rate),
         is_active: true,
       })
       .select()
@@ -43,6 +42,37 @@ export async function POST(request: NextRequest) {
       .from('influencer_codes')
       .update({ is_active })
       .eq('id', id)
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  }
+
+  if (action === 'mark_paid') {
+    const { code } = payload
+    const { error } = await supabase.rpc('mark_influencer_paid', { p_code: code })
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  }
+
+  if (action === 'link_user') {
+    // Link an influencer's DEDSTOK account to their code so they can see earnings
+    const { code, email } = payload
+    if (!code || !email) return NextResponse.json({ error: 'code and email required' }, { status: 400 })
+
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single()
+
+    if (userError || !userData) {
+      return NextResponse.json({ error: 'No account found for that email' }, { status: 404 })
+    }
+
+    const { error } = await supabase
+      .from('influencer_codes')
+      .update({ user_id: userData.id })
+      .eq('code', code)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ success: true })
