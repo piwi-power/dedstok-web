@@ -58,7 +58,7 @@ function ShareButtons({ rank, points, referralCode }: { rank: number; points: nu
     } catch {
       setIgMsg('Instagram sharing is only available on mobile.')
     }
-    setTimeout(() => setIgMsg(null), 4000)
+    setTimeout(() => setIgMsg(null), 6000)
   }
 
   return (
