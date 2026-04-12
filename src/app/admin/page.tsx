@@ -7,6 +7,7 @@ import AdminDrawButton from '@/components/AdminDrawButton'
 import AdminAnnounceButton from '@/components/AdminAnnounceButton'
 import AdminResendSmsButton from '@/components/AdminResendSmsButton'
 import AdminInfluencerPanel from '@/components/AdminInfluencerPanel'
+import AdminDropPanel from '@/components/AdminDropPanel'
 
 export default async function AdminPage() {
   // Auth check
@@ -18,10 +19,10 @@ export default async function AdminPage() {
 
   const supabase = createServiceClient()
 
-  // Fetch all drops with entry counts
+  // Fetch all drops with full data
   const { data: drops } = await supabase
     .from('drops')
-    .select('id, status, created_at')
+    .select('id, item_name, slug, description, entry_price, total_spots, spots_sold, draw_date, market_value, sourcing_tier, status, created_at')
     .order('created_at', { ascending: false })
 
   const dropIds = drops?.map(d => d.id) ?? []
@@ -102,12 +103,14 @@ export default async function AdminPage() {
           ))}
         </div>
 
-        {/* Active Drops */}
+        {/* Drop management — create, edit, delete, status */}
+        <AdminDropPanel drops={drops ?? []} />
+
+        {/* Active drops — draw controls and entry tables */}
         <section style={{ marginBottom: '48px' }}>
           <p style={{ color: 'rgba(245,237,224,0.35)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '16px' }}>
-            Active Drops
+            Active Drop Controls
           </p>
-
           {activeDrops.length === 0 ? (
             <div style={{ border: '1px solid rgba(245,237,224,0.08)', borderRadius: '4px', padding: '32px', textAlign: 'center' }}>
               <p style={{ color: 'rgba(245,237,224,0.3)', fontSize: '13px' }}>No active drops.</p>
@@ -117,20 +120,16 @@ export default async function AdminPage() {
               const dropEntries = allEntries?.filter(e => e.drop_id === drop.id) ?? []
               const totalTickets = dropEntries.reduce((sum, e) => sum + (e.spots_count ?? 0), 0)
               const dropRevenue = dropEntries.reduce((sum, e) => sum + (e.total_paid ?? 0), 0)
+              const dropData = drops?.find(d => d.id === drop.id)
 
               return (
                 <div key={drop.id} style={{ border: '1px solid rgba(202,138,4,0.3)', borderRadius: '4px', padding: '24px', marginBottom: '12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                        <span style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: '2px' }}>
-                          Live
-                        </span>
-                      </div>
-                      <p style={{ color: 'rgba(245,237,224,0.4)', fontSize: '11px', marginBottom: '4px' }}>
-                        Drop ID: <span style={{ fontFamily: 'monospace', color: 'rgba(245,237,224,0.6)' }}>{drop.id}</span>
+                      <p style={{ color: '#f5ede0', fontSize: '15px', fontWeight: 600, fontFamily: 'sans-serif', marginBottom: '6px' }}>
+                        {dropData?.item_name ?? drop.id}
                       </p>
-                      <div style={{ display: 'flex', gap: '24px', marginTop: '12px' }}>
+                      <div style={{ display: 'flex', gap: '24px', marginTop: '8px' }}>
                         <div>
                           <p style={{ color: 'rgba(245,237,224,0.35)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>Entrants</p>
                           <p style={{ color: '#f5ede0', fontSize: '20px', fontWeight: 700 }}>{dropEntries.length}</p>
@@ -148,12 +147,9 @@ export default async function AdminPage() {
                     <AdminDrawButton dropId={drop.id} entryCount={dropEntries.length} />
                   </div>
 
-                  {/* Entry table */}
                   {dropEntries.length > 0 && (
                     <div style={{ borderTop: '1px solid rgba(245,237,224,0.06)', paddingTop: '20px' }}>
-                      <p style={{ color: 'rgba(245,237,224,0.35)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px' }}>
-                        Entries
-                      </p>
+                      <p style={{ color: 'rgba(245,237,224,0.35)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px' }}>Entries</p>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 140px', gap: '0', fontSize: '11px' }}>
                         <div style={{ color: 'rgba(245,237,224,0.3)', padding: '6px 0', borderBottom: '1px solid rgba(245,237,224,0.06)' }}>Email</div>
                         <div style={{ color: 'rgba(245,237,224,0.3)', padding: '6px 0', borderBottom: '1px solid rgba(245,237,224,0.06)', textAlign: 'center' }}>Spots</div>
@@ -165,16 +161,10 @@ export default async function AdminPage() {
                             <>
                               <div key={`${entry.id}-email`} style={{ color: 'rgba(245,237,224,0.7)', padding: '8px 0', borderBottom: '1px solid rgba(245,237,224,0.04)', fontFamily: 'monospace' }}>
                                 {user?.email ?? entry.user_id.slice(0, 8)}
-                                {entry.influencer_code && (
-                                  <span style={{ marginLeft: '8px', color: '#CA8A04', fontSize: '9px' }}>{entry.influencer_code}</span>
-                                )}
+                                {entry.influencer_code && <span style={{ marginLeft: '8px', color: '#CA8A04', fontSize: '9px' }}>{entry.influencer_code}</span>}
                               </div>
-                              <div key={`${entry.id}-spots`} style={{ color: '#f5ede0', padding: '8px 0', borderBottom: '1px solid rgba(245,237,224,0.04)', textAlign: 'center' }}>
-                                {entry.spots_count}
-                              </div>
-                              <div key={`${entry.id}-paid`} style={{ color: '#f5ede0', padding: '8px 0', borderBottom: '1px solid rgba(245,237,224,0.04)', textAlign: 'right' }}>
-                                ${entry.total_paid}
-                              </div>
+                              <div key={`${entry.id}-spots`} style={{ color: '#f5ede0', padding: '8px 0', borderBottom: '1px solid rgba(245,237,224,0.04)', textAlign: 'center' }}>{entry.spots_count}</div>
+                              <div key={`${entry.id}-paid`} style={{ color: '#f5ede0', padding: '8px 0', borderBottom: '1px solid rgba(245,237,224,0.04)', textAlign: 'right' }}>${entry.total_paid}</div>
                               <div key={`${entry.id}-date`} style={{ color: 'rgba(245,237,224,0.4)', padding: '8px 0', borderBottom: '1px solid rgba(245,237,224,0.04)', textAlign: 'right' }}>
                                 {new Date(entry.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                               </div>
@@ -255,30 +245,6 @@ export default async function AdminPage() {
           )}
         </section>
 
-        {/* Closed drops */}
-        {closedDrops.length > 0 && (
-          <section>
-            <p style={{ color: 'rgba(245,237,224,0.35)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '16px' }}>
-              Closed Drops
-            </p>
-            {closedDrops.map(drop => {
-              const dropEntries = allEntries?.filter(e => e.drop_id === drop.id) ?? []
-              const dropRevenue = dropEntries.reduce((sum, e) => sum + (e.total_paid ?? 0), 0)
-              return (
-                <div key={drop.id} style={{ border: '1px solid rgba(245,237,224,0.06)', borderRadius: '4px', padding: '16px 20px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <p style={{ color: 'rgba(245,237,224,0.4)', fontSize: '11px', fontFamily: 'monospace' }}>{drop.id}</p>
-                  <div style={{ display: 'flex', gap: '24px' }}>
-                    <p style={{ color: 'rgba(245,237,224,0.5)', fontSize: '12px' }}>{dropEntries.length} entries</p>
-                    <p style={{ color: 'rgba(245,237,224,0.5)', fontSize: '12px' }}>${dropRevenue.toFixed(2)}</p>
-                    <span style={{ background: 'rgba(245,237,224,0.06)', color: 'rgba(245,237,224,0.4)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: '2px' }}>
-                      Closed
-                    </span>
-                  </div>
-                </div>
-              )
-            })}
-          </section>
-        )}
 
         {/* Influencer codes */}
         <AdminInfluencerPanel codes={influencerCodes ?? []} />
