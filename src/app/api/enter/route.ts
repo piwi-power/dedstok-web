@@ -112,15 +112,34 @@ export async function POST(request: NextRequest) {
     if (cashSpots === 0) {
       const pointCost = points_spots * drop.entry_price * 5
 
-      const { error: entryError } = await service.from('entries').insert({
-        drop_id,
-        user_id: user.id,
-        spots_count: totalSpots,
-        cash_spots: 0,
-        points_spots: totalSpots,
-        total_paid: 0,
-        influencer_code: validCode?.code ?? null,
-      })
+      // Upsert: update existing entry if one exists, otherwise insert
+      const { data: existing } = await service.from('entries')
+        .select('id, spots_count, points_spots')
+        .eq('drop_id', drop_id)
+        .eq('user_id', user.id)
+        .single()
+
+      let entryError
+      if (existing) {
+        const { error } = await service.from('entries')
+          .update({
+            spots_count: existing.spots_count + totalSpots,
+            points_spots: (existing.points_spots ?? 0) + totalSpots,
+          })
+          .eq('id', existing.id)
+        entryError = error
+      } else {
+        const { error } = await service.from('entries').insert({
+          drop_id,
+          user_id: user.id,
+          spots_count: totalSpots,
+          cash_spots: 0,
+          points_spots: totalSpots,
+          total_paid: 0,
+          influencer_code: validCode?.code ?? null,
+        })
+        entryError = error
+      }
 
       if (entryError) {
         return NextResponse.json<ApiResponse>(

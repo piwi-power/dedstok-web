@@ -130,20 +130,41 @@ export async function POST(request: NextRequest) {
     { onConflict: 'id', ignoreDuplicates: true }
   )
 
-  // 2. Write entry (total spots = cash + points spots)
-  const { error: entryError } = await supabase.from('entries').insert({
-    drop_id,
-    user_id,
-    spots_count: totalSpots,
-    cash_spots: cashSpots,
-    points_spots: pointsSpots,
-    total_paid: totalPaid,
-    stripe_payment_id: paymentIntent,
-    influencer_code: influencer_code || null,
-  })
+  // 2. Write entry — upsert so buying in two separate transactions works correctly
+  const { data: existingEntry } = await supabase.from('entries')
+    .select('id, spots_count, cash_spots, points_spots, total_paid')
+    .eq('drop_id', drop_id)
+    .eq('user_id', user_id)
+    .single()
+
+  let entryError
+  if (existingEntry) {
+    const { error } = await supabase.from('entries')
+      .update({
+        spots_count: existingEntry.spots_count + totalSpots,
+        cash_spots: (existingEntry.cash_spots ?? 0) + cashSpots,
+        points_spots: (existingEntry.points_spots ?? 0) + pointsSpots,
+        total_paid: (existingEntry.total_paid ?? 0) + totalPaid,
+        stripe_payment_id: paymentIntent, // keep most recent payment id
+      })
+      .eq('id', existingEntry.id)
+    entryError = error
+  } else {
+    const { error } = await supabase.from('entries').insert({
+      drop_id,
+      user_id,
+      spots_count: totalSpots,
+      cash_spots: cashSpots,
+      points_spots: pointsSpots,
+      total_paid: totalPaid,
+      stripe_payment_id: paymentIntent,
+      influencer_code: influencer_code || null,
+    })
+    entryError = error
+  }
 
   if (entryError) {
-    console.error('[webhook] Entry insert failed', entryError)
+    console.error('[webhook] Entry upsert failed', entryError)
     return NextResponse.json({ error: 'Entry insert failed' }, { status: 500 })
   }
 
