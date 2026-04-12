@@ -39,9 +39,16 @@ function ShareButtons({ rank, points, referralCode }: { rank: number; points: nu
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(referralUrl)}`, '_blank')
   }
 
-  function shareInstagram() {
-    // Instagram doesn't support direct URL sharing — copy to clipboard for story paste
-    navigator.clipboard.writeText(text + ' ' + referralUrl)
+  async function shareInstagram() {
+    // Use native share sheet on mobile (opens Instagram Stories etc.)
+    // Fall back to clipboard on desktop
+    if (navigator.share) {
+      try {
+        await navigator.share({ text, url: referralUrl })
+        return
+      } catch {}
+    }
+    await navigator.clipboard.writeText(text + ' ' + referralUrl)
     alert('Copied to clipboard — paste into your Instagram story.')
   }
 
