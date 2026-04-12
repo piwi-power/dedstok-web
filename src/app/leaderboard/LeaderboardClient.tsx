@@ -30,6 +30,7 @@ function ShareButtons({ rank, points, referralCode }: { rank: number; points: nu
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok.com'
   const referralUrl = `${siteUrl}/?ref=${referralCode}`
   const text = `I'm ranked #${rank} on the DEDSTOK leaderboard with ${points} STOK points. One drop. One winner. Every week.`
+  const [igMsg, setIgMsg] = useState<string | null>(null)
 
   function shareWhatsApp() {
     window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + referralUrl)}`, '_blank')
@@ -40,25 +41,36 @@ function ShareButtons({ rank, points, referralCode }: { rank: number; points: nu
   }
 
   async function shareInstagram() {
+    // Mobile: use native share sheet
     if (navigator.share) {
       try {
         await navigator.share({ text, url: referralUrl })
         return
       } catch {}
     }
+    // Desktop: Instagram doesn't allow web sharing — show inline message
+    setIgMsg(null)
     try {
       await navigator.clipboard.writeText(text + ' ' + referralUrl)
-      alert('Copied to clipboard — paste into your Instagram story.')
+      setIgMsg('Copied! Open Instagram and paste into your story.')
     } catch {
-      alert('Copy this link: ' + referralUrl)
+      setIgMsg('Instagram sharing is only available on mobile.')
     }
+    setTimeout(() => setIgMsg(null), 4000)
   }
 
   return (
-    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-      <button onClick={shareWhatsApp} style={shareBtn('#25D366')}>WhatsApp</button>
-      <button onClick={shareTwitter} style={shareBtn('#1DA1F2')}>Twitter</button>
-      <button onClick={shareInstagram} style={shareBtn('#E1306C')}>Instagram</button>
+    <div style={{ marginTop: '8px' }}>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button onClick={shareWhatsApp} style={shareBtn('#25D366')}>WhatsApp</button>
+        <button onClick={shareTwitter} style={shareBtn('#1DA1F2')}>Twitter</button>
+        <button onClick={shareInstagram} style={shareBtn('#E1306C')}>Instagram</button>
+      </div>
+      {igMsg && (
+        <p style={{ color: 'rgba(245,237,224,0.5)', fontSize: '11px', fontFamily: 'sans-serif', marginTop: '6px' }}>
+          {igMsg}
+        </p>
+      )}
     </div>
   )
 }
