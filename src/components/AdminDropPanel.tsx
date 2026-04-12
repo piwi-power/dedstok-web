@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 interface Drop {
   id: string
@@ -31,6 +31,12 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
 
 const STATUSES = ['scheduled', 'active', 'closed', 'drawn']
 
+const SOURCING_TIERS = [
+  { value: '', label: 'None' },
+  { value: 'A', label: 'A — Retail (best margin, bought at store price)' },
+  { value: 'B', label: 'B — Resell (bought above retail)' },
+]
+
 const emptyForm = {
   item_name: '', slug: '', description: '', entry_price: '',
   total_spots: '', draw_date: '', market_value: '', sourcing_tier: '', status: 'scheduled', image_url: '',
@@ -42,10 +48,13 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   function openCreate() {
     setForm(emptyForm)
@@ -61,7 +70,7 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
       description: drop.description ?? '',
       entry_price: String(drop.entry_price),
       total_spots: String(drop.total_spots),
-      draw_date: drop.draw_date.slice(0, 16), // datetime-local format
+      draw_date: drop.draw_date.slice(0, 16),
       market_value: drop.market_value ? String(drop.market_value) : '',
       sourcing_tier: drop.sourcing_tier ?? '',
       status: drop.status,
@@ -76,6 +85,37 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
     setShowForm(false)
     setEditingId(null)
     setError(null)
+  }
+
+  async function uploadFile(file: File) {
+    if (!file.type.startsWith('image/')) {
+      setError('Only image files are allowed')
+      return
+    }
+    setUploading(true)
+    setError(null)
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+    const data = await res.json()
+    setUploading(false)
+    if (!res.ok) {
+      setError(data.error ?? 'Upload failed')
+      return
+    }
+    setForm(f => ({ ...f, image_url: data.url }))
+  }
+
+  function handleFilePick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) uploadFile(file)
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setDragOver(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) uploadFile(file)
   }
 
   async function handleSave() {
@@ -103,7 +143,6 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
     setShowForm(false)
     setEditingId(null)
 
-    // Refresh by reloading the page — simplest approach
     window.location.reload()
   }
 
@@ -181,6 +220,79 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
             {editingId ? 'Edit Drop' : 'New Drop'}
           </p>
 
+          {/* Image upload */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={labelStyle}>Drop Image</label>
+            <div
+              onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                border: `2px dashed ${dragOver ? '#CA8A04' : 'rgba(245,237,224,0.15)'}`,
+                borderRadius: '4px',
+                padding: form.image_url ? '0' : '32px 20px',
+                cursor: uploading ? 'wait' : 'pointer',
+                transition: 'border-color 0.15s',
+                overflow: 'hidden',
+                background: dragOver ? 'rgba(202,138,4,0.05)' : 'transparent',
+                position: 'relative',
+              }}
+            >
+              {form.image_url ? (
+                <div style={{ position: 'relative' }}>
+                  <img
+                    src={form.image_url}
+                    alt="Drop preview"
+                    style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', display: 'block' }}
+                  />
+                  <div style={{
+                    position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    opacity: 0, transition: 'opacity 0.15s',
+                  }}
+                    onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                    onMouseLeave={e => (e.currentTarget.style.opacity = '0')}
+                  >
+                    <p style={{ color: '#f5ede0', fontSize: '12px', fontFamily: 'sans-serif', letterSpacing: '0.1em' }}>
+                      Click or drag to replace
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center' }}>
+                  {uploading ? (
+                    <p style={{ color: 'rgba(245,237,224,0.4)', fontSize: '12px', fontFamily: 'sans-serif' }}>Uploading...</p>
+                  ) : (
+                    <>
+                      <p style={{ color: 'rgba(245,237,224,0.5)', fontSize: '13px', fontFamily: 'sans-serif', marginBottom: '6px' }}>
+                        Drag & drop an image here
+                      </p>
+                      <p style={{ color: 'rgba(245,237,224,0.25)', fontSize: '11px', fontFamily: 'sans-serif' }}>
+                        or click to browse — JPEG, PNG, WebP
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              style={{ display: 'none' }}
+              onChange={handleFilePick}
+            />
+            {form.image_url && (
+              <button
+                onClick={() => setForm(f => ({ ...f, image_url: '' }))}
+                style={{ background: 'transparent', color: 'rgba(245,237,224,0.3)', border: 'none', fontSize: '10px', fontFamily: 'sans-serif', cursor: 'pointer', marginTop: '6px', padding: 0, letterSpacing: '0.1em', textTransform: 'uppercase' }}
+              >
+                Remove image
+              </button>
+            )}
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
             <div>
               <label style={labelStyle}>Item Name *</label>
@@ -209,23 +321,21 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
             <div>
               <label style={labelStyle}>Status</label>
               <select style={inputStyle} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
-                {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                {STATUSES.map(s => (
+                  <option key={s} value={s}>
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
               <label style={labelStyle}>Sourcing Tier</label>
               <select style={inputStyle} value={form.sourcing_tier} onChange={e => setForm(f => ({ ...f, sourcing_tier: e.target.value }))}>
-                <option value="">None</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
+                {SOURCING_TIERS.map(t => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
               </select>
             </div>
-          </div>
-
-          <div style={{ marginBottom: '14px' }}>
-            <label style={labelStyle}>Image URL</label>
-            <input style={inputStyle} value={form.image_url} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} placeholder="https://..." />
           </div>
 
           <div style={{ marginBottom: '20px' }}>
@@ -240,8 +350,8 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={handleSave}
-              disabled={saving}
-              style={{ background: '#CA8A04', color: '#0c0a09', border: 'none', borderRadius: '4px', padding: '9px 20px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'sans-serif', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1 }}
+              disabled={saving || uploading}
+              style={{ background: '#CA8A04', color: '#0c0a09', border: 'none', borderRadius: '4px', padding: '9px 20px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'sans-serif', cursor: (saving || uploading) ? 'not-allowed' : 'pointer', opacity: (saving || uploading) ? 0.6 : 1 }}
             >
               {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Create Drop'}
             </button>
@@ -269,30 +379,44 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
           return (
             <div key={drop.id} style={{ border: '1px solid rgba(245,237,224,0.08)', borderRadius: '4px', padding: '18px 20px', marginBottom: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
-                    <p style={{ color: '#f5ede0', fontSize: '14px', fontWeight: 600, fontFamily: 'sans-serif' }}>
-                      {drop.item_name}
-                    </p>
-                    <span style={{ background: sc.bg, color: sc.color, fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: '2px', fontFamily: 'sans-serif', whiteSpace: 'nowrap' }}>
-                      {drop.status}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                    <span style={{ color: 'rgba(245,237,224,0.4)', fontSize: '11px', fontFamily: 'sans-serif' }}>
-                      ${drop.entry_price} / spot
-                    </span>
-                    <span style={{ color: 'rgba(245,237,224,0.4)', fontSize: '11px', fontFamily: 'sans-serif' }}>
-                      {drop.spots_sold} / {drop.total_spots} spots sold
-                    </span>
-                    <span style={{ color: 'rgba(245,237,224,0.4)', fontSize: '11px', fontFamily: 'sans-serif' }}>
-                      Draw: {new Date(drop.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                    {drop.market_value && (
-                      <span style={{ color: 'rgba(245,237,224,0.4)', fontSize: '11px', fontFamily: 'sans-serif' }}>
-                        MV: ${drop.market_value}
+                <div style={{ display: 'flex', gap: '16px', flex: 1, minWidth: 0 }}>
+                  {drop.image_url && (
+                    <img
+                      src={drop.image_url}
+                      alt={drop.item_name}
+                      style={{ width: '64px', height: '44px', objectFit: 'cover', borderRadius: '3px', flexShrink: 0 }}
+                    />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                      <p style={{ color: '#f5ede0', fontSize: '14px', fontWeight: 600, fontFamily: 'sans-serif' }}>
+                        {drop.item_name}
+                      </p>
+                      <span style={{ background: sc.bg, color: sc.color, fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: '2px', fontFamily: 'sans-serif', whiteSpace: 'nowrap' }}>
+                        {drop.status.charAt(0).toUpperCase() + drop.status.slice(1)}
                       </span>
-                    )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                      <span style={{ color: 'rgba(245,237,224,0.4)', fontSize: '11px', fontFamily: 'sans-serif' }}>
+                        ${drop.entry_price} / spot
+                      </span>
+                      <span style={{ color: 'rgba(245,237,224,0.4)', fontSize: '11px', fontFamily: 'sans-serif' }}>
+                        {drop.spots_sold} / {drop.total_spots} spots sold
+                      </span>
+                      <span style={{ color: 'rgba(245,237,224,0.4)', fontSize: '11px', fontFamily: 'sans-serif' }}>
+                        Draw: {new Date(drop.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      {drop.market_value && (
+                        <span style={{ color: 'rgba(245,237,224,0.4)', fontSize: '11px', fontFamily: 'sans-serif' }}>
+                          MV: ${drop.market_value}
+                        </span>
+                      )}
+                      {drop.sourcing_tier && (
+                        <span style={{ color: 'rgba(202,138,4,0.6)', fontSize: '11px', fontFamily: 'sans-serif' }}>
+                          Tier {drop.sourcing_tier}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -314,7 +438,6 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
                 </div>
               </div>
 
-              {/* Delete confirmation inline */}
               {isConfirmingDelete && (
                 <div style={{ marginTop: '12px', padding: '12px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <p style={{ color: 'rgba(245,237,224,0.6)', fontSize: '12px', fontFamily: 'sans-serif', flex: 1 }}>
