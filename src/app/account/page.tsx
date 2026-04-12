@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ReferralCopy from '@/components/ReferralCopy'
 import InfluencerEarningsCard from '@/components/InfluencerEarningsCard'
+import DeleteAccountButton from '@/components/DeleteAccountButton'
 
 export const metadata: Metadata = {
   title: 'Account',
@@ -179,6 +180,10 @@ export default async function AccountPage() {
           })}
         </div>
       )}
+      {/* Danger zone */}
+      <div style={{ marginTop: '64px', paddingTop: '32px', borderTop: '1px solid rgba(245,237,224,0.06)', display: 'flex', justifyContent: 'center' }}>
+        <DeleteAccountButton />
+      </div>
     </main>
   )
 }
