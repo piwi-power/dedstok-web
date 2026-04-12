@@ -4,11 +4,11 @@ import AuthForm from '@/components/AuthForm'
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ auth?: string; next?: string }>
+  searchParams: Promise<{ auth?: string; next?: string; ref?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const { auth, next } = await searchParams
+  const { auth, next, ref } = await searchParams
 
   return (
     <main className="min-h-screen flex items-center justify-center px-6">
@@ -66,7 +66,7 @@ export default async function HomePage({
                   Link expired or invalid. Request a new one.
                 </p>
               )}
-              <AuthForm redirectTo={next ?? '/account'} />
+              <AuthForm redirectTo={next ?? '/account'} referralCode={ref} />
             </div>
           )}
         </div>

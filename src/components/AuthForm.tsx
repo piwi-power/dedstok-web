@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 
-export default function AuthForm({ redirectTo }: { redirectTo?: string }) {
+export default function AuthForm({ redirectTo, referralCode }: { redirectTo?: string; referralCode?: string }) {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -15,8 +15,12 @@ export default function AuthForm({ redirectTo }: { redirectTo?: string }) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  const callbackUrl = (origin: string) =>
-    `${origin}/api/auth/callback${redirectTo ? `?next=${encodeURIComponent(redirectTo)}` : ''}`
+  const callbackUrl = (origin: string) => {
+    const url = new URL(`${origin}/api/auth/callback`)
+    if (redirectTo) url.searchParams.set('next', redirectTo)
+    if (referralCode) url.searchParams.set('ref', referralCode)
+    return url.toString()
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
