@@ -41,14 +41,16 @@ function ShareButtons({ rank, points, referralCode }: { rank: number; points: nu
   }
 
   async function shareInstagram() {
-    // Mobile: use native share sheet
-    if (navigator.share) {
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    // Only use native share on actual mobile — desktop Chrome supports
+    // navigator.share but it won't open Instagram, so skip it there
+    if (isMobile && navigator.share) {
       try {
         await navigator.share({ text, url: referralUrl })
         return
       } catch {}
     }
-    // Desktop: Instagram doesn't allow web sharing — show inline message
+    // Desktop: copy to clipboard and show inline message
     setIgMsg(null)
     try {
       await navigator.clipboard.writeText(text + ' ' + referralUrl)
