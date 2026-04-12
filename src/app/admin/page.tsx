@@ -67,12 +67,20 @@ export default async function AdminPage() {
               Admin Dashboard
             </p>
           </div>
-          <a
-            href="/"
-            style={{ color: 'rgba(245,237,224,0.35)', fontSize: '12px', textDecoration: 'none' }}
-          >
-            Back to site
-          </a>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <a
+              href="/admin/users"
+              style={{ color: '#CA8A04', fontSize: '12px', textDecoration: 'none', letterSpacing: '0.05em' }}
+            >
+              Customers
+            </a>
+            <a
+              href="/"
+              style={{ color: 'rgba(245,237,224,0.35)', fontSize: '12px', textDecoration: 'none' }}
+            >
+              Back to site
+            </a>
+          </div>
         </div>
 
         {/* Stats row */}
