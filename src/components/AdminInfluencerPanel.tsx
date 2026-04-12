@@ -15,6 +15,7 @@ interface InfluencerCode {
   last_payout_date: string | null
   is_active: boolean
   user_id: string | null
+  deleted_at: string | null
 }
 
 interface Props {
@@ -30,6 +31,23 @@ export default function AdminInfluencerPanel({ codes: initialCodes }: Props) {
   const [error, setError] = useState('')
   const [linkForm, setLinkForm] = useState<{ code: string; email: string } | null>(null)
   const [linkMsg, setLinkMsg] = useState('')
+  const [showDeleted, setShowDeleted] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+
+  async function deleteCode(code: string) {
+    const res = await fetch('/api/admin/influencer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', code }),
+    })
+    if (res.ok) {
+      setCodes(prev => prev.map(c => c.code === code
+        ? { ...c, is_active: false, deleted_at: new Date().toISOString() }
+        : c
+      ))
+    }
+    setConfirmDelete(null)
+  }
 
   const input: React.CSSProperties = {
     background: 'rgba(245,237,224,0.05)',
@@ -112,9 +130,19 @@ export default function AdminInfluencerPanel({ codes: initialCodes }: Props) {
   return (
     <section style={{ marginBottom: '48px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <p style={{ color: 'rgba(245,237,224,0.35)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>
-          Influencer Codes
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <p style={{ color: 'rgba(245,237,224,0.35)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>
+            Influencer Codes
+          </p>
+          {codes.some(c => c.deleted_at) && (
+            <button
+              onClick={() => setShowDeleted(v => !v)}
+              style={{ background: 'transparent', color: 'rgba(245,237,224,0.3)', border: 'none', fontSize: '10px', fontFamily: 'sans-serif', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              {showDeleted ? 'Hide deleted' : 'Show deleted'}
+            </button>
+          )}
+        </div>
         <button
           onClick={() => setCreating(!creating)}
           style={{
@@ -205,14 +233,14 @@ export default function AdminInfluencerPanel({ codes: initialCodes }: Props) {
       )}
 
       {/* Codes table */}
-      {codes.length === 0 ? (
+      {codes.filter(c => showDeleted ? true : !c.deleted_at).length === 0 ? (
         <div style={{ border: '1px solid rgba(245,237,224,0.08)', borderRadius: '4px', padding: '32px', textAlign: 'center' }}>
           <p style={{ color: 'rgba(245,237,224,0.3)', fontSize: '13px', fontFamily: 'sans-serif' }}>No codes yet.</p>
         </div>
       ) : (
         <div style={{ border: '1px solid rgba(245,237,224,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
-          {codes.map((c, i) => (
-            <div key={c.id} style={{ borderBottom: i < codes.length - 1 ? '1px solid rgba(245,237,224,0.06)' : 'none' }}>
+          {codes.filter(c => showDeleted ? true : !c.deleted_at).map((c, i, arr) => (
+            <div key={c.id} style={{ borderBottom: i < arr.length - 1 ? '1px solid rgba(245,237,224,0.06)' : 'none', opacity: c.deleted_at ? 0.45 : 1 }}>
               {/* Main row */}
               <div
                 style={{
@@ -289,7 +317,7 @@ export default function AdminInfluencerPanel({ codes: initialCodes }: Props) {
                       Mark Paid
                     </button>
                   )}
-                  {!c.user_id && (
+                  {!c.user_id && !c.deleted_at && (
                     <button
                       onClick={() => setLinkForm({ code: c.code, email: '' })}
                       style={{
@@ -307,6 +335,34 @@ export default function AdminInfluencerPanel({ codes: initialCodes }: Props) {
                     >
                       Link Account
                     </button>
+                  )}
+                  {!c.deleted_at && (
+                    confirmDelete === c.code ? (
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button
+                          onClick={() => deleteCode(c.code)}
+                          style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '4px', padding: '4px 8px', fontSize: '10px', fontFamily: 'sans-serif', cursor: 'pointer' }}
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          onClick={() => setConfirmDelete(null)}
+                          style={{ background: 'transparent', color: 'rgba(245,237,224,0.3)', border: '1px solid rgba(245,237,224,0.1)', borderRadius: '4px', padding: '4px 8px', fontSize: '10px', fontFamily: 'sans-serif', cursor: 'pointer' }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDelete(c.code)}
+                        style={{ background: 'transparent', color: 'rgba(239,68,68,0.5)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '4px', padding: '4px 10px', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'sans-serif', cursor: 'pointer' }}
+                      >
+                        Delete
+                      </button>
+                    )
+                  )}
+                  {c.deleted_at && (
+                    <p style={{ color: 'rgba(239,68,68,0.4)', fontSize: '10px', fontFamily: 'sans-serif' }}>Deleted</p>
                   )}
                 </div>
               </div>

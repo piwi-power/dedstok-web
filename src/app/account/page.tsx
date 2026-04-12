@@ -33,7 +33,7 @@ export default async function AccountPage() {
       .limit(20),
     supabase
       .from('influencer_codes')
-      .select('code, influencer_name, instagram_handle, commission_rate, total_tickets_credited, total_commission_earned, total_pending_payout, last_payout_date, is_active')
+      .select('code, influencer_name, instagram_handle, commission_rate, total_tickets_credited, total_commission_earned, total_pending_payout, last_payout_date, is_active, deleted_at')
       .eq('user_id', user.id)
       .single(),
   ])

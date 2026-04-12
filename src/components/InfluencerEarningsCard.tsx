@@ -8,6 +8,7 @@ interface InfluencerCodeData {
   total_pending_payout: number
   last_payout_date: string | null
   is_active: boolean
+  deleted_at?: string | null
 }
 
 function nextPayoutDate(): string {
@@ -49,9 +50,9 @@ export default function InfluencerEarningsCard({ code }: { code: InfluencerCodeD
         </div>
         <div style={{ textAlign: 'right' }}>
           <span style={{
-            background: code.is_active ? 'rgba(34,197,94,0.1)' : 'rgba(245,237,224,0.06)',
-            color: code.is_active ? '#22c55e' : 'rgba(245,237,224,0.35)',
-            border: `1px solid ${code.is_active ? 'rgba(34,197,94,0.3)' : 'rgba(245,237,224,0.1)'}`,
+            background: code.deleted_at ? 'rgba(239,68,68,0.08)' : code.is_active ? 'rgba(34,197,94,0.1)' : 'rgba(245,237,224,0.06)',
+            color: code.deleted_at ? 'rgba(239,68,68,0.6)' : code.is_active ? '#22c55e' : 'rgba(245,237,224,0.35)',
+            border: `1px solid ${code.deleted_at ? 'rgba(239,68,68,0.2)' : code.is_active ? 'rgba(34,197,94,0.3)' : 'rgba(245,237,224,0.1)'}`,
             borderRadius: '4px',
             padding: '4px 12px',
             fontSize: '10px',
@@ -59,7 +60,7 @@ export default function InfluencerEarningsCard({ code }: { code: InfluencerCodeD
             textTransform: 'uppercase',
             fontFamily: 'sans-serif',
           }}>
-            {code.is_active ? 'Active' : 'Paused'}
+            {code.deleted_at ? 'Code deactivated' : code.is_active ? 'Active' : 'Paused'}
           </span>
           <p style={{ color: 'rgba(245,237,224,0.35)', fontSize: '11px', fontFamily: 'sans-serif', marginTop: '6px' }}>
             {rate}% per ticket

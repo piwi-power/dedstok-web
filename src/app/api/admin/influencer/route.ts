@@ -54,6 +54,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true })
   }
 
+  if (action === 'delete') {
+    // Soft delete: deactivate + stamp deleted_at, preserves earnings history for the influencer
+    const { code } = payload
+    const { error } = await supabase
+      .from('influencer_codes')
+      .update({ is_active: false, deleted_at: new Date().toISOString() })
+      .eq('code', code)
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  }
+
   if (action === 'link_user') {
     // Link an influencer's DEDSTOK account to their code so they can see earnings
     const { code, email } = payload
