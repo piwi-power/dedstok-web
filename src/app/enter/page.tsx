@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { getSanityClient } from '@/lib/sanity/client'
 import { DROP_BY_SLUG_QUERY } from '@/lib/sanity/queries'
 import EntryConfirm from '@/components/EntryConfirm'
+import BackButton from '@/components/BackButton'
 import type { SanityDrop } from '@/types'
 
 export const metadata: Metadata = { title: 'Enter' }
@@ -54,6 +55,8 @@ export default async function EnterPage({
 
   return (
     <main className="min-h-screen flex items-center justify-center px-6 py-24">
+      <div className="w-full max-w-lg">
+      <BackButton href={`/drops/${slug}`} />
       <EntryConfirm
         dropId={id}
         dropSlug={slug}
@@ -63,6 +66,7 @@ export default async function EnterPage({
         itemName={sanityDrop.item_name}
         pointsBalance={pointsBalance}
       />
+      </div>
     </main>
   )
 }

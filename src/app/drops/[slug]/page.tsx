@@ -6,6 +6,7 @@ import { getSanityClient } from '@/lib/sanity/client'
 import { DROP_BY_SLUG_QUERY } from '@/lib/sanity/queries'
 import { createClient } from '@/lib/supabase/server'
 import EntryButton from '@/components/EntryButton'
+import BackButton from '@/components/BackButton'
 import type { SanityDrop } from '@/types'
 
 interface Props {
@@ -51,6 +52,7 @@ export default async function DropPage({ params }: Props) {
 
   return (
     <main className="min-h-screen px-6 py-24 max-w-4xl mx-auto">
+      <BackButton href="/drops" />
       <p
         style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.4em' }}
         className="text-[var(--gold)] text-xs uppercase mb-4"

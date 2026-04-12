@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import VerifyClient from './VerifyClient'
+import BackButton from '@/components/BackButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,6 +35,7 @@ export default async function VerifyPage({ params }: Props) {
 
   return (
     <main style={{ minHeight: '100vh', padding: '60px 24px', maxWidth: '760px', margin: '0 auto', fontFamily: 'sans-serif' }}>
+      <BackButton href="/winners" />
 
       {/* Header */}
       <p style={{ color: '#CA8A04', fontSize: '11px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '16px' }}>
