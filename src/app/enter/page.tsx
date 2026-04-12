@@ -29,6 +29,15 @@ export default async function EnterPage({
   // Fetch drop name + price from Sanity for display
   const sanityDrop = await getSanityClient().fetch<SanityDrop>(DROP_BY_SLUG_QUERY, { slug })
 
+  // Fetch user's points balance
+  const { data: userRecord } = await supabase
+    .from('users')
+    .select('points_balance')
+    .eq('id', user.id)
+    .single()
+
+  const pointsBalance = userRecord?.points_balance ?? 0
+
   if (!sanityDrop) redirect('/')
 
   // Verify drop is still active in Supabase
@@ -52,6 +61,7 @@ export default async function EnterPage({
         code={code}
         entryPrice={sanityDrop.entry_price}
         itemName={sanityDrop.item_name}
+        pointsBalance={pointsBalance}
       />
     </main>
   )

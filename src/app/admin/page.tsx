@@ -6,6 +6,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import AdminDrawButton from '@/components/AdminDrawButton'
 import AdminAnnounceButton from '@/components/AdminAnnounceButton'
 import AdminResendSmsButton from '@/components/AdminResendSmsButton'
+import AdminInfluencerPanel from '@/components/AdminInfluencerPanel'
 
 export default async function AdminPage() {
   // Auth check
@@ -38,11 +39,10 @@ export default async function AdminPage() {
     .select('id, drop_id, drawn_at, announced, total_tickets, winning_ticket, verification_hash, users(email, phone)')
     .order('drawn_at', { ascending: false })
 
-  // Fetch Sanity drop names to cross-reference UUIDs
-  // We store item_name in Supabase drops table
-  const { data: dropDetails } = await supabase
-    .from('drops')
-    .select('id, status, created_at')
+  // Fetch influencer codes
+  const { data: influencerCodes } = await supabase
+    .from('influencer_codes')
+    .select('*')
     .order('created_at', { ascending: false })
 
   // Stats
@@ -271,6 +271,9 @@ export default async function AdminPage() {
             })}
           </section>
         )}
+
+        {/* Influencer codes */}
+        <AdminInfluencerPanel codes={influencerCodes ?? []} />
 
       </div>
     </main>

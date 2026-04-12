@@ -9,12 +9,23 @@ interface Props {
   code?: string
   entryPrice: number
   itemName: string
+  pointsBalance: number
 }
 
-export default function EntryConfirm({ dropId, dropSlug, spots, code, entryPrice, itemName }: Props) {
+export default function EntryConfirm({ dropId, dropSlug, spots, code, entryPrice, itemName, pointsBalance }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [influencerCode, setInfluencerCode] = useState(code ?? '')
+  const [pointsSpots, setPointsSpots] = useState(0)
+
+  // Points cost per spot at 5:1 rate
+  const pointsPerSpot = entryPrice * 5
+  const maxRedeemableSpots = Math.min(spots, Math.floor(pointsBalance / pointsPerSpot))
+  const canRedeemPoints = maxRedeemableSpots > 0
+
+  const cashSpots = spots - pointsSpots
+  const cashTotal = (entryPrice * cashSpots).toFixed(2)
+  const pointsCost = pointsSpots * pointsPerSpot
 
   async function handleCheckout() {
     setLoading(true)
@@ -26,6 +37,7 @@ export default function EntryConfirm({ dropId, dropSlug, spots, code, entryPrice
       body: JSON.stringify({
         drop_id: dropId,
         spots_count: spots,
+        points_spots: pointsSpots,
         influencer_code: influencerCode || undefined,
       }),
     })
@@ -45,8 +57,6 @@ export default function EntryConfirm({ dropId, dropSlug, spots, code, entryPrice
     window.location.href = data.data.checkout_url
   }
 
-  const total = (entryPrice * spots).toFixed(2)
-
   return (
     <div className="max-w-md w-full bg-[var(--walnut)] border border-[var(--gold-dim)] rounded p-8">
       <p
@@ -63,6 +73,7 @@ export default function EntryConfirm({ dropId, dropSlug, spots, code, entryPrice
         {itemName}
       </h2>
 
+      {/* Spot breakdown */}
       <div className="space-y-3 mb-6 text-sm">
         <div className="flex justify-between">
           <span className="text-[var(--cream-dim)]">Spots</span>
@@ -72,17 +83,83 @@ export default function EntryConfirm({ dropId, dropSlug, spots, code, entryPrice
           <span className="text-[var(--cream-dim)]">Price per spot</span>
           <span className="text-[var(--cream)]">${entryPrice}</span>
         </div>
+
+        {pointsSpots > 0 && (
+          <div className="flex justify-between text-[var(--gold)]">
+            <span>{pointsSpots} spot{pointsSpots > 1 ? 's' : ''} with STOK points</span>
+            <span>-{pointsCost} pts</span>
+          </div>
+        )}
+
         <div className="flex justify-between border-t border-[var(--gold-dim)] pt-3">
-          <span className="text-[var(--cream-dim)]">Total</span>
+          <span className="text-[var(--cream-dim)]">Cash total</span>
           <span
             style={{ fontFamily: 'var(--font-bebas)' }}
             className="text-[var(--gold)] text-xl"
           >
-            ${total}
+            {cashSpots === 0 ? 'FREE' : `$${cashTotal}`}
           </span>
         </div>
       </div>
 
+      {/* Points redemption */}
+      {canRedeemPoints && (
+        <div style={{ background: 'rgba(202,138,4,0.06)', border: '1px solid rgba(202,138,4,0.2)', borderRadius: '4px', padding: '16px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <p style={{ fontFamily: 'sans-serif', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#CA8A04' }}>
+              STOK Points
+            </p>
+            <p style={{ fontFamily: 'monospace', fontSize: '12px', color: 'rgba(245,237,224,0.6)' }}>
+              {pointsBalance} pts available
+            </p>
+          </div>
+          <p style={{ fontFamily: 'sans-serif', fontSize: '12px', color: 'rgba(245,237,224,0.45)', marginBottom: '12px' }}>
+            {pointsPerSpot} points = 1 free spot
+          </p>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {Array.from({ length: maxRedeemableSpots }, (_, i) => i + 1).map(n => (
+              <button
+                key={n}
+                onClick={() => setPointsSpots(pointsSpots === n ? 0 : n)}
+                style={{
+                  flex: 1,
+                  background: pointsSpots === n ? '#CA8A04' : 'rgba(202,138,4,0.1)',
+                  color: pointsSpots === n ? '#0c0a09' : '#CA8A04',
+                  border: `1px solid ${pointsSpots === n ? '#CA8A04' : 'rgba(202,138,4,0.3)'}`,
+                  borderRadius: '4px',
+                  padding: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  fontFamily: 'sans-serif',
+                  cursor: 'pointer',
+                }}
+              >
+                {n} spot{n > 1 ? 's' : ''}
+              </button>
+            ))}
+            {pointsSpots > 0 && (
+              <button
+                onClick={() => setPointsSpots(0)}
+                style={{
+                  background: 'transparent',
+                  color: 'rgba(245,237,224,0.35)',
+                  border: '1px solid rgba(245,237,224,0.1)',
+                  borderRadius: '4px',
+                  padding: '8px 12px',
+                  fontSize: '11px',
+                  fontFamily: 'sans-serif',
+                  cursor: 'pointer',
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Influencer code */}
       <div className="mb-6">
         <label
           style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
@@ -110,14 +187,18 @@ export default function EntryConfirm({ dropId, dropSlug, spots, code, entryPrice
         style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
         className="w-full bg-[var(--gold)] hover:bg-[var(--gold-light)] disabled:opacity-50 text-[var(--bg)] text-xs uppercase py-4 rounded-full transition-colors"
       >
-        {loading ? 'Redirecting to payment...' : 'Proceed to Payment'}
+        {loading
+          ? 'Processing...'
+          : cashSpots === 0
+          ? `Redeem ${pointsCost} STOK Points`
+          : `Proceed to Payment — $${cashTotal}`}
       </button>
 
       <p
         style={{ fontFamily: 'var(--font-dm-mono)' }}
         className="text-[var(--cream-dim)] text-[10px] text-center mt-4"
       >
-        Powered by Stripe. No refunds after draw.
+        {cashSpots === 0 ? 'No payment required. Entry is free with your points.' : 'Powered by Stripe. No refunds after draw.'}
       </p>
     </div>
   )
