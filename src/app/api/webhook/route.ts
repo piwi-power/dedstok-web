@@ -147,8 +147,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Entry insert failed' }, { status: 500 })
   }
 
-  // 3. Increment spots_sold
+  // 3. Increment spots_sold + user's total_entries
   await supabase.rpc('increment_spots_sold', { drop_id, amount: totalSpots })
+  await supabase.rpc('increment_total_entries', { p_user_id: user_id })
 
   // 4. Credit earned points (cash spots only)
   if (pointsEarned > 0) {
