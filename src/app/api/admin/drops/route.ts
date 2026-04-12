@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   if (!await checkAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { item_name, description, entry_price, total_spots, draw_date, market_value, sourcing_tier, status } = body
+  const { item_name, description, entry_price, total_spots, draw_date, market_value, sourcing_tier, status, image_url } = body
 
   if (!item_name || !entry_price || !total_spots || !draw_date) {
     return NextResponse.json({ error: 'item_name, entry_price, total_spots and draw_date are required' }, { status: 400 })
@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     market_value: market_value ? Number(market_value) : null,
     sourcing_tier: sourcing_tier ?? null,
     status: status ?? 'scheduled',
+    image_url: image_url?.trim() || null,
     spots_sold: 0,
   }).select().single()
 
@@ -54,7 +55,7 @@ export async function PATCH(request: NextRequest) {
 
   if (!drop_id) return NextResponse.json({ error: 'drop_id required' }, { status: 400 })
 
-  const allowed = ['item_name', 'slug', 'description', 'entry_price', 'total_spots', 'draw_date', 'market_value', 'sourcing_tier', 'status']
+  const allowed = ['item_name', 'slug', 'description', 'entry_price', 'total_spots', 'draw_date', 'market_value', 'sourcing_tier', 'status', 'image_url']
   const update: Record<string, unknown> = {}
   for (const key of allowed) {
     if (fields[key] !== undefined) update[key] = fields[key]

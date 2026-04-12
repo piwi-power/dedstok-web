@@ -15,6 +15,7 @@ interface Drop {
   sourcing_tier: string | null
   status: string
   created_at: string
+  image_url?: string | null
 }
 
 interface Props {
@@ -32,7 +33,7 @@ const STATUSES = ['scheduled', 'active', 'closed', 'drawn']
 
 const emptyForm = {
   item_name: '', slug: '', description: '', entry_price: '',
-  total_spots: '', draw_date: '', market_value: '', sourcing_tier: '', status: 'scheduled',
+  total_spots: '', draw_date: '', market_value: '', sourcing_tier: '', status: 'scheduled', image_url: '',
 }
 
 export default function AdminDropPanel({ drops: initialDrops }: Props) {
@@ -64,6 +65,7 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
       market_value: drop.market_value ? String(drop.market_value) : '',
       sourcing_tier: drop.sourcing_tier ?? '',
       status: drop.status,
+      image_url: drop.image_url ?? '',
     })
     setEditingId(drop.id)
     setShowForm(true)
@@ -219,6 +221,11 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
                 <option value="C">C</option>
               </select>
             </div>
+          </div>
+
+          <div style={{ marginBottom: '14px' }}>
+            <label style={labelStyle}>Image URL</label>
+            <input style={inputStyle} value={form.image_url} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} placeholder="https://..." />
           </div>
 
           <div style={{ marginBottom: '20px' }}>

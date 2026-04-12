@@ -22,7 +22,7 @@ export default async function AdminPage() {
   // Fetch all drops with full data
   const { data: drops } = await supabase
     .from('drops')
-    .select('id, item_name, slug, description, entry_price, total_spots, spots_sold, draw_date, market_value, sourcing_tier, status, created_at')
+    .select('id, item_name, slug, description, entry_price, total_spots, spots_sold, draw_date, market_value, sourcing_tier, status, created_at, image_url')
     .order('created_at', { ascending: false })
 
   const dropIds = drops?.map(d => d.id) ?? []
