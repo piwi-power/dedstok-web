@@ -149,7 +149,8 @@ export async function POST(request: NextRequest) {
       }
 
       await service.rpc('increment_spots_sold', { drop_id, amount: totalSpots })
-      await service.rpc('increment_total_entries', { p_user_id: user.id })
+      // Only increment total_entries on a new entry row, not when updating existing
+      if (!existing) await service.rpc('increment_total_entries', { p_user_id: user.id })
       await service.rpc('redeem_points', { p_user_id: user.id, p_amount: pointCost, p_drop_id: drop_id })
 
       if (influencer_code && validCode) {
