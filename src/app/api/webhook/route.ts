@@ -131,23 +131,23 @@ export async function POST(request: NextRequest) {
   )
 
   // 2. Write entry — upsert so buying in two separate transactions works correctly
-  const { data: existingEntry } = await supabase.from('entries')
+  const { data: userDropEntry } = await supabase.from('entries')
     .select('id, spots_count, cash_spots, points_spots, total_paid')
     .eq('drop_id', drop_id)
     .eq('user_id', user_id)
     .single()
 
   let entryError
-  if (existingEntry) {
+  if (userDropEntry) {
     const { error } = await supabase.from('entries')
       .update({
-        spots_count: existingEntry.spots_count + totalSpots,
-        cash_spots: (existingEntry.cash_spots ?? 0) + cashSpots,
-        points_spots: (existingEntry.points_spots ?? 0) + pointsSpots,
-        total_paid: (existingEntry.total_paid ?? 0) + totalPaid,
-        stripe_payment_id: paymentIntent, // keep most recent payment id
+        spots_count: userDropEntry.spots_count + totalSpots,
+        cash_spots: (userDropEntry.cash_spots ?? 0) + cashSpots,
+        points_spots: (userDropEntry.points_spots ?? 0) + pointsSpots,
+        total_paid: (userDropEntry.total_paid ?? 0) + totalPaid,
+        stripe_payment_id: paymentIntent,
       })
-      .eq('id', existingEntry.id)
+      .eq('id', userDropEntry.id)
     entryError = error
   } else {
     const { error } = await supabase.from('entries').insert({
