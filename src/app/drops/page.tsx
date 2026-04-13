@@ -212,13 +212,10 @@ export default async function DropsPage() {
                         </div>
                       </div>
 
-                      {/* Draw date + revenue */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '14px' }}>
+                      {/* Draw date */}
+                      <div style={{ marginTop: '14px' }}>
                         <p style={{ color: 'rgba(245,237,224,0.2)', fontFamily: 'sans-serif', fontSize: '10px' }}>
                           {new Date(drop.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </p>
-                        <p style={{ color: 'rgba(245,237,224,0.2)', fontFamily: 'sans-serif', fontSize: '10px' }}>
-                          ${revenue.toLocaleString()} raised
                         </p>
                       </div>
                     </div>

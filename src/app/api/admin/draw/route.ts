@@ -100,6 +100,9 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (winnerUser?.email) {
+    const ticketId = verificationHash.slice(0, 8).toUpperCase()
+    const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok-web.vercel.app'}/verify/${drop_id}`
+
     try {
       await getResend().emails.send({
         from: FROM_EMAIL,
@@ -109,17 +112,24 @@ export async function POST(request: NextRequest) {
           <div style="background:#0c0a09;color:#f5ede0;font-family:sans-serif;padding:40px;max-width:500px;margin:0 auto;">
             <h1 style="color:#CA8A04;font-size:28px;margin-bottom:8px;">DEDSTOK</h1>
             <p style="color:rgba(245,237,224,0.55);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:32px;">You Won</p>
-            <p style="color:rgba(245,237,224,0.85);font-size:16px;margin-bottom:24px;line-height:1.6;">
-              Congratulations. Your ticket was drawn. We will contact you shortly to arrange delivery.
+            <p style="color:rgba(245,237,224,0.85);font-size:16px;margin-bottom:8px;line-height:1.6;">
+              Congratulations. Your ticket <strong style="color:#CA8A04;">#${ticketId}</strong> was drawn.
+            </p>
+            <p style="color:rgba(245,237,224,0.6);font-size:14px;margin-bottom:32px;line-height:1.6;">
+              We will contact you shortly to arrange delivery.
             </p>
             <div style="background:rgba(245,237,224,0.05);border-radius:4px;padding:16px;margin-bottom:16px;">
               <p style="color:rgba(245,237,224,0.4);font-size:11px;margin:0 0 4px;">Winning ticket</p>
-              <p style="color:#f5ede0;font-size:14px;margin:0;">${winningTicket + 1} of ${totalTickets} total tickets</p>
+              <p style="color:#f5ede0;font-size:14px;margin:0;">#${ticketId} &mdash; drawn ${winningTicket + 1} of ${totalTickets} total tickets (1 in ${totalTickets} odds)</p>
             </div>
-            <div style="background:rgba(245,237,224,0.05);border-radius:4px;padding:16px;margin-bottom:24px;">
+            <div style="background:rgba(245,237,224,0.05);border-radius:4px;padding:16px;margin-bottom:8px;">
               <p style="color:rgba(245,237,224,0.4);font-size:11px;margin:0 0 4px;">Verification hash</p>
-              <p style="color:#f5ede0;font-size:11px;font-family:monospace;word-break:break-all;margin:0;">${verificationHash}</p>
+              <p style="color:#f5ede0;font-size:11px;font-family:monospace;word-break:break-all;margin:0 0 10px;">${verificationHash}</p>
+              <a href="${verifyUrl}" style="color:#CA8A04;font-size:11px;text-decoration:none;letter-spacing:0.1em;">Verify this draw on DEDSTOK &rarr;</a>
             </div>
+            <p style="color:rgba(245,237,224,0.2);font-size:10px;margin-top:4px;margin-bottom:32px;">
+              Anyone can verify this draw was fair using the hash and entry data above.
+            </p>
             <p style="color:rgba(245,237,224,0.4);font-size:11px;">One drop. One winner. Every week.</p>
           </div>
         `,
