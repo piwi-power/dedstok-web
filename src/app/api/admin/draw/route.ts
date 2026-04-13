@@ -9,6 +9,23 @@ import { cookies } from 'next/headers'
 
 export const runtime = 'nodejs'
 
+const WINNER_QUOTES: { text: string; author: string }[] = [
+  { text: 'Fortune favors the bold.', author: 'Virgil' },
+  { text: 'Luck is the residue of design.', author: 'Branch Rickey' },
+  { text: "I've found that luck is quite predictable. If you want more luck, take more chances, be more active, show up more often.", author: 'Brian Tracy' },
+  { text: 'The secret of getting ahead is getting started.', author: 'Mark Twain' },
+  { text: 'Opportunities multiply as they are seized.', author: 'Sun Tzu' },
+  { text: 'It is not in the stars to hold our destiny but in ourselves.', author: 'William Shakespeare' },
+  { text: 'Diligence is the mother of good luck.', author: 'Benjamin Franklin' },
+  { text: 'Luck affects everything; let your hook always be cast. In the stream where you least expect it, there will be fish.', author: 'Ovid' },
+  { text: 'The moment you doubt whether you can fly, you cease forever to be able to do it.', author: 'J.M. Barrie, Peter Pan' },
+  { text: 'Go and wake up your luck.', author: 'Persian proverb' },
+]
+
+function pickQuote(): { text: string; author: string } {
+  return WINNER_QUOTES[randomInt(0, WINNER_QUOTES.length)]
+}
+
 export async function POST(request: NextRequest) {
   // Cookie-based auth for admin UI
   const cookieStore = await cookies()
@@ -102,6 +119,7 @@ export async function POST(request: NextRequest) {
   if (winnerUser?.email) {
     const ticketId = verificationHash.slice(0, 8).toUpperCase()
     const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok-web.vercel.app'}/verify/${drop_id}`
+    const quote = pickQuote()
 
     try {
       await getResend().emails.send({
@@ -130,6 +148,10 @@ export async function POST(request: NextRequest) {
             <p style="color:rgba(245,237,224,0.2);font-size:10px;margin-top:4px;margin-bottom:32px;">
               Anyone can verify this draw was fair using the hash and entry data above.
             </p>
+            <div style="border-left:2px solid rgba(202,138,4,0.4);padding:12px 16px;margin-bottom:32px;">
+              <p style="color:rgba(245,237,224,0.7);font-size:14px;font-style:italic;line-height:1.6;margin:0 0 8px;">"${quote.text}"</p>
+              <p style="color:rgba(245,237,224,0.35);font-size:11px;margin:0;">— ${quote.author}</p>
+            </div>
             <p style="color:rgba(245,237,224,0.4);font-size:11px;">One drop. One winner. Every week.</p>
           </div>
         `,
