@@ -10,6 +10,17 @@ import { cookies } from 'next/headers'
 export const runtime = 'nodejs'
 
 const WINNER_QUOTES: { text: string; author: string }[] = [
+  // Culture / streetwear / rap
+  { text: 'Everything I do is for the 17-year-old version of myself.', author: 'Virgil Abloh' },
+  { text: "Name one genius that ain't crazy.", author: 'Kanye West' },
+  { text: "I'm not a businessman, I'm a business, man.", author: 'Jay-Z, Diamonds from Sierra Leone Remix' },
+  { text: 'The marathon continues.', author: 'Nipsey Hussle' },
+  { text: "We've never tried to be cool. If you try to be cool, it's always a mistake.", author: 'James Jebbia, founder of Supreme' },
+  { text: 'I try to make all the beautiful things I always wanted but couldn\'t afford when I was young.', author: 'Rick Owens' },
+  { text: "I don't follow trends. I set them.", author: 'A$AP Rocky' },
+  { text: 'In order to be irreplaceable, one must always be different.', author: 'Coco Chanel' },
+  { text: 'Invest in yourself. The returns are tremendous.', author: 'Nipsey Hussle' },
+  { text: 'The world is yours.', author: 'Nas, Illmatic' },
   // Classic / literary
   { text: 'Fortune favors the bold.', author: 'Virgil' },
   { text: 'Luck is the residue of design.', author: 'Branch Rickey' },
