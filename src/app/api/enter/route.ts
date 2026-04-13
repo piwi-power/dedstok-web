@@ -120,6 +120,8 @@ export async function POST(request: NextRequest) {
         .single()
 
       let entryError
+      let entryId: string | null = existing?.id ?? null
+
       if (existing) {
         const { error } = await service.from('entries')
           .update({
@@ -129,7 +131,7 @@ export async function POST(request: NextRequest) {
           .eq('id', existing.id)
         entryError = error
       } else {
-        const { error } = await service.from('entries').insert({
+        const { data: inserted, error } = await service.from('entries').insert({
           drop_id,
           user_id: user.id,
           spots_count: totalSpots,
@@ -137,32 +139,35 @@ export async function POST(request: NextRequest) {
           points_spots: totalSpots,
           total_paid: 0,
           influencer_code: validCode?.code ?? null,
-        })
+        }).select('id').single()
         entryError = error
+        entryId = inserted?.id ?? null
       }
 
-      if (entryError) {
+      if (entryError || !entryId) {
         return NextResponse.json<ApiResponse>(
           { success: false, error: 'Failed to create entry' },
           { status: 500 }
         )
       }
 
-      await service.rpc('increment_spots_sold', { drop_id, amount: totalSpots })
-      // Only increment total_entries on a new entry row, not when updating existing
-      if (!existing) await service.rpc('increment_total_entries', { p_user_id: user.id })
-      await service.rpc('redeem_points', { p_user_id: user.id, p_amount: pointCost, p_drop_id: drop_id })
+      // Run all side effects in parallel
+      const [ticketResult] = await Promise.all([
+        service.rpc('create_tickets', { p_drop_id: drop_id, p_entry_id: entryId, p_user_id: user.id, p_count: totalSpots }),
+        service.rpc('increment_spots_sold', { drop_id, amount: totalSpots }),
+        !existing ? service.rpc('increment_total_entries', { p_user_id: user.id }) : Promise.resolve(),
+        service.rpc('redeem_points', { p_user_id: user.id, p_amount: pointCost, p_drop_id: drop_id }),
+        validCode
+          ? Promise.all([
+              service.rpc('credit_influencer', { p_code: validCode.code, p_tickets: totalSpots, p_entry_price: drop.entry_price }),
+              service.rpc('add_points', { user_id: user.id, amount: 10 * totalSpots, drop_id }),
+            ])
+          : Promise.resolve(),
+      ])
 
-      if (influencer_code && validCode) {
-        await service.rpc('credit_influencer', {
-          p_code: validCode.code,
-          p_tickets: totalSpots,
-          p_entry_price: drop.entry_price,
-        })
-        await service.rpc('add_points', { user_id: user.id, amount: 10 * totalSpots, drop_id })
-      }
+      const ticketNumbers: number[] = Array.isArray(ticketResult?.data) ? ticketResult.data : []
+      const ticketList = ticketNumbers.map(n => `#${String(n).padStart(4, '0')}`).join(', ')
 
-      // Send confirmation email
       if (userRecord.email) {
         try {
           await getResend().emails.send({
@@ -173,8 +178,12 @@ export async function POST(request: NextRequest) {
               <div style="background:#0c0a09;color:#f5ede0;font-family:sans-serif;padding:40px;max-width:500px;margin:0 auto;">
                 <h1 style="color:#CA8A04;font-size:28px;margin-bottom:8px;">DEDSTOK</h1>
                 <p style="color:rgba(245,237,224,0.55);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:32px;">Entry Confirmed</p>
-                <p style="color:rgba(245,237,224,0.7);margin-bottom:8px;">Spots: <strong style="color:#f5ede0;">${totalSpots}</strong></p>
-                <p style="color:rgba(245,237,224,0.7);margin-bottom:8px;">Paid with: <strong style="color:#CA8A04;">${pointCost} STOK points</strong></p>
+                <p style="color:rgba(245,237,224,0.7);margin-bottom:16px;line-height:1.6;">You're in. Good luck.</p>
+                <div style="background:rgba(245,237,224,0.05);border-radius:4px;padding:16px;margin-bottom:16px;">
+                  <p style="color:rgba(245,237,224,0.4);font-size:11px;margin:0 0 6px;">Your ticket${ticketNumbers.length > 1 ? 's' : ''}</p>
+                  <p style="color:#CA8A04;font-size:18px;font-weight:700;margin:0;letter-spacing:0.05em;">${ticketList || '—'}</p>
+                </div>
+                <p style="color:rgba(245,237,224,0.5);font-size:13px;margin-bottom:0;">Paid with: <strong style="color:#CA8A04;">${pointCost} STOK points</strong></p>
                 <p style="color:rgba(245,237,224,0.4);font-size:11px;margin-top:32px;">One drop. One winner. Every week.</p>
               </div>
             `,

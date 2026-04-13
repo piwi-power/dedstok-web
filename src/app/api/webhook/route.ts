@@ -8,19 +8,25 @@ import Stripe from 'stripe'
 
 export const runtime = 'nodejs'
 
-function buildEmailHtml(spotsNum: number, pointsEarned: number): string {
+function buildEmailHtml(ticketNumbers: number[], pointsEarned: number): string {
+  const ticketList = ticketNumbers.map(n => `#${String(n).padStart(4, '0')}`).join(', ')
   return `
     <div style="background:#0c0a09;color:#f5ede0;font-family:sans-serif;padding:40px;max-width:500px;margin:0 auto;">
       <h1 style="color:#CA8A04;font-size:28px;margin-bottom:8px;">DEDSTOK</h1>
       <p style="color:rgba(245,237,224,0.55);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:32px;">
         Entry Confirmed
       </p>
-      <p style="color:rgba(245,237,224,0.7);margin-bottom:8px;">
-        Spots purchased: <strong style="color:#f5ede0;">${spotsNum}</strong>
+      <p style="color:rgba(245,237,224,0.7);margin-bottom:16px;line-height:1.6;">
+        You're in. Good luck.
       </p>
-      <p style="color:rgba(245,237,224,0.7);margin-bottom:8px;">
+      <div style="background:rgba(245,237,224,0.05);border-radius:4px;padding:16px;margin-bottom:16px;">
+        <p style="color:rgba(245,237,224,0.4);font-size:11px;margin:0 0 6px;">Your ticket${ticketNumbers.length > 1 ? 's' : ''}</p>
+        <p style="color:#CA8A04;font-size:18px;font-weight:700;margin:0;letter-spacing:0.05em;">${ticketList}</p>
+      </div>
+      ${pointsEarned > 0 ? `
+      <p style="color:rgba(245,237,224,0.5);font-size:13px;margin-bottom:0;">
         Points earned: <strong style="color:#CA8A04;">+${pointsEarned} STOK</strong>
-      </p>
+      </p>` : ''}
       <p style="color:rgba(245,237,224,0.4);font-size:11px;margin-top:32px;">
         One drop. One winner. Every week.
       </p>
@@ -28,12 +34,12 @@ function buildEmailHtml(spotsNum: number, pointsEarned: number): string {
   `
 }
 
-async function sendConfirmationEmail(customerEmail: string, spotsNum: number, pointsEarned: number) {
+async function sendConfirmationEmail(customerEmail: string, ticketNumbers: number[], pointsEarned: number) {
   const { data: emailData, error: emailError } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: customerEmail,
     subject: `You're in — DEDSTOK`,
-    html: buildEmailHtml(spotsNum, pointsEarned),
+    html: buildEmailHtml(ticketNumbers, pointsEarned),
   })
   if (emailError) console.error('[webhook] Resend error:', emailError)
   else console.log('[webhook] Email sent:', emailData?.id)
@@ -119,7 +125,7 @@ export async function POST(request: NextRequest) {
   if (existingEntry) {
     console.log('[webhook] Already processed, skipping to email')
     if (customerEmail) {
-      try { await sendConfirmationEmail(customerEmail, totalSpots, pointsEarned) } catch {}
+      try { await sendConfirmationEmail(customerEmail, [], pointsEarned) } catch {}
     }
     return NextResponse.json({ received: true })
   }
@@ -138,6 +144,8 @@ export async function POST(request: NextRequest) {
     .single()
 
   let entryError
+  let entryInsertId: string | null = null
+
   if (userDropEntry) {
     const { error } = await supabase.from('entries')
       .update({
@@ -150,7 +158,7 @@ export async function POST(request: NextRequest) {
       .eq('id', userDropEntry.id)
     entryError = error
   } else {
-    const { error } = await supabase.from('entries').insert({
+    const { data: inserted, error } = await supabase.from('entries').insert({
       drop_id,
       user_id,
       spots_count: totalSpots,
@@ -159,8 +167,9 @@ export async function POST(request: NextRequest) {
       total_paid: totalPaid,
       stripe_payment_id: paymentIntent,
       influencer_code: influencer_code || null,
-    })
+    }).select('id').single()
     entryError = error
+    entryInsertId = inserted?.id ?? null
   }
 
   if (entryError) {
@@ -168,39 +177,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Entry insert failed' }, { status: 500 })
   }
 
-  // 3. Increment spots_sold + user's total_entries (only on new entry row)
-  await supabase.rpc('increment_spots_sold', { drop_id, amount: totalSpots })
-  if (!userDropEntry) await supabase.rpc('increment_total_entries', { p_user_id: user_id })
+  // 3–7. Run all independent operations in parallel
+  const pointCost = pointsSpots * entryPriceNum * 5
 
-  // 4. Credit earned points (cash spots only)
-  if (pointsEarned > 0) {
-    await supabase.rpc('add_points', { user_id, amount: pointsEarned, drop_id })
-  }
+  const [ticketResult] = await Promise.all([
+    // Assign real ticket numbers (atomic, race-condition safe)
+    supabase.rpc('create_tickets', {
+      p_drop_id: drop_id,
+      p_entry_id: (userDropEntry?.id ?? entryInsertId),
+      p_user_id: user_id,
+      p_count: totalSpots,
+    }),
+    supabase.rpc('increment_spots_sold', { drop_id, amount: totalSpots }),
+    !userDropEntry ? supabase.rpc('increment_total_entries', { p_user_id: user_id }) : Promise.resolve(),
+    pointsEarned > 0 ? supabase.rpc('add_points', { user_id, amount: pointsEarned, drop_id }) : Promise.resolve(),
+    pointsSpots > 0 ? supabase.rpc('redeem_points', { p_user_id: user_id, p_amount: pointCost, p_drop_id: drop_id }) : Promise.resolve(),
+    handleReferral(supabase, user_id, pointsEarned),
+    influencer_code
+      ? Promise.all([
+          supabase.rpc('credit_influencer', { p_code: influencer_code, p_tickets: totalSpots, p_entry_price: entryPriceNum }),
+          supabase.rpc('add_points', { user_id, amount: 10 * totalSpots, drop_id }),
+        ])
+      : Promise.resolve(),
+  ])
 
-  // 5. Deduct redeemed points (points spots)
-  if (pointsSpots > 0) {
-    const dropData = await supabase.from('drops').select('entry_price').eq('id', drop_id).single()
-    const entryPrice = dropData.data?.entry_price ?? 0
-    const pointCost = pointsSpots * entryPrice * 5 // 5:1 rate
-    await supabase.rpc('redeem_points', { p_user_id: user_id, p_amount: pointCost, p_drop_id: drop_id })
-  }
-
-  // 6. Handle referral crediting
-  await handleReferral(supabase, user_id, pointsEarned)
-
-  // 7. Credit influencer commission (10% of entry_price × spots) + 10pt buyer bonus per spot
-  if (influencer_code) {
-    await supabase.rpc('credit_influencer', {
-      p_code: influencer_code,
-      p_tickets: totalSpots,
-      p_entry_price: entryPriceNum,
-    })
-    await supabase.rpc('add_points', { user_id, amount: 10 * totalSpots, drop_id })
-  }
-
-  // 8. Confirmation email
+  // 8. Confirmation email with real ticket numbers
+  const ticketNumbers: number[] = Array.isArray(ticketResult?.data) ? ticketResult.data : []
   if (customerEmail) {
-    try { await sendConfirmationEmail(customerEmail, totalSpots, pointsEarned) } catch {}
+    try { await sendConfirmationEmail(customerEmail, ticketNumbers, pointsEarned) } catch {}
   }
 
   return NextResponse.json({ received: true })

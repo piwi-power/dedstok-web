@@ -77,47 +77,41 @@ export async function POST(request: NextRequest) {
 
   if (existingWinner) return NextResponse.json({ error: 'Winner already drawn' }, { status: 409 })
 
-  const { data: entries } = await supabase
-    .from('entries')
-    .select('id, user_id, spots_count')
+  // Pull real tickets — one row per ticket, ordered by ticket_number
+  const { data: tickets } = await supabase
+    .from('tickets')
+    .select('ticket_number, user_id')
     .eq('drop_id', drop_id)
-    .order('created_at', { ascending: true })
+    .order('ticket_number', { ascending: true })
 
-  if (!entries || entries.length === 0) {
-    return NextResponse.json({ error: 'No entries found' }, { status: 400 })
+  if (!tickets || tickets.length === 0) {
+    return NextResponse.json({ error: 'No tickets found for this drop' }, { status: 400 })
   }
 
-  const ticketPool: string[] = []
-  const entryIds: string[] = []
+  const totalTickets = tickets.length
+  const winningIndex = randomInt(0, totalTickets)
+  const winningTicketRow = tickets[winningIndex]
+  const winnerId = winningTicketRow.user_id
+  const winningTicketNumber = winningTicketRow.ticket_number
 
-  for (const entry of entries) {
-    entryIds.push(entry.id)
-    for (let i = 0; i < entry.spots_count; i++) {
-      ticketPool.push(entry.user_id)
-    }
-  }
-
-  const totalTickets = ticketPool.length
-  const winningTicket = randomInt(0, totalTickets)
-  const winnerId = ticketPool[winningTicket]
-
-  const hashInput = `${drop_id}|${entryIds.join(',')}|${winningTicket}`
+  // Hash: drop_id + all ticket numbers in order + winning ticket number
+  const ticketNumbersCsv = tickets.map(t => t.ticket_number).join(',')
+  const hashInput = `${drop_id}|${ticketNumbersCsv}|${winningTicketNumber}`
   const verificationHash = createHash('sha256').update(hashInput).digest('hex')
 
   const drawInputs = {
     drop_id,
-    entry_ids_in_order: entryIds,
     total_tickets: totalTickets,
-    winning_ticket_index: winningTicket,
+    winning_ticket_number: winningTicketNumber,
     algorithm: 'Node.js crypto.randomInt — cryptographically secure CSPRNG',
-    verification_note: 'SHA-256(drop_id + "|" + entry_ids_csv + "|" + winning_ticket_index) = verification_hash',
+    verification_note: 'SHA-256(drop_id + "|" + ticket_numbers_csv + "|" + winning_ticket_number) = verification_hash',
   }
 
   const { error: winnerError } = await supabase.from('winners').insert({
     drop_id,
     user_id: winnerId,
     total_tickets: totalTickets,
-    winning_ticket: winningTicket,
+    winning_ticket: winningTicketNumber,
     verification_hash: verificationHash,
     draw_inputs: drawInputs,
   })
@@ -136,7 +130,7 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (winnerUser?.email) {
-    const ticketId = verificationHash.slice(0, 8).toUpperCase()
+    const ticketId = String(winningTicketNumber).padStart(4, '0')
     const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok-web.vercel.app'}/verify/${drop_id}`
     const quote = pickQuote()
 
@@ -157,7 +151,7 @@ export async function POST(request: NextRequest) {
             </p>
             <div style="background:rgba(245,237,224,0.05);border-radius:4px;padding:16px;margin-bottom:16px;">
               <p style="color:rgba(245,237,224,0.4);font-size:11px;margin:0 0 4px;">Winning ticket</p>
-              <p style="color:#f5ede0;font-size:14px;margin:0;">#${ticketId} &mdash; drawn ${winningTicket + 1} of ${totalTickets} total tickets (1 in ${totalTickets} odds)</p>
+              <p style="color:#f5ede0;font-size:14px;margin:0;">Ticket #${ticketId} &mdash; 1 of ${totalTickets} entries</p>
             </div>
             <div style="background:rgba(245,237,224,0.05);border-radius:4px;padding:16px;margin-bottom:8px;">
               <p style="color:rgba(245,237,224,0.4);font-size:11px;margin:0 0 4px;">Verification hash</p>
@@ -185,7 +179,7 @@ export async function POST(request: NextRequest) {
       await getTwilio().messages.create({
         from: TWILIO_FROM,
         to: winnerUser.phone,
-        body: `DEDSTOK: You won this week's drop. Ticket ${winningTicket + 1} of ${totalTickets}. Check your email for next steps.`,
+        body: `DEDSTOK: You won this week's drop. Ticket #${String(winningTicketNumber).padStart(4, '0')} of ${totalTickets}. Check your email for next steps.`,
       })
     } catch (err) {
       console.error('[admin/draw] Winner SMS failed:', err)
@@ -196,7 +190,7 @@ export async function POST(request: NextRequest) {
     success: true,
     winner_id: winnerId,
     winner_email: winnerUser?.email,
-    winning_ticket: winningTicket + 1,
+    winning_ticket: winningTicketNumber,
     total_tickets: totalTickets,
     verification_hash: verificationHash,
   })
