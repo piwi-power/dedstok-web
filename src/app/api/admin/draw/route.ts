@@ -10,6 +10,7 @@ import { cookies } from 'next/headers'
 export const runtime = 'nodejs'
 
 const WINNER_QUOTES: { text: string; author: string }[] = [
+  // Classic / literary
   { text: 'Fortune favors the bold.', author: 'Virgil' },
   { text: 'Luck is the residue of design.', author: 'Branch Rickey' },
   { text: "I've found that luck is quite predictable. If you want more luck, take more chances, be more active, show up more often.", author: 'Brian Tracy' },
@@ -18,6 +19,11 @@ const WINNER_QUOTES: { text: string; author: string }[] = [
   { text: 'Diligence is the mother of good luck.', author: 'Benjamin Franklin' },
   { text: 'Luck affects everything; let your hook always be cast. In the stream where you least expect it, there will be fish.', author: 'Ovid' },
   { text: 'The moment you doubt whether you can fly, you cease forever to be able to do it.', author: 'J.M. Barrie, Peter Pan' },
+  { text: 'Luck is not chance, it\'s toil; fortune\'s expensive smile is earned.', author: 'Emily Dickinson' },
+  { text: 'Les choses les plus rares au monde, après l\'esprit de discernement, sont les diamants et les perles.', author: 'Jean de la Bruyère, Les Caractères' },
+  { text: 'Coincidence is God\'s way of remaining anonymous.', author: 'Albert Einstein' },
+  { text: 'When luck is on your side, it is not the time to be modest.', author: 'José Saramago' },
+  { text: 'Not all those who wander are lost.', author: 'J.R.R. Tolkien, The Lord of the Rings' },
 ]
 
 function pickQuote(): { text: string; author: string } {
