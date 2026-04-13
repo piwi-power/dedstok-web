@@ -14,12 +14,10 @@ const WINNER_QUOTES: { text: string; author: string }[] = [
   { text: 'Luck is the residue of design.', author: 'Branch Rickey' },
   { text: "I've found that luck is quite predictable. If you want more luck, take more chances, be more active, show up more often.", author: 'Brian Tracy' },
   { text: 'The secret of getting ahead is getting started.', author: 'Mark Twain' },
-  { text: 'Opportunities multiply as they are seized.', author: 'Sun Tzu' },
-  { text: 'It is not in the stars to hold our destiny but in ourselves.', author: 'William Shakespeare' },
+  { text: 'Opportunities multiply as they are seized.', author: 'Sun Tzu, The Art of War' },
   { text: 'Diligence is the mother of good luck.', author: 'Benjamin Franklin' },
   { text: 'Luck affects everything; let your hook always be cast. In the stream where you least expect it, there will be fish.', author: 'Ovid' },
   { text: 'The moment you doubt whether you can fly, you cease forever to be able to do it.', author: 'J.M. Barrie, Peter Pan' },
-  { text: 'Go and wake up your luck.', author: 'Persian proverb' },
 ]
 
 function pickQuote(): { text: string; author: string } {
