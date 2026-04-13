@@ -12,6 +12,10 @@ export const runtime = 'nodejs'
 const WINNER_QUOTES: { text: string; author: string }[] = [
   // Culture / streetwear / rap
   { text: 'Everything I do is for the 17-year-old version of myself.', author: 'Virgil Abloh' },
+  { text: 'I see things that other people don\'t see. And I\'m not afraid to say them.', author: 'Virgil Abloh' },
+  { text: 'Fashion should be a form of escapism, and not a form of imprisonment.', author: 'Raf Simons' },
+  { text: 'Remind yourself. Nobody built like you, you design yourself.', author: 'Jay-Z, The Black Album' },
+  { text: 'Reality is wrong. Dreams are for real.', author: 'Tupac Shakur' },
   { text: "Name one genius that ain't crazy.", author: 'Kanye West' },
   { text: "I'm not a businessman, I'm a business, man.", author: 'Jay-Z, Diamonds from Sierra Leone Remix' },
   { text: 'The marathon continues.', author: 'Nipsey Hussle' },
