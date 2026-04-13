@@ -279,7 +279,7 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
+              accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
               style={{ display: 'none' }}
               onChange={handleFilePick}
             />
