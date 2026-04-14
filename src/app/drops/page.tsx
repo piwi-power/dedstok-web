@@ -25,20 +25,20 @@ export default async function DropsPage() {
 
     supabase
       .from('drops')
-      .select('id, item_name, slug, entry_price, total_spots, spots_sold, draw_date, market_value, image_url, status')
+      .select('id, item_name, slug, entry_price, total_spots, draw_date, market_value, image_url, status')
       .in('status', ['drawn', 'closed'])
       .order('draw_date', { ascending: false })
       .limit(20),
   ])
 
-  // Fetch announced winners for past drops
+  // Announced winners for past drops
   let winnersMap: Record<string, string> = {}
   if (pastDrops && pastDrops.length > 0) {
     const drawnIds = pastDrops.filter(d => d.status === 'drawn').map(d => d.id)
     if (drawnIds.length > 0) {
       const { data: winners } = await service
         .from('winners')
-        .select('drop_id, announced, users(email)')
+        .select('drop_id, users(email)')
         .in('drop_id', drawnIds)
         .eq('announced', true)
 
@@ -54,6 +54,7 @@ export default async function DropsPage() {
 
   return (
     <main style={{ minHeight: '100vh', padding: '60px 24px', maxWidth: '900px', margin: '0 auto' }}>
+
       {/* Current drop */}
       <p style={{ color: '#CA8A04', fontFamily: 'sans-serif', fontSize: '11px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '16px' }}>
         This Week
@@ -88,7 +89,7 @@ export default async function DropsPage() {
                   {activeDrop.description}
                 </p>
               )}
-              <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                 <div>
                   <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>Entry</p>
                   <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '18px', fontWeight: 700 }}>${activeDrop.entry_price}</p>
@@ -99,18 +100,23 @@ export default async function DropsPage() {
                     {new Date(activeDrop.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </p>
                 </div>
-                <div>
-                  <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>Spots Left</p>
-                  <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '18px', fontWeight: 700 }}>
-                    {activeDrop.total_spots - activeDrop.spots_sold}
-                  </p>
-                </div>
                 {activeDrop.market_value && (
                   <div>
                     <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>Market Value</p>
                     <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '18px', fontWeight: 700 }}>${activeDrop.market_value.toLocaleString()}</p>
                   </div>
                 )}
+                <div>
+                  <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>Spots Left</p>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '18px', fontWeight: 700 }}>
+                      {activeDrop.total_spots - activeDrop.spots_sold}
+                    </p>
+                    <p style={{ color: 'rgba(245,237,224,0.3)', fontFamily: 'sans-serif', fontSize: '11px' }}>
+                      1 in {activeDrop.total_spots} odds
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -132,8 +138,6 @@ export default async function DropsPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
             {pastDrops.map(drop => {
-              const fillRate = drop.total_spots > 0 ? Math.round((drop.spots_sold / drop.total_spots) * 100) : 0
-              const revenue = drop.spots_sold * drop.entry_price
               const isDrawn = drop.status === 'drawn'
               const winner = winnersMap[drop.id]
               const valueMultiple = drop.market_value && drop.entry_price
@@ -142,7 +146,8 @@ export default async function DropsPage() {
 
               return (
                 <Link key={drop.id} href={`/drops/${drop.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
-                  <div style={{ border: '1px solid rgba(245,237,224,0.07)', borderRadius: '4px', overflow: 'hidden', background: 'rgba(245,237,224,0.02)', transition: 'border-color 0.15s' }}>
+                  <div style={{ border: '1px solid rgba(245,237,224,0.07)', borderRadius: '4px', overflow: 'hidden', background: 'rgba(245,237,224,0.02)' }}>
+
                     {/* Thumbnail */}
                     {drop.image_url ? (
                       <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden', background: 'rgba(245,237,224,0.04)', position: 'relative' }}>
@@ -162,7 +167,6 @@ export default async function DropsPage() {
                     )}
 
                     <div style={{ padding: '20px' }}>
-                      {/* Status badge */}
                       <span style={{
                         display: 'inline-block',
                         background: isDrawn ? 'rgba(202,138,4,0.12)' : 'rgba(245,237,224,0.06)',
@@ -177,15 +181,14 @@ export default async function DropsPage() {
                         {drop.item_name}
                       </p>
 
-                      {/* Stats grid */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
                         <div>
                           <p style={{ color: 'rgba(245,237,224,0.3)', fontFamily: 'sans-serif', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>Entry</p>
                           <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '14px', fontWeight: 600 }}>${drop.entry_price}</p>
                         </div>
                         <div>
-                          <p style={{ color: 'rgba(245,237,224,0.3)', fontFamily: 'sans-serif', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>Entries Sold</p>
-                          <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '14px', fontWeight: 600 }}>{drop.spots_sold} / {drop.total_spots}</p>
+                          <p style={{ color: 'rgba(245,237,224,0.3)', fontFamily: 'sans-serif', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>Odds</p>
+                          <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '14px', fontWeight: 600 }}>1 in {drop.total_spots}</p>
                         </div>
                         {drop.market_value && (
                           <div>
@@ -201,23 +204,9 @@ export default async function DropsPage() {
                         )}
                       </div>
 
-                      {/* Fill rate bar */}
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                          <p style={{ color: 'rgba(245,237,224,0.25)', fontFamily: 'sans-serif', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Fill rate</p>
-                          <p style={{ color: fillRate === 100 ? '#22c55e' : 'rgba(245,237,224,0.4)', fontFamily: 'sans-serif', fontSize: '9px', fontWeight: 600 }}>{fillRate}%</p>
-                        </div>
-                        <div style={{ height: '2px', background: 'rgba(245,237,224,0.07)', borderRadius: '1px', overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${fillRate}%`, background: fillRate === 100 ? '#22c55e' : '#CA8A04', borderRadius: '1px' }} />
-                        </div>
-                      </div>
-
-                      {/* Draw date */}
-                      <div style={{ marginTop: '14px' }}>
-                        <p style={{ color: 'rgba(245,237,224,0.2)', fontFamily: 'sans-serif', fontSize: '10px' }}>
-                          {new Date(drop.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </p>
-                      </div>
+                      <p style={{ color: 'rgba(245,237,224,0.2)', fontFamily: 'sans-serif', fontSize: '10px' }}>
+                        {new Date(drop.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
                     </div>
                   </div>
                 </Link>
