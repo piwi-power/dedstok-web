@@ -19,8 +19,18 @@ export default function EntryButton({ dropId, dropSlug, spotsRemaining, isActive
     return (
       <button
         disabled
-        style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
-        className="bg-[var(--walnut)] border border-[var(--gold-dim)] text-[var(--cream-dim)] text-xs uppercase px-8 py-4 rounded-full opacity-50 cursor-not-allowed"
+        style={{
+          fontFamily: 'var(--font-dm-mono)',
+          letterSpacing: '0.2em',
+          fontSize: '9px',
+          textTransform: 'uppercase',
+          color: 'var(--cream-dim)',
+          background: 'var(--walnut)',
+          border: '1px solid var(--gold-dim)',
+          padding: '16px 40px',
+          opacity: 0.5,
+          cursor: 'not-allowed',
+        }}
       >
         {spotsRemaining === 0 ? 'Sold Out' : 'Drop Closed'}
       </button>
@@ -36,49 +46,110 @@ export default function EntryButton({ dropId, dropSlug, spotsRemaining, isActive
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-4">
-        <span
-          style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
-          className="text-[var(--gold)] text-[10px] uppercase"
-        >
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+      {/* Spots stepper */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <span style={{
+          fontFamily: 'var(--font-dm-mono)',
+          color: 'var(--gold)',
+          fontSize: '9px',
+          letterSpacing: '0.25em',
+          textTransform: 'uppercase',
+        }}>
           Spots
         </span>
-        <div className="flex items-center gap-3">
+
+        <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(202,138,4,0.25)' }}>
           <button
             onClick={() => setSpots(Math.max(1, spots - 1))}
-            className="w-8 h-8 border border-[var(--gold-dim)] text-[var(--cream)] rounded hover:border-[var(--gold)] transition-colors"
+            style={{
+              width: '40px',
+              height: '40px',
+              background: 'none',
+              border: 'none',
+              borderRight: '1px solid rgba(202,138,4,0.2)',
+              color: 'var(--cream)',
+              cursor: 'pointer',
+              fontSize: '18px',
+              lineHeight: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background 150ms',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,237,224,0.04)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'none')}
           >
-            -
+            −
           </button>
-          <span
-            style={{ fontFamily: 'var(--font-bebas)' }}
-            className="text-[var(--cream)] text-2xl w-6 text-center"
-          >
+          <span style={{
+            fontFamily: 'var(--font-bebas)',
+            color: 'var(--cream)',
+            fontSize: '24px',
+            width: '48px',
+            textAlign: 'center',
+            lineHeight: 1,
+            paddingTop: '2px',
+          }}>
             {spots}
           </span>
           <button
             onClick={() => setSpots(Math.min(2, spots + 1))}
-            className="w-8 h-8 border border-[var(--gold-dim)] text-[var(--cream)] rounded hover:border-[var(--gold)] transition-colors"
+            style={{
+              width: '40px',
+              height: '40px',
+              background: 'none',
+              border: 'none',
+              borderLeft: '1px solid rgba(202,138,4,0.2)',
+              color: 'var(--cream)',
+              cursor: 'pointer',
+              fontSize: '18px',
+              lineHeight: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background 150ms',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,237,224,0.04)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'none')}
           >
             +
           </button>
         </div>
-        <span
-          style={{ fontFamily: 'var(--font-dm-mono)' }}
-          className="text-[var(--cream-dim)] text-[10px]"
-        >
+
+        <span style={{
+          fontFamily: 'var(--font-dm-mono)',
+          color: 'rgba(245,237,224,0.2)',
+          fontSize: '9px',
+          letterSpacing: '0.15em',
+        }}>
           max 2
         </span>
       </div>
 
+      {/* Enter button */}
       <button
         onClick={handleEnter}
-        style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
-        className="bg-[var(--gold)] hover:bg-[var(--gold-light)] text-[var(--bg)] text-xs uppercase px-8 py-4 rounded-full transition-colors"
+        style={{
+          fontFamily: 'var(--font-dm-mono)',
+          letterSpacing: '0.22em',
+          color: 'var(--bg)',
+          background: 'var(--gold)',
+          fontSize: '9px',
+          textTransform: 'uppercase',
+          padding: '16px 40px',
+          border: 'none',
+          cursor: 'pointer',
+          alignSelf: 'flex-start',
+          transition: 'opacity 150ms',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
+        onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
       >
-        Enter the Raffle
+        Enter the Drop
       </button>
+
     </div>
   )
 }

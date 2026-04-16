@@ -4,7 +4,6 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import EntryButton from '@/components/EntryButton'
-import BackButton from '@/components/BackButton'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -46,114 +45,145 @@ export default async function DropPage({ params }: Props) {
   const isActive = drop.status === 'active'
   const drawDate = new Date(drop.draw_date)
 
-  return (
-    <main className="min-h-screen px-6 py-24 max-w-4xl mx-auto">
-      <BackButton href="/drops" />
+  // Build stats array — only include market value if set
+  const stats = [
+    ...(drop.market_value ? [{ label: 'Market Value', value: `$${drop.market_value.toLocaleString()}` }] : []),
+    { label: 'Entry', value: `$${drop.entry_price}` },
+    { label: 'Odds / Spot', value: `1 in ${drop.total_spots}` },
+    { label: 'Spots Left', value: String(spotsRemaining) },
+  ]
 
-      {drop.image_url && (
-        <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden', borderRadius: '4px', marginBottom: '40px', background: 'rgba(245,237,224,0.03)' }}>
+  return (
+    <main style={{ minHeight: '100vh', paddingBottom: '120px' }}>
+
+      {/* Hero image — full content width, no radius */}
+      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '32px 32px 0' }}>
+        {drop.image_url ? (
           <img
             src={drop.image_url}
             alt={drop.item_name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            style={{
+              width: '100%',
+              aspectRatio: '16/9',
+              objectFit: 'cover',
+              display: 'block',
+            }}
           />
-        </div>
-      )}
-
-      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '14px' }}>
-        {isActive ? 'Live Drop' : 'Drop'}
-      </p>
-
-      <h1 style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 700, color: 'var(--cream)', fontSize: '52px', letterSpacing: '0.01em', textTransform: 'uppercase', lineHeight: 1, marginBottom: '16px' }}>
-        {drop.item_name}
-      </h1>
-
-      {/* Quote — shown when set in admin */}
-      {drop.quote && (
-        <div style={{ marginBottom: '28px', maxWidth: '540px' }}>
-          <p style={{ fontFamily: 'var(--font-jost)', fontStyle: 'italic', color: 'rgba(245,237,224,0.4)', fontSize: '14px', lineHeight: 1.7, marginBottom: '6px' }}>
-            "{drop.quote}"
-          </p>
-          {drop.quote_attribution && (
-            <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.2)', fontSize: '9px', letterSpacing: '0.12em' }}>
-              — {drop.quote_attribution}
-            </p>
-          )}
-        </div>
-      )}
-
-      {drop.description && (
-        <p style={{ fontFamily: 'var(--font-jost)', color: 'var(--cream-dim)', fontSize: '14px', lineHeight: 1.7, marginBottom: '36px', maxWidth: '520px' }}>
-          {drop.description}
-        </p>
-      )}
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12 max-w-2xl">
-        {drop.market_value && (
-          <div className="bg-[var(--walnut)] border border-[var(--gold-dim)] p-4 rounded">
-            <p
-              style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
-              className="text-[var(--gold)] text-[9px] uppercase mb-1"
-            >
-              Market Value
-            </p>
-            <p style={{ fontFamily: 'var(--font-bebas)' }} className="text-[var(--cream)] text-3xl">
-              ${drop.market_value.toLocaleString()}
+        ) : (
+          <div style={{
+            width: '100%',
+            aspectRatio: '16/9',
+            background: 'var(--walnut)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.1)', fontSize: '9px', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
+              No image
             </p>
           </div>
         )}
-
-        <div className="bg-[var(--walnut)] border border-[var(--gold-dim)] p-4 rounded">
-          <p
-            style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
-            className="text-[var(--gold)] text-[9px] uppercase mb-1"
-          >
-            Entry Price
-          </p>
-          <p style={{ fontFamily: 'var(--font-bebas)' }} className="text-[var(--cream)] text-3xl">
-            ${drop.entry_price}
-          </p>
-        </div>
-
-        <div className="bg-[var(--walnut)] border border-[var(--gold-dim)] p-4 rounded">
-          <p
-            style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
-            className="text-[var(--gold)] text-[9px] uppercase mb-1"
-          >
-            Odds per spot
-          </p>
-          <p style={{ fontFamily: 'var(--font-bebas)' }} className="text-[var(--cream)] text-3xl">
-            1 in {drop.total_spots}
-          </p>
-        </div>
-
-        <div className="bg-[var(--walnut)] border border-[var(--gold-dim)] p-4 rounded">
-          <p
-            style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
-            className="text-[var(--gold)] text-[9px] uppercase mb-1"
-          >
-            Spots Left
-          </p>
-          <p style={{ fontFamily: 'var(--font-bebas)' }} className="text-[var(--cream)] text-3xl">
-            {spotsRemaining}
-          </p>
-        </div>
       </div>
 
-      <div
-        style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
-        className="text-[var(--cream-dim)] text-[10px] uppercase mb-10"
-      >
-        Draw: {drawDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-      </div>
+      {/* Content */}
+      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '40px 32px 0' }}>
 
-      <EntryButton
-        dropId={drop.id}
-        dropSlug={slug}
-        spotsRemaining={spotsRemaining}
-        isActive={isActive}
-        isLoggedIn={!!user}
-      />
+        {/* Status + title */}
+        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '12px' }}>
+          {isActive ? 'Live Drop' : drop.status === 'drawn' ? 'Drawn' : 'Closed'}
+        </p>
+
+        <h1 style={{
+          fontFamily: 'var(--font-barlow-condensed)',
+          fontWeight: 700,
+          color: 'var(--cream)',
+          fontSize: 'clamp(40px, 6vw, 72px)',
+          letterSpacing: '0.01em',
+          textTransform: 'uppercase',
+          lineHeight: 1,
+          marginBottom: '32px',
+        }}>
+          {drop.item_name}
+        </h1>
+
+        {/* Stats strip — connected cells, no individual gaps */}
+        <div style={{
+          display: 'flex',
+          border: '1px solid rgba(202,138,4,0.2)',
+          marginBottom: '40px',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+        }}>
+          {stats.map((stat, i) => (
+            <div
+              key={stat.label}
+              style={{
+                flex: 1,
+                minWidth: '88px',
+                padding: '16px 20px',
+                background: 'var(--walnut)',
+                borderRight: i < stats.length - 1 ? '1px solid rgba(202,138,4,0.15)' : 'none',
+              }}
+            >
+              <p style={{
+                fontFamily: 'var(--font-dm-mono)',
+                color: 'rgba(245,237,224,0.35)',
+                fontSize: '8px',
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                marginBottom: '6px',
+                whiteSpace: 'nowrap',
+              }}>
+                {stat.label}
+              </p>
+              <p style={{
+                fontFamily: 'var(--font-bebas)',
+                color: 'var(--cream)',
+                fontSize: '28px',
+                lineHeight: 1,
+              }}>
+                {stat.value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Quote */}
+        {drop.quote && (
+          <div style={{ marginBottom: '28px', maxWidth: '580px', borderLeft: '2px solid rgba(202,138,4,0.3)', paddingLeft: '20px' }}>
+            <p style={{ fontFamily: 'var(--font-jost)', fontStyle: 'italic', color: 'rgba(245,237,224,0.45)', fontSize: '14px', lineHeight: 1.7, marginBottom: '6px' }}>
+              &ldquo;{drop.quote}&rdquo;
+            </p>
+            {drop.quote_attribution && (
+              <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.2)', fontSize: '9px', letterSpacing: '0.12em' }}>
+                &mdash; {drop.quote_attribution}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Description */}
+        {drop.description && (
+          <p style={{ fontFamily: 'var(--font-jost)', color: 'var(--cream-dim)', fontSize: '14px', lineHeight: 1.75, marginBottom: '36px', maxWidth: '560px' }}>
+            {drop.description}
+          </p>
+        )}
+
+        {/* Draw date */}
+        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '28px' }}>
+          Draw &mdash; {drawDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+        </p>
+
+        {/* Entry section */}
+        <EntryButton
+          dropId={drop.id}
+          dropSlug={slug}
+          spotsRemaining={spotsRemaining}
+          isActive={isActive}
+          isLoggedIn={!!user}
+        />
+
+      </div>
     </main>
   )
 }

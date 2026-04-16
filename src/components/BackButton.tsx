@@ -9,18 +9,18 @@ export default function BackButton({ href }: { href: string }) {
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '6px',
-        color: 'rgba(245,237,224,0.4)',
-        fontSize: '11px',
-        fontFamily: 'sans-serif',
-        letterSpacing: '0.15em',
+        gap: '8px',
+        color: 'rgba(245,237,224,0.35)',
+        fontSize: '9px',
+        fontFamily: 'var(--font-dm-mono)',
+        letterSpacing: '0.2em',
         textTransform: 'uppercase',
         textDecoration: 'none',
-        marginBottom: '32px',
+        marginBottom: '28px',
         transition: 'color 0.15s',
       }}
-      onMouseEnter={e => (e.currentTarget.style.color = 'rgba(245,237,224,0.8)')}
-      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,237,224,0.4)')}
+      onMouseEnter={e => (e.currentTarget.style.color = 'rgba(245,237,224,0.7)')}
+      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,237,224,0.35)')}
     >
       ← Back
     </Link>
