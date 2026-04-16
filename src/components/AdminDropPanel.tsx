@@ -16,6 +16,8 @@ interface Drop {
   status: string
   created_at: string
   image_url?: string | null
+  quote?: string | null
+  quote_attribution?: string | null
 }
 
 interface Props {
@@ -40,6 +42,7 @@ const SOURCING_TIERS = [
 const emptyForm = {
   item_name: '', slug: '', description: '', entry_price: '',
   total_spots: '', draw_date: '', market_value: '', sourcing_tier: '', status: 'scheduled', image_url: '',
+  quote: '', quote_attribution: '',
 }
 
 export default function AdminDropPanel({ drops: initialDrops }: Props) {
@@ -75,6 +78,8 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
       sourcing_tier: drop.sourcing_tier ?? '',
       status: drop.status,
       image_url: drop.image_url ?? '',
+      quote: drop.quote ?? '',
+      quote_attribution: drop.quote_attribution ?? '',
     })
     setEditingId(drop.id)
     setShowForm(true)
@@ -338,9 +343,18 @@ export default function AdminDropPanel({ drops: initialDrops }: Props) {
             </div>
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '14px' }}>
             <label style={labelStyle}>Description</label>
             <textarea style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Short description shown on the drop page..." />
+          </div>
+
+          <div style={{ marginBottom: '14px' }}>
+            <label style={labelStyle}>Quote — relevant cultural figure</label>
+            <textarea style={{ ...inputStyle, minHeight: '60px', resize: 'vertical' }} value={form.quote} onChange={e => setForm(f => ({ ...f, quote: e.target.value }))} placeholder='"The Dunk was always a canvas — it just needed the right artists."' />
+          </div>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={labelStyle}>Quote Attribution</label>
+            <input style={inputStyle} value={form.quote_attribution} onChange={e => setForm(f => ({ ...f, quote_attribution: e.target.value }))} placeholder="Peter Moore, original Dunk designer, 1985" />
           </div>
 
           {error && (

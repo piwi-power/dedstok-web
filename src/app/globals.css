@@ -1,21 +1,78 @@
 @import "tailwindcss";
 
+/* ════════════════════════════════════════════════════════
+   DEDSTOK — Brand Tokens v1.0 (Locked April 2026)
+   Source of truth for all design decisions.
+   Do not modify without founder approval.
+   Reference: BRANDING.md
+   ════════════════════════════════════════════════════════ */
+
 :root {
-  /* ── DEDSTOK Brand Colors ─────────────────────────── */
-  --bg:          #0c0a09;
-  --bg-dark:     #0a0804;
-  --walnut:      #1C1917;
-  --walnut-mid:  #2c1f12;
-  --walnut-warm: #3d2b1a;
-  --gold:        #CA8A04;
-  --gold-light:  #e8b830;
-  --gold-dim:    rgba(202, 138, 4, 0.5);
-  --cream:       #f5ede0;
-  --cream-dim:   rgba(245, 237, 224, 0.55);
+
+  /* ── Backgrounds ──────────────────────────────────── */
+  --bg:            #0c0a09;   /* Vault floor. Warm near-black. */
+  --bg-dark:       #0a0804;   /* Nav, overlays, deeper shadow. */
+
+  /* ── Surfaces ─────────────────────────────────────── */
+  --walnut:        #1C1917;   /* Cards, panels. The room walls. */
+  --walnut-mid:    #2c1f12;   /* Default borders. Dividers. */
+  --walnut-warm:   #3d2b1a;   /* Hover state on surfaces only. Never static bg. */
+
+  /* ── Accent ───────────────────────────────────────── */
+  --gold:          #CA8A04;   /* The reward. CTAs, active labels, highlights. */
+  --gold-light:    #e8b830;   /* Gold hover state. Never used at rest. */
+  --gold-dim:      rgba(202, 138, 4, 0.5);    /* Ghost borders, inactive gold. */
+  --gold-glow:     rgba(202, 138, 4, 0.15);   /* Ambient room glow. Candlelight, not neon. */
+
+  /* ── Text ─────────────────────────────────────────── */
+  --cream:         #f5ede0;                   /* Primary text. Warm, not white. */
+  --cream-dim:     rgba(245, 237, 224, 0.55); /* Secondary text. Labels. */
+  --cream-faint:   rgba(245, 237, 224, 0.08); /* Hover zone tint. Not for text. */
+
+  /* ── Signal ───────────────────────────────────────── */
+  --signal:        #c2410c;   /* Urgency: countdown, closing soon, sold out. */
+                               /* Always pair with text label. Never stand alone. */
+
+  /* ── Motion ───────────────────────────────────────── */
+  --duration-hover:   150ms;
+  --duration-enter:   500ms;
+  --duration-page:    400ms;
+  --duration-draw:    600ms;
+  --ease-hover:       ease-out;
+  --ease-enter:       cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-page:        cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  --ease-draw:        cubic-bezier(0.34, 1.56, 0.64, 1); /* Spring. Draw reveal ONLY. One element. */
+
+  /* ── Spacing ──────────────────────────────────────── */
+  --space-micro:  4px;
+  --space-xs:     8px;
+  --space-s:      16px;
+  --space-m:      24px;
+  --space-l:      32px;
+  --space-xl:     48px;
+  --space-2xl:    64px;
+  --space-3xl:    96px;
+  --space-4xl:    140px;  /* Desktop section padding. Dark luxury standard. */
+
+  /* ── Layout ───────────────────────────────────────── */
+  --max-w-content: 1280px;
+  --max-w-text:    720px;
+  --max-w-admin:   960px;
+
+  /* ── Border ───────────────────────────────────────── */
+  --border-default:  1px solid var(--walnut-mid);
+  --border-hover:    1px solid var(--gold-dim);
+  --border-active:   1px solid var(--gold);
+  --border-error:    1px solid var(--signal);
+
+  /* ── Radius ───────────────────────────────────────── */
+  --radius-none:     0px;    /* Cards, containers, images, modals. */
+  --radius-input:    2px;    /* Buttons, inputs only. */
+  --radius-badge:    9999px; /* Pill. Badges and tags only. */
 }
 
 @theme inline {
-  /* Map CSS vars into Tailwind tokens */
+  /* ── Color tokens → Tailwind ──────────────────────── */
   --color-bg:           var(--bg);
   --color-bg-dark:      var(--bg-dark);
   --color-walnut:       var(--walnut);
@@ -25,14 +82,27 @@
   --color-gold-light:   var(--gold-light);
   --color-cream:        var(--cream);
   --color-cream-dim:    var(--cream-dim);
+  --color-signal:       var(--signal);
 
-  /* Typography tokens */
-  --font-serif:   var(--font-bodoni);
-  --font-sans:    var(--font-jost);
-  --font-mono:    var(--font-dm-mono);
-  --font-display: var(--font-bebas);
+  /* ── Font tokens → Tailwind ───────────────────────────────────────────────
+     LOCKED April 2026. Do not modify without founder approval.
+
+     Anton      → Brand name + rank numbers + drop hero + winner reveal.
+                  Commerce pages: Drops, Leaderboard, Winners.
+     Barlow     → Product names on drop cards. Cold, condensed, streetwear-credible. LOCKED.
+     Bodoni     → Editorial headings. Articles page. Brand quotes. Never product names.
+     Bebas Neue → Countdown timer and large display numbers only.
+     Jost       → All body text, UI labels, admin. The invisible workhorse.
+     DM Mono    → Ticket numbers, referral codes, data fields, precision labels.
+     ──────────────────────────────────────────────────────────────────────── */
+  --font-serif:    var(--font-bodoni);   /* Editorial headings. Product names. Articles. */
+  --font-sans:     var(--font-jost);     /* Body. UI. Admin. Function. */
+  --font-mono:     var(--font-dm-mono);  /* Tickets. Codes. Data. Precision. */
+  --font-display:  var(--font-bebas);    /* Countdown timer and large numbers ONLY. */
+  --font-wordmark: var(--font-anton);    /* Brand name + rank numbers + hero. LOCKED. */
 }
 
+/* ── Reset ────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -52,23 +122,33 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Selection ──────────────────────────────────────── */
+/* ── Selection ────────────────────────────────────────── */
 ::selection {
   background-color: var(--gold);
   color: var(--bg);
 }
 
-/* ── Scrollbar ──────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 4px;
+/* ── Scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--walnut-mid); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+
+/* ── Skeleton loading ─────────────────────────────────── */
+@keyframes skeleton-pulse {
+  0%, 100% { background-color: var(--walnut-mid); }
+  50%       { background-color: var(--walnut-warm); }
 }
-::-webkit-scrollbar-track {
-  background: var(--bg-dark);
+.skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  border-radius: var(--radius-none);
 }
-::-webkit-scrollbar-thumb {
-  background: var(--walnut-mid);
-  border-radius: 2px;
+
+/* ── Beacon pulse (room hotspots) ─────────────────────── */
+@keyframes beacon-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.10); opacity: 0.7; }
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gold-dim);
+.beacon {
+  animation: beacon-pulse 2.5s ease-in-out infinite;
 }

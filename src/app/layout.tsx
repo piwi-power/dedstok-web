@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Bodoni_Moda, Jost, DM_Mono, Bebas_Neue } from 'next/font/google'
+import { Bodoni_Moda, Jost, DM_Mono, Bebas_Neue, Cinzel, Cormorant_Garamond, Playfair_Display, Alex_Brush, Italiana, Anton, Black_Han_Sans, Barlow_Condensed } from 'next/font/google'
 import { headers } from 'next/headers'
 import './globals.css'
 import Nav from '@/components/Nav'
@@ -33,6 +33,76 @@ const bebas = Bebas_Neue({
   display: 'swap',
 })
 
+// Current wordmark font — Roman inscription
+const cinzel = Cinzel({
+  variable: '--font-cinzel',
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '900'],
+  display: 'swap',
+})
+
+// ── Wordmark candidates (for /fonts preview page) ─────────────────────────────
+
+// Option A: Couture-house italic serif — most refined
+const cormorant = Cormorant_Garamond({
+  variable: '--font-cormorant',
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+})
+
+// Option B: Fashion-editorial bold serif — The Row / Vogue energy
+const playfair = Playfair_Display({
+  variable: '--font-playfair',
+  subsets: ['latin'],
+  weight: ['400', '700', '900'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+})
+
+// Option C: Luxury script — closest to genuine handwriting
+const alexBrush = Alex_Brush({
+  variable: '--font-alex-brush',
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
+})
+
+// Option D: Italian fashion house — clean display serif with attitude
+const italiana = Italiana({
+  variable: '--font-italiana',
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
+})
+
+// ── Heavy graphic candidates ───────────────────────────────────────────────────
+
+// Memphis rap / Savage Mode energy — cold, condensed, dominant
+const anton = Anton({
+  variable: '--font-anton',
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
+})
+
+// Maximum weight — ultra-black, uncompromising, the heaviest option
+const blackHanSans = Black_Han_Sans({
+  variable: '--font-black-han-sans',
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
+})
+
+// Condensed grotesque — clean, cold, scales from nav to billboard
+const barlowCondensed = Barlow_Condensed({
+  variable: '--font-barlow-condensed',
+  subsets: ['latin'],
+  weight: ['700', '800', '900'],
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
   title: {
     default: 'DEDSTOK — One Drop. One Winner. Every Week.',
@@ -61,6 +131,7 @@ export default async function RootLayout({
   const headersList = await headers()
   const pathname = headersList.get('x-invoke-path') ?? headersList.get('next-url') ?? ''
   const isAdmin = pathname.startsWith('/admin')
+  const isHomepage = pathname === '/' || pathname === ''
 
   return (
     <html
@@ -70,12 +141,22 @@ export default async function RootLayout({
         ${jost.variable}
         ${dmMono.variable}
         ${bebas.variable}
+        ${cinzel.variable}
+        ${cormorant.variable}
+        ${playfair.variable}
+        ${alexBrush.variable}
+        ${italiana.variable}
+        ${anton.variable}
+        ${blackHanSans.variable}
+        ${barlowCondensed.variable}
         h-full
       `}
     >
       <body className="min-h-full bg-[var(--bg)] text-[var(--cream)] antialiased">
         {!isAdmin && <Nav />}
-        <div style={isAdmin ? {} : { paddingTop: '56px' }}>
+        {/* Homepage: room fills the full viewport, nav floats over it transparently.
+            All other pages: standard 56px offset below the fixed nav. */}
+        <div style={isAdmin || isHomepage ? {} : { paddingTop: '56px' }}>
           {children}
         </div>
       </body>

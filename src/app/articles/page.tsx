@@ -12,7 +12,12 @@ export const metadata: Metadata = {
 export const revalidate = 60
 
 export default async function ArticlesPage() {
-  const articles = await getSanityClient().fetch<SanityArticle[]>(ALL_ARTICLES_QUERY)
+  let articles: SanityArticle[] = []
+  try {
+    articles = await getSanityClient().fetch<SanityArticle[]>(ALL_ARTICLES_QUERY)
+  } catch {
+    // Sanity not configured yet — render empty state
+  }
 
   return (
     <main style={{ minHeight: '100vh', padding: '60px 24px', maxWidth: '900px', margin: '0 auto' }}>

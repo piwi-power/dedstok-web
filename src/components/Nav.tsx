@@ -1,9 +1,14 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
 
 export default async function Nav() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
+  const headersList = await headers()
+  const pathname = headersList.get('x-invoke-path') ?? headersList.get('next-url') ?? ''
+  const isHomepage = pathname === '/' || pathname === ''
 
   return (
     <nav style={{
@@ -12,41 +17,74 @@ export default async function Nav() {
       left: 0,
       right: 0,
       zIndex: 50,
-      background: 'rgba(12,10,9,0.85)',
-      backdropFilter: 'blur(12px)',
-      borderBottom: '1px solid rgba(245,237,224,0.08)',
-      padding: '0 24px',
-      height: '56px',
+      height: '64px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      padding: '0 32px',
+      // Transparent on homepage (room experience) — blurred on interior pages
+      background: isHomepage
+        ? 'transparent'
+        : 'rgba(10, 8, 4, 0.88)',
+      backdropFilter: isHomepage ? 'none' : 'blur(16px)',
+      borderBottom: isHomepage
+        ? 'none'
+        : '1px solid rgba(44, 31, 18, 0.6)',
+      transition: 'background 300ms ease, border-color 300ms ease',
     }}>
-      <Link href="/" style={{
-        color: '#CA8A04',
-        fontFamily: 'sans-serif',
-        fontWeight: 700,
-        fontSize: '16px',
-        letterSpacing: '0.15em',
-        textDecoration: 'none',
-      }}>
-        DEDSTOK
+
+      {/* Left: Wordmark only — Anton (LOCKED) */}
+      <Link href="/" style={{ textDecoration: 'none' }}>
+        <span style={{
+          fontFamily: 'var(--font-anton)',
+          fontSize: '22px',
+          letterSpacing: '0.08em',
+          color: 'var(--cream)',
+          textTransform: 'uppercase',
+          lineHeight: 1,
+        }}>
+          DEDSTOK
+        </span>
       </Link>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-        <Link href="/drops" style={linkStyle}>Drops</Link>
-        <Link href="/winners" style={linkStyle}>Winners</Link>
-        <Link href="/leaderboard" style={linkStyle}>Leaderboard</Link>
-        <Link href="/articles" style={linkStyle}>Articles</Link>
+      {/* Center: Nav links — hidden on homepage (rooms are the nav) */}
+      {!isHomepage && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '36px' }}>
+          <NavLink href="/drops">Drops</NavLink>
+          <NavLink href="/winners">Winners</NavLink>
+          <NavLink href="/leaderboard">Leaderboard</NavLink>
+          <NavLink href="/articles">Articles</NavLink>
+        </div>
+      )}
+
+      {/* Right: Account / Sign in */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         {user ? (
-          <Link href="/account" style={{ ...linkStyle, color: '#CA8A04' }}>Account</Link>
+          <Link href="/account" style={{
+            fontFamily: 'var(--font-dm-mono)',
+            fontSize: '10px',
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color: 'var(--gold)',
+            textDecoration: 'none',
+            padding: '6px 0',
+            transition: 'color 150ms ease-out',
+          }}>
+            Account
+          </Link>
         ) : (
           <Link href="/?auth=required" style={{
-            ...linkStyle,
-            background: '#CA8A04',
-            color: '#0c0a09',
-            padding: '6px 16px',
-            borderRadius: '4px',
-            fontWeight: 700,
+            fontFamily: 'var(--font-jost)',
+            fontSize: '12px',
+            fontWeight: 600,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            color: 'var(--bg)',
+            background: 'var(--gold)',
+            textDecoration: 'none',
+            padding: '8px 20px',
+            borderRadius: '2px',
+            transition: 'background 150ms ease-out',
           }}>
             Sign In
           </Link>
@@ -56,12 +94,20 @@ export default async function Nav() {
   )
 }
 
-const linkStyle: React.CSSProperties = {
-  color: 'rgba(245,237,224,0.6)',
-  fontFamily: 'sans-serif',
-  fontSize: '12px',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-  textDecoration: 'none',
-  transition: 'color 0.15s',
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link href={href} style={{
+      fontFamily: 'var(--font-dm-mono)',
+      fontSize: '10px',
+      fontWeight: 400,
+      letterSpacing: '0.2em',
+      textTransform: 'uppercase',
+      color: 'var(--cream-dim)',
+      textDecoration: 'none',
+      transition: 'color 150ms ease-out',
+      padding: '4px 0',
+    }}>
+      {children}
+    </Link>
+  )
 }

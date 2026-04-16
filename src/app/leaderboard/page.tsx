@@ -28,18 +28,16 @@ export default async function LeaderboardPage() {
   const lastMonthName = lastMonth.toLocaleString('en-US', { month: 'long' })
 
   return (
-    <main style={{ minHeight: '100vh', padding: '60px 24px', maxWidth: '760px', margin: '0 auto', fontFamily: 'sans-serif' }}>
-      <p style={{ color: '#CA8A04', fontSize: '11px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '16px' }}>
-        Community
+    <main style={{ minHeight: '100vh', padding: '80px 32px 120px', maxWidth: '800px', margin: '0 auto' }}>
+      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '14px' }}>
+        Hall of Records
       </p>
-      <h1 style={{ color: '#f5ede0', fontSize: '40px', fontWeight: 700, marginBottom: '8px' }}>
-        Leaderboard
+      <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: '72px', letterSpacing: '0.02em', lineHeight: 1, marginBottom: '16px' }}>
+        LEADERBOARD
       </h1>
-      <p style={{ color: 'rgba(245,237,224,0.4)', fontSize: '13px', marginBottom: '12px' }}>
-        The monthly #1 earns double tickets on every spot they purchase the following month.
-      </p>
-      <p style={{ color: 'rgba(245,237,224,0.25)', fontSize: '12px', marginBottom: '48px' }}>
-        Points accumulate month to month — your balance never resets. Monthly rankings measure points earned and spent within that calendar month only. Enter at least one drop to appear.
+      <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.35)', fontSize: '13px', lineHeight: 1.7, marginBottom: '56px', maxWidth: '520px' }}>
+        The monthly #1 earns double tickets on every spot they buy the following month.
+        Points never reset. Monthly rankings measure what you earned and spent within that calendar month only.
       </p>
 
       <LeaderboardClient
