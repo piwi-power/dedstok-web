@@ -8,6 +8,61 @@ import { createHash, randomInt } from 'crypto'
 
 export const runtime = 'nodejs'
 
+const WINNER_QUOTES: { text: string; author: string }[] = [
+  { text: 'Everything I do is for the 17-year-old version of myself.', author: 'Virgil Abloh' },
+  { text: 'Remind yourself. Nobody built like you, you design yourself.', author: 'Jay-Z' },
+  { text: 'Reality is wrong. Dreams are for real.', author: 'Tupac Shakur' },
+  { text: "Name one genius that ain't crazy.", author: 'Kanye West' },
+  { text: 'You can have everything you want in life if you just help enough other people get what they want.', author: 'Zig Ziglar' },
+  { text: 'The secret of getting ahead is getting started.', author: 'Mark Twain' },
+  { text: 'What you wear is how you present yourself to the world.', author: 'Miuccia Prada' },
+]
+function pickWinnerQuote() {
+  return WINNER_QUOTES[Math.floor(Math.random() * WINNER_QUOTES.length)]
+}
+
+function buildWinnerEmailHtml(
+  ticketNumber: number,
+  totalTickets: number,
+  verificationHash: string,
+  verifyUrl: string,
+  quote: { text: string; author: string },
+): string {
+  const ticketId = String(ticketNumber).padStart(4, '0')
+  return `
+    <div style="background-color:#0c0a09;margin:0 auto;max-width:500px;padding:0;">
+      <div style="background-color:#CA8A04;height:3px;font-size:3px;line-height:3px;">&nbsp;</div>
+      <div style="padding:32px 32px 0;">
+        <p style="color:#CA8A04;font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.35em;margin:0 0 4px;text-transform:uppercase;">DEDSTOK</p>
+        <p style="border-bottom:1px solid rgba(245,237,224,0.07);color:rgba(245,237,224,0.3);font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;letter-spacing:0.3em;margin:0 0 28px;padding-bottom:20px;text-transform:uppercase;">This Week's Winner</p>
+      </div>
+      <div style="padding:0 32px 32px;">
+        <p style="color:#f5ede0;font-family:'Helvetica Neue',Arial,sans-serif;font-size:32px;font-weight:700;letter-spacing:0.04em;line-height:1;margin:0 0 4px;text-transform:uppercase;">You Won.</p>
+        <p style="color:rgba(245,237,224,0.45);font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;line-height:1.75;margin:0 0 28px;">Congratulations. Your ticket was drawn. We'll reach out shortly to arrange delivery.</p>
+        <div style="border:1px solid rgba(202,138,4,0.4);margin:0 0 16px;padding:20px;">
+          <p style="color:rgba(245,237,224,0.3);font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:0.25em;margin:0 0 8px;text-transform:uppercase;">Winning Ticket</p>
+          <p style="color:#CA8A04;font-family:'Courier New',Courier,monospace;font-size:24px;font-weight:700;letter-spacing:0.1em;margin:0;">#${ticketId} &nbsp;<span style="color:rgba(245,237,224,0.25);font-size:13px;font-weight:400;">of ${totalTickets}</span></p>
+        </div>
+        <div style="border:1px solid rgba(245,237,224,0.07);margin:0 0 8px;padding:16px;">
+          <p style="color:rgba(245,237,224,0.3);font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:0.2em;margin:0 0 6px;text-transform:uppercase;">Verification Hash</p>
+          <p style="color:rgba(245,237,224,0.45);font-family:'Courier New',Courier,monospace;font-size:10px;margin:0 0 10px;word-break:break-all;">${verificationHash}</p>
+          <a href="${verifyUrl}" style="color:#CA8A04;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:0.12em;text-decoration:none;text-transform:uppercase;">Verify this draw &rarr;</a>
+        </div>
+        <p style="color:rgba(245,237,224,0.18);font-family:'Helvetica Neue',Arial,sans-serif;font-size:10px;margin:0 0 28px;">Anyone can verify this draw was fair using the hash and entry data above.</p>
+        <div style="border-left:2px solid rgba(202,138,4,0.4);padding:12px 20px;">
+          <p style="color:rgba(245,237,224,0.6);font-family:Georgia,'Times New Roman',serif;font-size:14px;font-style:italic;line-height:1.65;margin:0 0 8px;">&ldquo;${quote.text}&rdquo;</p>
+          <p style="color:rgba(245,237,224,0.3);font-family:'Helvetica Neue',Arial,sans-serif;font-size:10px;letter-spacing:0.08em;margin:0;">&mdash; ${quote.author}</p>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(245,237,224,0.06);padding:20px 32px;">
+        <p style="color:rgba(245,237,224,0.18);font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;letter-spacing:0.2em;margin:0 0 4px;text-transform:uppercase;">One drop. One winner. Every week.</p>
+        <p style="color:rgba(245,237,224,0.1);font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;margin:0;">dedstok.com</p>
+      </div>
+      <div style="background-color:#CA8A04;height:3px;font-size:3px;line-height:3px;">&nbsp;</div>
+    </div>
+  `
+}
+
 export async function POST(request: NextRequest) {
   // Admin auth — x-admin-secret header
   const secret = request.headers.get('x-admin-secret')
@@ -128,32 +183,13 @@ export async function POST(request: NextRequest) {
   // 10. Winner email
   if (winnerUser?.email) {
     try {
+      const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok.com'}/verify/${drop_id}`
+      const quote = pickWinnerQuote()
       await getResend().emails.send({
         from: FROM_EMAIL,
         to: winnerUser.email,
         subject: `You won — DEDSTOK`,
-        html: `
-          <div style="background:#0c0a09;color:#f5ede0;font-family:sans-serif;padding:40px;max-width:500px;margin:0 auto;">
-            <h1 style="color:#CA8A04;font-size:28px;margin-bottom:8px;">DEDSTOK</h1>
-            <p style="color:rgba(245,237,224,0.55);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:32px;">
-              You Won
-            </p>
-            <p style="color:rgba(245,237,224,0.85);font-size:16px;margin-bottom:24px;line-height:1.6;">
-              Congratulations. Your ticket was drawn. We will contact you shortly to arrange delivery.
-            </p>
-            <div style="background:rgba(245,237,224,0.05);border-radius:4px;padding:16px;margin-bottom:24px;">
-              <p style="color:rgba(245,237,224,0.4);font-size:11px;margin:0 0 4px;">Winning ticket</p>
-              <p style="color:#f5ede0;font-size:14px;margin:0;">${winningTicket + 1} of ${totalTickets} total tickets</p>
-            </div>
-            <div style="background:rgba(245,237,224,0.05);border-radius:4px;padding:16px;margin-bottom:24px;">
-              <p style="color:rgba(245,237,224,0.4);font-size:11px;margin:0 0 4px;">Draw verification hash</p>
-              <p style="color:#f5ede0;font-size:11px;font-family:monospace;word-break:break-all;margin:0;">${verificationHash}</p>
-            </div>
-            <p style="color:rgba(245,237,224,0.4);font-size:11px;margin-top:32px;">
-              One drop. One winner. Every week.
-            </p>
-          </div>
-        `,
+        html: buildWinnerEmailHtml(winningTicket + 1, totalTickets, verificationHash, verifyUrl, quote),
       })
     } catch (err) {
       console.error('[draw] Winner email failed:', err)

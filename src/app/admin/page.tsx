@@ -60,7 +60,7 @@ export default async function AdminPage() {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--gold)', fontSize: '28px', letterSpacing: '0.1em', marginBottom: '4px' }}>
+            <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: '28px', letterSpacing: '0.1em', marginBottom: '4px' }}>
               DEDSTOK
             </h1>
             <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.35)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase' }}>

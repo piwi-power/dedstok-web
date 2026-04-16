@@ -9,27 +9,32 @@ import Stripe from 'stripe'
 export const runtime = 'nodejs'
 
 function buildEmailHtml(ticketNumbers: number[], pointsEarned: number): string {
-  const ticketList = ticketNumbers.map(n => `#${String(n).padStart(4, '0')}`).join(', ')
+  const ticketList = ticketNumbers.map(n => `#${String(n).padStart(4, '0')}`).join('  ')
+  const plural = ticketNumbers.length > 1 ? 's' : ''
+  const pointsBlock = pointsEarned > 0
+    ? `<p style="color:rgba(245,237,224,0.4);font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;letter-spacing:0.05em;margin:0;">+<span style="color:#CA8A04;font-weight:700;">${pointsEarned} STOK</span> points earned</p>`
+    : ''
   return `
-    <div style="background:#0c0a09;color:#f5ede0;font-family:sans-serif;padding:40px;max-width:500px;margin:0 auto;">
-      <h1 style="color:#CA8A04;font-size:28px;margin-bottom:8px;">DEDSTOK</h1>
-      <p style="color:rgba(245,237,224,0.55);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:32px;">
-        Entry Confirmed
-      </p>
-      <p style="color:rgba(245,237,224,0.7);margin-bottom:16px;line-height:1.6;">
-        You're in. Good luck.
-      </p>
-      <div style="background:rgba(245,237,224,0.05);border-radius:4px;padding:16px;margin-bottom:16px;">
-        <p style="color:rgba(245,237,224,0.4);font-size:11px;margin:0 0 6px;">Your ticket${ticketNumbers.length > 1 ? 's' : ''}</p>
-        <p style="color:#CA8A04;font-size:18px;font-weight:700;margin:0;letter-spacing:0.05em;">${ticketList}</p>
+    <div style="background-color:#0c0a09;margin:0 auto;max-width:500px;padding:0;">
+      <div style="background-color:#CA8A04;height:2px;font-size:2px;line-height:2px;">&nbsp;</div>
+      <div style="padding:32px 32px 0;">
+        <p style="color:#CA8A04;font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.35em;margin:0 0 4px;text-transform:uppercase;">DEDSTOK</p>
+        <p style="border-bottom:1px solid rgba(245,237,224,0.07);color:rgba(245,237,224,0.3);font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;letter-spacing:0.3em;margin:0 0 28px;padding-bottom:20px;text-transform:uppercase;">Entry Confirmed</p>
       </div>
-      ${pointsEarned > 0 ? `
-      <p style="color:rgba(245,237,224,0.5);font-size:13px;margin-bottom:0;">
-        Points earned: <strong style="color:#CA8A04;">+${pointsEarned} STOK</strong>
-      </p>` : ''}
-      <p style="color:rgba(245,237,224,0.4);font-size:11px;margin-top:32px;">
-        One drop. One winner. Every week.
-      </p>
+      <div style="padding:0 32px 32px;">
+        <p style="color:#f5ede0;font-family:'Helvetica Neue',Arial,sans-serif;font-size:30px;font-weight:700;letter-spacing:0.04em;line-height:1;margin:0 0 12px;text-transform:uppercase;">You're In</p>
+        <p style="color:rgba(245,237,224,0.5);font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;line-height:1.75;margin:0 0 28px;">Your spot is locked. The draw happens Saturday.<br>One winner. That could be you.</p>
+        <div style="border:1px solid rgba(202,138,4,0.3);margin:0 0 24px;padding:20px;">
+          <p style="color:rgba(245,237,224,0.3);font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:0.25em;margin:0 0 8px;text-transform:uppercase;">Your ticket${plural}</p>
+          <p style="color:#CA8A04;font-family:'Courier New',Courier,monospace;font-size:22px;font-weight:700;letter-spacing:0.1em;margin:0;">${ticketList}</p>
+        </div>
+        ${pointsBlock}
+      </div>
+      <div style="border-top:1px solid rgba(245,237,224,0.06);padding:20px 32px;">
+        <p style="color:rgba(245,237,224,0.18);font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;letter-spacing:0.2em;margin:0 0 4px;text-transform:uppercase;">One drop. One winner. Every week.</p>
+        <p style="color:rgba(245,237,224,0.1);font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;margin:0;">dedstok.com</p>
+      </div>
+      <div style="background-color:#CA8A04;height:2px;font-size:2px;line-height:2px;">&nbsp;</div>
     </div>
   `
 }

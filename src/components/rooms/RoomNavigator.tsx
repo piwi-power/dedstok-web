@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -15,7 +15,44 @@ interface RoomNavigatorProps {
 export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNavigatorProps) {
   const [currentRoomId, setCurrentRoomId] = useState('door')
   const [imgError, setImgError] = useState<Record<string, boolean>>({})
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileWidth, setMobileWidth] = useState(0)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+
+  // Read ?room= URL param before first paint — no flash, instant start at correct room
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const room = params.get('room')
+    if (room && ROOMS[room]) {
+      setCurrentRoomId(room)
+    }
+  }, [])
+
+  // Mobile detection: landscape room images need horizontal panning on portrait screens
+  useEffect(() => {
+    const check = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      if (mobile) {
+        // Make inner container exactly 16:9 at full viewport height
+        setMobileWidth(Math.round(window.innerHeight * (16 / 9)))
+      }
+    }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  // Re-center scroll to middle of image on each room transition (mobile)
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el || !isMobile) return
+    requestAnimationFrame(() => {
+      el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2
+    })
+  }, [currentRoomId, isMobile, mobileWidth])
 
   const currentRoom = ROOMS[currentRoomId]
 
@@ -28,9 +65,17 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
   }, [router])
 
   return (
-    // Full-viewport container — sits below the nav (z-index: 50)
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1, overflow: 'hidden' }}>
-
+    <div
+      ref={scrollRef}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1,
+        overflowX: isMobile ? 'auto' : 'hidden',
+        overflowY: 'hidden',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={currentRoomId}
@@ -38,7 +83,14 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1.0] }}
-          style={{ position: 'absolute', inset: 0 }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            height: '100%',
+            width: isMobile && mobileWidth > 0 ? `${mobileWidth}px` : '100%',
+            minWidth: '100%',
+          }}
         >
           {/* Gradient fallback — always rendered beneath the image */}
           <div style={{
@@ -60,16 +112,16 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
             />
           )}
 
-          {/* Vignette overlay — top and bottom darkening for nav + text legibility */}
+          {/* Vignette overlay */}
           <div style={{
             position: 'absolute',
             inset: 0,
             background: [
               'linear-gradient(to bottom,',
-              '  rgba(10,8,4,0.55) 0%,',    /* top — nav zone */
+              '  rgba(10,8,4,0.55) 0%,',
               '  transparent 20%,',
               '  transparent 65%,',
-              '  rgba(10,8,4,0.7) 100%)',    /* bottom — label zone */
+              '  rgba(10,8,4,0.7) 100%)',
             ].join(' '),
             pointerEvents: 'none',
           }} />
@@ -116,19 +168,65 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
             </motion.div>
           )}
 
+          {/* Mobile pan hint — fades out after 3s */}
+          {isMobile && currentRoomId !== 'door' && (
+            <MobilePanHint />
+          )}
+
         </motion.div>
       </AnimatePresence>
     </div>
   )
 }
 
-// ── Door overlay: branding text over the door image ──────────────────────────
+// ── Mobile pan hint ───────────────────────────────────────────────────────────
+function MobilePanHint() {
+  const [visible, setVisible] = useState(true)
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(false), 2800)
+    return () => clearTimeout(t)
+  }, [])
+
+  if (!visible) return null
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.4, delay: 0.8 }}
+      style={{
+        position: 'absolute',
+        bottom: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        pointerEvents: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+      }}
+    >
+      <span style={{
+        fontFamily: 'var(--font-dm-mono)',
+        color: 'rgba(245,237,224,0.3)',
+        fontSize: '9px',
+        letterSpacing: '0.2em',
+        textTransform: 'uppercase',
+        whiteSpace: 'nowrap',
+      }}>
+        ← swipe to explore →
+      </span>
+    </motion.div>
+  )
+}
+
+// ── Door overlay ──────────────────────────────────────────────────────────────
 function DoorOverlay() {
   const [logoError, setLogoError] = useState(false)
 
   return (
     <>
-      {/* Tagline centered at bottom */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -154,7 +252,6 @@ function DoorOverlay() {
         </p>
       </motion.div>
 
-      {/* Logo overlay on the nameplate — only renders when ds-logo-white.png is present */}
       {!logoError && (
         <div style={{
           position: 'absolute',
@@ -181,11 +278,10 @@ function DoorOverlay() {
   )
 }
 
-// ── Vault overlay: ambient glow that pulses over the display case ─────────────
+// ── Vault overlay ─────────────────────────────────────────────────────────────
 function VaultOverlay() {
   return (
     <>
-      {/* Pulsing glow centered on the case — roughly 50% left, 50% top */}
       <motion.div
         animate={{
           opacity: [0.3, 0.55, 0.3],
@@ -206,7 +302,6 @@ function VaultOverlay() {
         }}
       />
 
-      {/* Subtitle above the hotspot */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

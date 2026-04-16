@@ -48,9 +48,9 @@ export default async function Nav() {
         </span>
       </Link>
 
-      {/* Center: Nav links — hidden on homepage (rooms are the nav) */}
+      {/* Center: Nav links — hidden on homepage + hidden on mobile (use Explore overlay) */}
       {!isHomepage && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '36px' }}>
+        <div className="hidden md:flex" style={{ alignItems: 'center', gap: '36px' }}>
           <NavLink href="/drops">Drops</NavLink>
           <NavLink href="/winners">Winners</NavLink>
           <NavLink href="/leaderboard">Leaderboard</NavLink>

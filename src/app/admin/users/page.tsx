@@ -59,10 +59,10 @@ export default async function AdminUsersPage() {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <div>
-            <h1 style={{ color: '#CA8A04', fontSize: '20px', fontWeight: 700, letterSpacing: '0.15em', marginBottom: '2px' }}>
+            <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: '28px', letterSpacing: '0.1em', marginBottom: '4px' }}>
               DEDSTOK
             </h1>
-            <p style={{ color: 'rgba(245,237,224,0.35)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+            <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.35)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase' }}>
               Customers
             </p>
           </div>
