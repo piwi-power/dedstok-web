@@ -53,90 +53,72 @@ export default async function DropsPage() {
   }
 
   return (
-    <main style={{ minHeight: '100vh', padding: '60px 24px', maxWidth: '900px', margin: '0 auto' }}>
+    <main style={{ minHeight: '100vh', padding: '56px 32px 120px', maxWidth: '960px', margin: '0 auto' }}>
 
-      {/* Current drop */}
-      <p style={{ color: '#CA8A04', fontFamily: 'sans-serif', fontSize: '11px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '16px' }}>
+      {/* Header */}
+      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '12px' }}>
         This Week
       </p>
-      <h1 style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '40px', fontWeight: 700, marginBottom: '48px' }}>
-        Current Drop
+      <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: '72px', letterSpacing: '0.02em', lineHeight: 1, marginBottom: '48px' }}>
+        DROPS
       </h1>
 
+      {/* Active drop */}
       {!activeDrop ? (
-        <div style={{ textAlign: 'center', padding: '80px 40px', border: '1px solid rgba(202,138,4,0.2)', borderRadius: '4px', marginBottom: '80px' }}>
-          <p style={{ color: 'rgba(245,237,224,0.4)', fontFamily: 'sans-serif', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+        <div style={{ textAlign: 'center', padding: '80px 40px', border: '1px solid rgba(202,138,4,0.15)', marginBottom: '80px' }}>
+          <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '10px', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
             Next drop revealed Sunday.
           </p>
         </div>
       ) : (
-        <Link href={`/drops/${activeDrop.slug}`} style={{ textDecoration: 'none', display: 'block', marginBottom: '80px' }}>
-          <div style={{ border: '1px solid rgba(202,138,4,0.25)', borderRadius: '4px', overflow: 'hidden' }}>
+        <Link href={`/drops/${activeDrop.slug}`} style={{ textDecoration: 'none', display: 'block', marginBottom: '96px' }}>
+          <div style={{ border: '1px solid rgba(202,138,4,0.2)', overflow: 'hidden' }}>
             {activeDrop.image_url && (
-              <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden', background: 'rgba(245,237,224,0.03)' }}>
+              <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden', background: 'var(--walnut)' }}>
                 <img src={activeDrop.image_url} alt={activeDrop.item_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>
             )}
             <div style={{ padding: '40px' }}>
-              <p style={{ color: '#CA8A04', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '12px' }}>
+              <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '12px' }}>
                 Live Now
               </p>
-              <h2 style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '28px', fontWeight: 700, marginBottom: '16px' }}>
+              <h2 style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 700, color: 'var(--cream)', fontSize: '36px', letterSpacing: '0.01em', textTransform: 'uppercase', marginBottom: '16px', lineHeight: 1 }}>
                 {activeDrop.item_name}
               </h2>
               {activeDrop.description && (
-                <p style={{ color: 'rgba(245,237,224,0.55)', fontFamily: 'sans-serif', fontSize: '14px', lineHeight: 1.6, marginBottom: '32px' }}>
+                <p style={{ fontFamily: 'var(--font-jost)', color: 'var(--cream-dim)', fontSize: '14px', lineHeight: 1.7, marginBottom: '32px', maxWidth: '560px' }}>
                   {activeDrop.description}
                 </p>
               )}
-              <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                <div>
-                  <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>Entry</p>
-                  <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '18px', fontWeight: 700 }}>${activeDrop.entry_price}</p>
-                </div>
-                <div>
-                  <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>Draw</p>
-                  <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '18px', fontWeight: 700 }}>
-                    {new Date(activeDrop.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </p>
-                </div>
-                {activeDrop.market_value && (
-                  <div>
-                    <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>Market Value</p>
-                    <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '18px', fontWeight: 700 }}>${activeDrop.market_value.toLocaleString()}</p>
-                  </div>
-                )}
-                <div>
-                  <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>Spots Left</p>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                    <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '18px', fontWeight: 700 }}>
-                      {activeDrop.total_spots - activeDrop.spots_sold}
-                    </p>
-                    <p style={{ color: 'rgba(245,237,224,0.3)', fontFamily: 'sans-serif', fontSize: '11px' }}>
-                      1 in {activeDrop.total_spots} odds
-                    </p>
-                  </div>
-                </div>
+              <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                <StatBlock label="Entry" value={`$${activeDrop.entry_price}`} />
+                <StatBlock label="Draw" value={new Date(activeDrop.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
+                {activeDrop.market_value && <StatBlock label="Market Value" value={`$${activeDrop.market_value.toLocaleString()}`} />}
+                <StatBlock
+                  label="Spots Left"
+                  value={String(activeDrop.total_spots - activeDrop.spots_sold)}
+                  sub={`1 in ${activeDrop.total_spots} odds`}
+                />
               </div>
             </div>
           </div>
         </Link>
       )}
 
-      {/* Past drops */}
+      {/* Archive */}
       {pastDrops && pastDrops.length > 0 && (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
-            <p style={{ color: 'rgba(245,237,224,0.2)', fontFamily: 'sans-serif', fontSize: '11px', letterSpacing: '0.4em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+            <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.2)', fontSize: '9px', letterSpacing: '0.35em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
               The Archive
             </p>
             <div style={{ flex: 1, height: '1px', background: 'rgba(245,237,224,0.07)' }} />
-            <p style={{ color: 'rgba(245,237,224,0.15)', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+            <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.15)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
               {pastDrops.length} drop{pastDrops.length !== 1 ? 's' : ''}
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
             {pastDrops.map(drop => {
               const isDrawn = drop.status === 'drawn'
               const winner = winnersMap[drop.id]
@@ -146,65 +128,48 @@ export default async function DropsPage() {
 
               return (
                 <Link key={drop.id} href={`/drops/${drop.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
-                  <div style={{ border: '1px solid rgba(245,237,224,0.07)', borderRadius: '4px', overflow: 'hidden', background: 'rgba(245,237,224,0.02)' }}>
-
-                    {/* Thumbnail */}
+                  <div style={{ border: '1px solid rgba(245,237,224,0.07)', overflow: 'hidden', background: 'rgba(245,237,224,0.015)' }}>
                     {drop.image_url ? (
-                      <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden', background: 'rgba(245,237,224,0.04)', position: 'relative' }}>
-                        <img src={drop.image_url} alt={drop.item_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'grayscale(30%)' }} />
+                      <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden', background: 'var(--walnut)', position: 'relative' }}>
+                        <img src={drop.image_url} alt={drop.item_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'grayscale(40%)' }} />
                         {isDrawn && winner && (
-                          <div style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'rgba(0,0,0,0.75)', padding: '3px 8px', borderRadius: '2px' }}>
-                            <p style={{ color: '#CA8A04', fontFamily: 'sans-serif', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                          <div style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'rgba(0,0,0,0.8)', padding: '3px 8px' }}>
+                            <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                               Won by {winner}
                             </p>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div style={{ width: '100%', aspectRatio: '16/9', background: 'rgba(245,237,224,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <p style={{ color: 'rgba(245,237,224,0.1)', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>No image</p>
+                      <div style={{ width: '100%', aspectRatio: '16/9', background: 'var(--walnut)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.1)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>No image</p>
                       </div>
                     )}
 
                     <div style={{ padding: '20px' }}>
                       <span style={{
                         display: 'inline-block',
-                        background: isDrawn ? 'rgba(202,138,4,0.12)' : 'rgba(245,237,224,0.06)',
-                        color: isDrawn ? '#CA8A04' : 'rgba(245,237,224,0.3)',
+                        background: isDrawn ? 'rgba(202,138,4,0.1)' : 'rgba(245,237,224,0.05)',
+                        color: isDrawn ? 'var(--gold)' : 'rgba(245,237,224,0.3)',
+                        fontFamily: 'var(--font-dm-mono)',
                         fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase',
-                        padding: '2px 7px', borderRadius: '2px', marginBottom: '10px', fontFamily: 'sans-serif',
+                        padding: '2px 8px', borderRadius: '9999px', marginBottom: '12px',
                       }}>
                         {isDrawn ? 'Drawn' : 'Closed'}
                       </span>
 
-                      <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '15px', fontWeight: 600, marginBottom: '16px', lineHeight: 1.3 }}>
+                      <p style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 700, color: 'var(--cream)', fontSize: '18px', letterSpacing: '0.01em', textTransform: 'uppercase', marginBottom: '16px', lineHeight: 1.2 }}>
                         {drop.item_name}
                       </p>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
-                        <div>
-                          <p style={{ color: 'rgba(245,237,224,0.3)', fontFamily: 'sans-serif', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>Entry</p>
-                          <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '14px', fontWeight: 600 }}>${drop.entry_price}</p>
-                        </div>
-                        <div>
-                          <p style={{ color: 'rgba(245,237,224,0.3)', fontFamily: 'sans-serif', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>Odds</p>
-                          <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '14px', fontWeight: 600 }}>1 in {drop.total_spots}</p>
-                        </div>
-                        {drop.market_value && (
-                          <div>
-                            <p style={{ color: 'rgba(245,237,224,0.3)', fontFamily: 'sans-serif', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>Market Value</p>
-                            <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '14px', fontWeight: 600 }}>${drop.market_value.toLocaleString()}</p>
-                          </div>
-                        )}
-                        {valueMultiple && (
-                          <div>
-                            <p style={{ color: 'rgba(245,237,224,0.3)', fontFamily: 'sans-serif', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>Value / Entry</p>
-                            <p style={{ color: '#22c55e', fontFamily: 'sans-serif', fontSize: '14px', fontWeight: 600 }}>{valueMultiple}x</p>
-                          </div>
-                        )}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                        <MiniStat label="Entry" value={`$${drop.entry_price}`} />
+                        <MiniStat label="Odds" value={`1 in ${drop.total_spots}`} />
+                        {drop.market_value && <MiniStat label="Market Value" value={`$${drop.market_value.toLocaleString()}`} />}
+                        {valueMultiple && <MiniStat label="Value / Entry" value={`${valueMultiple}x`} highlight />}
                       </div>
 
-                      <p style={{ color: 'rgba(245,237,224,0.2)', fontFamily: 'sans-serif', fontSize: '10px' }}>
+                      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.2)', fontSize: '9px' }}>
                         {new Date(drop.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </p>
                     </div>
@@ -216,5 +181,24 @@ export default async function DropsPage() {
         </>
       )}
     </main>
+  )
+}
+
+function StatBlock({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div>
+      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.35)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>{label}</p>
+      <p style={{ fontFamily: 'var(--font-jost)', fontWeight: 600, color: 'var(--cream)', fontSize: '18px' }}>{value}</p>
+      {sub && <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.25)', fontSize: '9px', marginTop: '2px' }}>{sub}</p>}
+    </div>
+  )
+}
+
+function MiniStat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div>
+      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '8px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>{label}</p>
+      <p style={{ fontFamily: 'var(--font-jost)', fontWeight: 600, color: highlight ? '#22c55e' : 'var(--cream)', fontSize: '13px' }}>{value}</p>
+    </div>
   )
 }

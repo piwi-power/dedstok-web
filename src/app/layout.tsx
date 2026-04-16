@@ -155,8 +155,8 @@ export default async function RootLayout({
       <body className="min-h-full bg-[var(--bg)] text-[var(--cream)] antialiased">
         {!isAdmin && <Nav />}
         {/* Homepage: room fills the full viewport, nav floats over it transparently.
-            All other pages: standard 56px offset below the fixed nav. */}
-        <div style={isAdmin || isHomepage ? {} : { paddingTop: '56px' }}>
+            All other pages: 64px offset below the fixed nav (nav height = 64px). */}
+        <div style={isAdmin || isHomepage ? {} : { paddingTop: '64px' }}>
           {children}
         </div>
       </body>

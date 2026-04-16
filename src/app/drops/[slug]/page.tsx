@@ -32,7 +32,7 @@ export default async function DropPage({ params }: Props) {
   const [dropResult, userResult] = await Promise.all([
     supabase
       .from('drops')
-      .select('id, item_name, slug, description, entry_price, total_spots, spots_sold, draw_date, market_value, status, image_url')
+      .select('id, item_name, slug, description, entry_price, total_spots, spots_sold, draw_date, market_value, status, image_url, quote, quote_attribution')
       .eq('slug', slug)
       .single(),
     supabase.auth.getUser(),
@@ -60,22 +60,32 @@ export default async function DropPage({ params }: Props) {
         </div>
       )}
 
-      <p
-        style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.4em' }}
-        className="text-[var(--gold)] text-xs uppercase mb-4"
-      >
+      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '14px' }}>
         {isActive ? 'Live Drop' : 'Drop'}
       </p>
 
-      <h1
-        style={{ fontFamily: 'var(--font-serif)' }}
-        className="text-[var(--cream)] text-5xl font-bold mb-4"
-      >
+      <h1 style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 700, color: 'var(--cream)', fontSize: '52px', letterSpacing: '0.01em', textTransform: 'uppercase', lineHeight: 1, marginBottom: '16px' }}>
         {drop.item_name}
       </h1>
 
+      {/* Quote — shown when set in admin */}
+      {drop.quote && (
+        <div style={{ marginBottom: '28px', maxWidth: '540px' }}>
+          <p style={{ fontFamily: 'var(--font-jost)', fontStyle: 'italic', color: 'rgba(245,237,224,0.4)', fontSize: '14px', lineHeight: 1.7, marginBottom: '6px' }}>
+            "{drop.quote}"
+          </p>
+          {drop.quote_attribution && (
+            <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.2)', fontSize: '9px', letterSpacing: '0.12em' }}>
+              — {drop.quote_attribution}
+            </p>
+          )}
+        </div>
+      )}
+
       {drop.description && (
-        <p className="text-[var(--cream-dim)] mb-10 max-w-xl">{drop.description}</p>
+        <p style={{ fontFamily: 'var(--font-jost)', color: 'var(--cream-dim)', fontSize: '14px', lineHeight: 1.7, marginBottom: '36px', maxWidth: '520px' }}>
+          {drop.description}
+        </p>
       )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12 max-w-2xl">

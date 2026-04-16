@@ -28,20 +28,20 @@ export default async function WinnersPage() {
     .order('drawn_at', { ascending: false })
 
   return (
-    <main style={{ minHeight: '100vh', padding: '60px 24px', maxWidth: '900px', margin: '0 auto' }}>
-      <p style={{ color: '#CA8A04', fontFamily: 'sans-serif', fontSize: '11px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '16px' }}>
+    <main style={{ minHeight: '100vh', padding: '56px 32px 120px', maxWidth: '900px', margin: '0 auto' }}>
+      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '12px' }}>
         Archive
       </p>
-      <h1 style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '40px', fontWeight: 700, marginBottom: '12px' }}>
-        Winners
+      <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: '72px', letterSpacing: '0.02em', lineHeight: 1, marginBottom: '16px' }}>
+        WINNERS
       </h1>
-      <p style={{ color: 'rgba(245,237,224,0.4)', fontFamily: 'sans-serif', fontSize: '12px', marginBottom: '56px', lineHeight: 1.6 }}>
-        Every draw is provably fair. Each winner row includes the total ticket pool, the winning ticket number, and a SHA-256 verification hash you can independently verify.
+      <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.35)', fontSize: '13px', marginBottom: '56px', lineHeight: 1.7, maxWidth: '520px' }}>
+        Every draw is provably fair. Each entry includes the total ticket pool, winning ticket number, and a SHA-256 hash you can independently verify.
       </p>
 
       {!winners || winners.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 40px', border: '1px solid rgba(202,138,4,0.2)', borderRadius: '4px' }}>
-          <p style={{ color: 'rgba(245,237,224,0.4)', fontFamily: 'sans-serif', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+        <div style={{ textAlign: 'center', padding: '80px 40px', border: '1px solid rgba(202,138,4,0.15)' }}>
+          <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.25)', fontSize: '10px', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
             First winner drops Saturday.
           </p>
         </div>
@@ -64,49 +64,49 @@ export default async function WinnersPage() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px', marginBottom: '16px' }}>
                   <div>
-                    <p style={{ color: '#CA8A04', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '8px' }}>
                       Drop #{(winners.length - i).toString().padStart(2, '0')} &middot;{' '}
                       {new Date(w.drawn_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </p>
-                    <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '20px', fontWeight: 700, marginBottom: '4px' }}>
+                    <p style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 700, color: 'var(--cream)', fontSize: '24px', letterSpacing: '0.01em', textTransform: 'uppercase', marginBottom: '6px', lineHeight: 1 }}>
                       {drop?.item_name}
                     </p>
-                    <p style={{ color: 'rgba(245,237,224,0.4)', fontFamily: 'sans-serif', fontSize: '11px' }}>
+                    <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '10px' }}>
                       {drop?.total_spots} total spots &middot; ${drop?.entry_price}/spot
                     </p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ color: 'rgba(245,237,224,0.4)', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>
                       Winner
                     </p>
-                    <p style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '14px' }}>{maskedEmail}</p>
+                    <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--cream)', fontSize: '13px' }}>{maskedEmail}</p>
                   </div>
                 </div>
 
                 {/* Provability row */}
                 {w.total_tickets && w.winning_ticket !== null && (
                   <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-                    <div style={{ background: 'rgba(245,237,224,0.04)', borderRadius: '4px', padding: '10px 14px' }}>
-                      <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '2px' }}>
+                    <div style={{ background: 'rgba(245,237,224,0.03)', border: '1px solid rgba(245,237,224,0.06)', padding: '10px 14px' }}>
+                      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>
                         Winning ticket
                       </p>
-                      <p style={{ color: '#f5ede0', fontFamily: 'monospace', fontSize: '13px' }}>
+                      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--cream)', fontSize: '13px' }}>
                         #{(w.winning_ticket as number) + 1} of {w.total_tickets}
                       </p>
                     </div>
                     {w.verification_hash && (
-                      <div style={{ background: 'rgba(245,237,224,0.04)', borderRadius: '4px', padding: '10px 14px', flex: 1, minWidth: '200px' }}>
-                        <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '2px' }}>
+                      <div style={{ background: 'rgba(245,237,224,0.03)', border: '1px solid rgba(245,237,224,0.06)', padding: '10px 14px', flex: 1, minWidth: '200px' }}>
+                        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>
                           SHA-256 verification hash
                         </p>
-                        <p style={{ color: 'rgba(245,237,224,0.6)', fontFamily: 'monospace', fontSize: '10px', wordBreak: 'break-all', marginBottom: '8px' }}>
+                        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.45)', fontSize: '10px', wordBreak: 'break-all', marginBottom: '10px' }}>
                           {w.verification_hash as string}
                         </p>
                         <Link
                           href={`/verify/${w.drop_id}`}
-                          style={{ color: '#CA8A04', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none' }}
+                          style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', textDecoration: 'none' }}
                         >
-                          Verify this draw &rarr;
+                          Verify this draw →
                         </Link>
                       </div>
                     )}
