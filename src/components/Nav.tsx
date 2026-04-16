@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
+import ExploreOverlay from './ExploreOverlay'
 
 export default async function Nav() {
   const supabase = await createClient()
@@ -57,8 +58,9 @@ export default async function Nav() {
         </div>
       )}
 
-      {/* Right: Account / Sign in */}
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      {/* Right: Explore + Account / Sign in */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <ExploreOverlay />
         {user ? (
           <Link href="/account" style={{
             fontFamily: 'var(--font-dm-mono)',
