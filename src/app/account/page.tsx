@@ -52,28 +52,21 @@ export default async function AccountPage() {
   }
 
   return (
-    <main className="min-h-screen px-6 py-24 max-w-4xl mx-auto">
-      <div className="flex items-start justify-between mb-12">
+    <main style={{ minHeight: '100vh', padding: '56px 32px 120px', maxWidth: '960px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '48px' }}>
         <div>
-          <p
-            style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.4em' }}
-            className="text-[var(--gold)] text-xs uppercase mb-4"
-          >
+          <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '12px' }}>
             Account
           </p>
-          <h1
-            style={{ fontFamily: 'var(--font-serif)' }}
-            className="text-[var(--cream)] text-5xl font-bold mb-2"
-          >
-            Your Profile
+          <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: '64px', letterSpacing: '0.02em', lineHeight: 1, marginBottom: '8px' }}>
+            YOUR PROFILE
           </h1>
-          <p className="text-[var(--cream-dim)] text-sm">{user.email}</p>
+          <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--cream-dim)', fontSize: '11px' }}>{user.email}</p>
         </div>
         <form action={signOut}>
           <button
             type="submit"
-            style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.15em' }}
-            className="text-[var(--cream-dim)] text-[10px] uppercase hover:text-[var(--cream)] transition-colors mt-4"
+            style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--cream-dim)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', background: 'none', border: 'none', cursor: 'pointer', marginTop: '8px' }}
           >
             Sign Out
           </button>
@@ -85,96 +78,64 @@ export default async function AccountPage() {
 
       {/* Referral link */}
       {profile?.referral_code && (
-        <div style={{ background: 'rgba(202,138,4,0.06)', border: '1px solid rgba(202,138,4,0.2)', borderRadius: '4px', padding: '20px', marginBottom: '32px' }}>
-          <p style={{ color: 'rgba(245,237,224,0.4)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: 'sans-serif', marginBottom: '8px' }}>
+        <div style={{ background: 'rgba(202,138,4,0.05)', border: '1px solid rgba(202,138,4,0.18)', padding: '20px', marginBottom: '32px' }}>
+          <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.35)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '8px' }}>
             Your Referral Link — {profile.total_referrals ?? 0} referral{profile.total_referrals !== 1 ? 's' : ''}
           </p>
-          <p style={{ color: 'rgba(245,237,224,0.35)', fontSize: '12px', fontFamily: 'sans-serif', marginBottom: '12px' }}>
-            Every time someone you referred buys a spot, you earn 50% of their points — forever. The more they enter, the more you earn.
+          <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.35)', fontSize: '13px', lineHeight: 1.7, marginBottom: '12px' }}>
+            Every time someone you referred buys a spot, you earn 50% of their points — forever.
           </p>
           <ReferralCopy code={profile.referral_code} />
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-4 mb-16">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '56px' }}>
         {[
           { label: 'STOK Points', value: profile?.points_balance?.toLocaleString() ?? '0' },
           { label: 'Drops Entered', value: profile?.total_entries?.toString() ?? entries.length.toString() },
           { label: 'Wins', value: profile?.total_wins?.toString() ?? '0' },
         ].map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-[var(--walnut)] border border-[var(--gold-dim)] p-6 rounded"
-          >
-            <p
-              style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
-              className="text-[var(--gold)] text-[10px] uppercase mb-2"
-            >
+          <div key={stat.label} style={{ background: 'var(--walnut)', border: '1px solid var(--gold-dim)', padding: '24px' }}>
+            <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '8px' }}>
               {stat.label}
             </p>
-            <p
-              style={{ fontFamily: 'var(--font-bebas)' }}
-              className="text-[var(--cream)] text-4xl"
-            >
+            <p style={{ fontFamily: 'var(--font-bebas)', color: 'var(--cream)', fontSize: '40px', lineHeight: 1 }}>
               {stat.value}
             </p>
           </div>
         ))}
       </div>
 
-      <h2
-        style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
-        className="text-[var(--gold)] text-xs uppercase mb-6"
-      >
+      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '20px' }}>
         Entry History
-      </h2>
+      </p>
 
       {entries.length === 0 ? (
-        <div className="text-center py-16 border border-[var(--gold-dim)] rounded">
-          <p className="text-[var(--cream-dim)] text-sm mb-4">No entries yet.</p>
-          <Link
-            href="/"
-            style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.2em' }}
-            className="text-[var(--gold)] text-xs uppercase hover:text-[var(--gold-light)] transition-colors"
-          >
+        <div style={{ textAlign: 'center', padding: '64px 40px', border: '1px solid rgba(202,138,4,0.15)' }}>
+          <p style={{ fontFamily: 'var(--font-jost)', color: 'var(--cream-dim)', fontSize: '14px', marginBottom: '16px' }}>No entries yet.</p>
+          <Link href="/" style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', textDecoration: 'none' }}>
             View Current Drop
           </Link>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {entries.map((entry) => {
             const drop = (entry.drops as unknown as { item_name: string; slug: string; draw_date: string; status: string } | null)
+            const statusColor = drop?.status === 'drawn' ? 'var(--gold)' : drop?.status === 'active' ? '#22c55e' : 'rgba(245,237,224,0.3)'
+            const statusBg = drop?.status === 'drawn' ? 'rgba(202,138,4,0.1)' : drop?.status === 'active' ? 'rgba(34,197,94,0.1)' : 'rgba(245,237,224,0.05)'
             return (
-              <div
-                key={entry.id}
-                className="bg-[var(--walnut)] border border-[var(--gold-dim)] p-5 rounded flex items-center justify-between"
-              >
+              <div key={entry.id} style={{ background: 'var(--walnut)', border: '1px solid rgba(245,237,224,0.06)', padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <p className="text-[var(--cream)] text-sm font-medium mb-1">
+                  <p style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 700, color: 'var(--cream)', fontSize: '16px', letterSpacing: '0.01em', textTransform: 'uppercase', marginBottom: '4px' }}>
                     {drop?.item_name ?? 'Drop'}
                   </p>
-                  <p
-                    style={{ fontFamily: 'var(--font-dm-mono)' }}
-                    className="text-[var(--cream-dim)] text-[10px]"
-                  >
-                    {entry.spots_count} spot{entry.spots_count > 1 ? 's' : ''} &middot; ${entry.total_paid} &middot;{' '}
-                    {new Date(entry.created_at).toLocaleDateString()}
+                  <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--cream-dim)', fontSize: '10px' }}>
+                    {entry.spots_count} spot{entry.spots_count > 1 ? 's' : ''} &middot; ${entry.total_paid} &middot; {new Date(entry.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="text-right">
-                  <span
-                    style={{ fontFamily: 'var(--font-dm-mono)', letterSpacing: '0.15em' }}
-                    className={`text-[10px] uppercase px-2 py-1 rounded ${
-                      drop?.status === 'drawn'
-                        ? 'bg-[var(--gold-dim)] text-[var(--gold)]'
-                        : drop?.status === 'active'
-                        ? 'bg-green-900/30 text-green-400'
-                        : 'text-[var(--cream-dim)]'
-                    }`}
-                  >
-                    {drop?.status ?? 'pending'}
-                  </span>
-                </div>
+                <span style={{ fontFamily: 'var(--font-dm-mono)', color: statusColor, background: statusBg, fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: '9999px' }}>
+                  {drop?.status ?? 'pending'}
+                </span>
               </div>
             )
           })}

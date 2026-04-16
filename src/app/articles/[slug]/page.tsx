@@ -34,16 +34,16 @@ export default async function ArticlePage({ params }: Props) {
   if (!article) notFound()
 
   return (
-    <main style={{ minHeight: '100vh', padding: '60px 24px', maxWidth: '680px', margin: '0 auto' }}>
+    <main style={{ minHeight: '100vh', padding: '80px 24px 120px', maxWidth: '680px', margin: '0 auto' }}>
       <BackButton href="/articles" />
-      <p style={{ color: '#CA8A04', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '16px' }}>
+      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.35em', textTransform: 'uppercase', marginBottom: '16px' }}>
         {article.category}
       </p>
-      <h1 style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '36px', fontWeight: 700, lineHeight: 1.2, marginBottom: '16px' }}>
+      <h1 style={{ fontFamily: 'var(--font-bodoni)', fontWeight: 700, color: 'var(--cream)', fontSize: '40px', lineHeight: 1.2, marginBottom: '20px', letterSpacing: '-0.25px' }}>
         {article.title}
       </h1>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '48px' }}>
-        <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '11px', letterSpacing: '0.1em' }}>
+        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.35)', fontSize: '10px', letterSpacing: '0.1em' }}>
           {new Date(article.published_at).toLocaleDateString('en-US', {
             year: 'numeric', month: 'long', day: 'numeric',
           })}
@@ -51,14 +51,14 @@ export default async function ArticlePage({ params }: Props) {
         {article.author && (
           <>
             <span style={{ color: 'rgba(245,237,224,0.15)', fontSize: '11px' }}>·</span>
-            <p style={{ color: 'rgba(245,237,224,0.35)', fontFamily: 'sans-serif', fontSize: '11px', letterSpacing: '0.1em' }}>
-              Written by {article.author}
+            <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.35)', fontSize: '10px', letterSpacing: '0.1em' }}>
+              {article.author}
             </p>
           </>
         )}
       </div>
 
-      <div style={{ color: 'rgba(245,237,224,0.75)', fontFamily: 'sans-serif', fontSize: '15px', lineHeight: 1.8 }}>
+      <div style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.75)', fontSize: '15px', lineHeight: 1.8 }}>
         {article.body ? (
           <PortableText
             value={article.body as Parameters<typeof PortableText>[0]['value']}
@@ -68,17 +68,17 @@ export default async function ArticlePage({ params }: Props) {
                   <p style={{ marginBottom: '20px' }}>{children}</p>
                 ),
                 h2: ({ children }) => (
-                  <h2 style={{ color: '#f5ede0', fontSize: '22px', fontWeight: 700, marginTop: '40px', marginBottom: '12px' }}>{children}</h2>
+                  <h2 style={{ fontFamily: 'var(--font-bodoni)', fontWeight: 700, color: 'var(--cream)', fontSize: '24px', marginTop: '48px', marginBottom: '14px', letterSpacing: '-0.2px' }}>{children}</h2>
                 ),
                 h3: ({ children }) => (
-                  <h3 style={{ color: '#f5ede0', fontSize: '18px', fontWeight: 600, marginTop: '32px', marginBottom: '8px' }}>{children}</h3>
+                  <h3 style={{ fontFamily: 'var(--font-bodoni)', fontWeight: 700, color: 'var(--cream)', fontSize: '19px', marginTop: '36px', marginBottom: '10px' }}>{children}</h3>
                 ),
                 blockquote: ({ children }) => (
-                  <blockquote style={{ borderLeft: '2px solid #CA8A04', paddingLeft: '20px', color: 'rgba(245,237,224,0.5)', fontStyle: 'italic', margin: '32px 0' }}>{children}</blockquote>
+                  <blockquote style={{ borderLeft: '2px solid var(--gold)', paddingLeft: '20px', color: 'rgba(245,237,224,0.5)', fontStyle: 'italic', margin: '32px 0' }}>{children}</blockquote>
                 ),
               },
               marks: {
-                strong: ({ children }) => <strong style={{ color: '#f5ede0', fontWeight: 700 }}>{children}</strong>,
+                strong: ({ children }) => <strong style={{ color: 'var(--cream)', fontWeight: 700 }}>{children}</strong>,
                 em: ({ children }) => <em style={{ fontStyle: 'italic' }}>{children}</em>,
               },
               list: {

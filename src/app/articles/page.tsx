@@ -20,44 +20,39 @@ export default async function ArticlesPage() {
   }
 
   return (
-    <main style={{ minHeight: '100vh', padding: '60px 24px', maxWidth: '900px', margin: '0 auto' }}>
-      <p style={{ color: '#CA8A04', fontFamily: 'sans-serif', fontSize: '11px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '16px' }}>
+    <main style={{ minHeight: '100vh', padding: '56px 32px 120px', maxWidth: '900px', margin: '0 auto' }}>
+      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '12px' }}>
         Culture
       </p>
-      <h1 style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '40px', fontWeight: 700, marginBottom: '56px' }}>
+      <h1 style={{ fontFamily: 'var(--font-bodoni)', fontWeight: 700, color: 'var(--cream)', fontSize: '56px', lineHeight: 1.05, marginBottom: '56px', letterSpacing: '-0.5px' }}>
         The Edit
       </h1>
 
       {!articles || articles.length === 0 ? (
-        <p style={{ color: 'rgba(245,237,224,0.4)', fontFamily: 'sans-serif', fontSize: '14px' }}>
+        <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.3)', fontSize: '14px' }}>
           No articles yet.
         </p>
       ) : (
-        <div style={{ display: 'grid', gap: '2px' }}>
+        <div>
           {articles.map((article) => (
             <Link
               key={article._id}
               href={`/articles/${article.slug.current}`}
-              style={{
-                display: 'block',
-                padding: '28px 0',
-                borderBottom: '1px solid rgba(245,237,224,0.08)',
-                textDecoration: 'none',
-              }}
+              style={{ display: 'block', padding: '28px 0', borderBottom: '1px solid rgba(245,237,224,0.07)', textDecoration: 'none' }}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '32px' }}>
                 <div style={{ flex: 1 }}>
-                  <p style={{ color: '#CA8A04', fontFamily: 'sans-serif', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '10px' }}>
                     {article.category}
                   </p>
-                  <h2 style={{ color: '#f5ede0', fontFamily: 'sans-serif', fontSize: '20px', fontWeight: 600, marginBottom: '8px', lineHeight: 1.3 }}>
+                  <h2 style={{ fontFamily: 'var(--font-bodoni)', fontWeight: 700, color: 'var(--cream)', fontSize: '22px', marginBottom: '10px', lineHeight: 1.3, letterSpacing: '-0.25px' }}>
                     {article.title}
                   </h2>
-                  <p style={{ color: 'rgba(245,237,224,0.5)', fontFamily: 'sans-serif', fontSize: '13px', lineHeight: 1.5 }}>
+                  <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.45)', fontSize: '13px', lineHeight: 1.6 }}>
                     {article.excerpt}
                   </p>
                 </div>
-                <p style={{ color: 'rgba(245,237,224,0.3)', fontFamily: 'sans-serif', fontSize: '11px', whiteSpace: 'nowrap', marginTop: '4px' }}>
+                <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.25)', fontSize: '9px', whiteSpace: 'nowrap', marginTop: '4px' }}>
                   {new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
