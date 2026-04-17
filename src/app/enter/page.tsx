@@ -3,11 +3,8 @@ export const dynamic = 'force-dynamic'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getSanityClient } from '@/lib/sanity/client'
-import { DROP_BY_SLUG_QUERY } from '@/lib/sanity/queries'
 import EntryConfirm from '@/components/EntryConfirm'
 import BackButton from '@/components/BackButton'
-import type { SanityDrop } from '@/types'
 
 export const metadata: Metadata = { title: 'Enter' }
 
@@ -27,45 +24,45 @@ export default async function EnterPage({
 
   const spotsCount = Math.min(2, Math.max(1, parseInt(spots ?? '1')))
 
-  // Fetch drop name + price from Sanity for display
-  const sanityDrop = await getSanityClient().fetch<SanityDrop>(DROP_BY_SLUG_QUERY, { slug })
-
-  // Fetch user's points balance
-  const { data: userRecord } = await supabase
-    .from('users')
-    .select('points_balance')
-    .eq('id', user.id)
-    .single()
-
-  const pointsBalance = userRecord?.points_balance ?? 0
-
-  if (!sanityDrop) redirect('/')
-
-  // Verify drop is still active in Supabase
-  const { data: liveDrop } = await supabase
-    .from('drops')
-    .select('status, spots_sold, total_spots')
-    .eq('id', id)
-    .single()
+  const [{ data: liveDrop }, { data: userRecord }] = await Promise.all([
+    supabase
+      .from('drops')
+      .select('status, spots_sold, total_spots, item_name, entry_price')
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('users')
+      .select('points_balance')
+      .eq('id', user.id)
+      .single(),
+  ])
 
   if (!liveDrop || liveDrop.status !== 'active') redirect(`/drops/${slug}`)
 
   const spotsRemaining = liveDrop.total_spots - liveDrop.spots_sold
   if (spotsRemaining < spotsCount) redirect(`/drops/${slug}`)
 
+  const pointsBalance = userRecord?.points_balance ?? 0
+
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-24">
-      <div className="w-full max-w-lg">
-      <BackButton href={`/drops/${slug}`} />
-      <EntryConfirm
-        dropId={id}
-        dropSlug={slug}
-        spots={spotsCount}
-        code={code}
-        entryPrice={sanityDrop.entry_price}
-        itemName={sanityDrop.item_name}
-        pointsBalance={pointsBalance}
-      />
+    <main style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '96px 24px',
+    }}>
+      <div style={{ width: '100%', maxWidth: '480px' }}>
+        <BackButton href={`/drops/${slug}`} />
+        <EntryConfirm
+          dropId={id}
+          dropSlug={slug}
+          spots={spotsCount}
+          code={code}
+          entryPrice={liveDrop.entry_price}
+          itemName={liveDrop.item_name}
+          pointsBalance={pointsBalance}
+        />
       </div>
     </main>
   )

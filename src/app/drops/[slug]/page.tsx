@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import EntryButton from '@/components/EntryButton'
+import CountdownTimer from '@/components/CountdownTimer'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -169,10 +170,15 @@ export default async function DropPage({ params }: Props) {
           </p>
         )}
 
-        {/* Draw date */}
-        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '28px' }}>
+        {/* Draw date + countdown */}
+        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '16px' }}>
           Draw &mdash; {drawDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>
+        {isActive && (
+          <div style={{ marginBottom: '28px' }}>
+            <CountdownTimer drawDate={drop.draw_date} />
+          </div>
+        )}
 
         {/* Entry section */}
         <EntryButton

@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import CountdownTimer from '@/components/CountdownTimer'
 
 export const metadata: Metadata = {
   title: 'Drops',
@@ -90,16 +91,37 @@ export default async function DropsPage() {
                   {activeDrop.description}
                 </p>
               )}
-              <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                <StatBlock label="Entry" value={`$${activeDrop.entry_price}`} />
-                <StatBlock label="Draw" value={new Date(activeDrop.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
-                {activeDrop.market_value && <StatBlock label="Market Value" value={`$${activeDrop.market_value.toLocaleString()}`} />}
-                <StatBlock
-                  label="Spots Left"
-                  value={String(activeDrop.total_spots - activeDrop.spots_sold)}
-                  sub={`1 in ${activeDrop.total_spots} odds`}
-                />
+              {/* Connected stats strip */}
+              <div style={{
+                display: 'flex',
+                border: '1px solid rgba(202,138,4,0.15)',
+                overflowX: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                marginBottom: '24px',
+              }}>
+                {[
+                  ...(activeDrop.market_value ? [{ label: 'Market Value', value: `$${activeDrop.market_value.toLocaleString()}` }] : []),
+                  { label: 'Entry', value: `$${activeDrop.entry_price}` },
+                  { label: 'Odds', value: `1 in ${activeDrop.total_spots}` },
+                  { label: 'Spots Left', value: String(activeDrop.total_spots - activeDrop.spots_sold) },
+                ].map((stat, i, arr) => (
+                  <div key={stat.label} style={{
+                    flex: 1,
+                    minWidth: '80px',
+                    padding: '14px 18px',
+                    borderRight: i < arr.length - 1 ? '1px solid rgba(202,138,4,0.1)' : 'none',
+                  }}>
+                    <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '8px', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '5px', whiteSpace: 'nowrap' }}>
+                      {stat.label}
+                    </p>
+                    <p style={{ fontFamily: 'var(--font-bebas)', color: 'var(--cream)', fontSize: '24px', lineHeight: 1 }}>
+                      {stat.value}
+                    </p>
+                  </div>
+                ))}
               </div>
+
+              <CountdownTimer drawDate={activeDrop.draw_date} />
             </div>
           </div>
         </Link>
@@ -181,16 +203,6 @@ export default async function DropsPage() {
         </>
       )}
     </main>
-  )
-}
-
-function StatBlock({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div>
-      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.35)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>{label}</p>
-      <p style={{ fontFamily: 'var(--font-jost)', fontWeight: 600, color: 'var(--cream)', fontSize: '18px' }}>{value}</p>
-      {sub && <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.25)', fontSize: '9px', marginTop: '2px' }}>{sub}</p>}
-    </div>
   )
 }
 
