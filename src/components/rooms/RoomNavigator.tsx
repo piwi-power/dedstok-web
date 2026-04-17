@@ -55,9 +55,9 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
     })
   }, [currentRoomId, isMobile, mobileWidth])
 
-  // Show pan hint when on a non-door room on mobile
+  // Show pan hint only on the door room on mobile
   useEffect(() => {
-    if (isMobile && currentRoomId !== 'door') {
+    if (isMobile && currentRoomId === 'door') {
       setPanHintVisible(true)
     } else {
       setPanHintVisible(false)
@@ -209,9 +209,9 @@ function MobilePanHint() {
       transition={{ duration: 0.4, delay: 0.8 }}
       style={{
         position: 'absolute',
-        top: '50%',
+        bottom: '28px',
         left: '50%',
-        transform: 'translate(-50%, -50%)',
+        transform: 'translateX(-50%)',
         pointerEvents: 'none',
       }}
     >
