@@ -17,6 +17,7 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
   const [imgError, setImgError] = useState<Record<string, boolean>>({})
   const [isMobile, setIsMobile] = useState(false)
   const [mobileWidth, setMobileWidth] = useState(0)
+  const [panHintVisible, setPanHintVisible] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -53,6 +54,25 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
       el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2
     })
   }, [currentRoomId, isMobile, mobileWidth])
+
+  // Show pan hint when on a non-door room on mobile
+  useEffect(() => {
+    if (isMobile && currentRoomId !== 'door') {
+      setPanHintVisible(true)
+    } else {
+      setPanHintVisible(false)
+    }
+  }, [currentRoomId, isMobile])
+
+  // Hide pan hint on first scroll (re-attaches each time hint becomes visible)
+  useEffect(() => {
+    if (!panHintVisible) return
+    const el = scrollRef.current
+    if (!el) return
+    const handler = () => setPanHintVisible(false)
+    el.addEventListener('scroll', handler, { once: true, passive: true })
+    return () => el.removeEventListener('scroll', handler)
+  }, [panHintVisible])
 
   const currentRoom = ROOMS[currentRoomId]
 
@@ -168,10 +188,10 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
             </motion.div>
           )}
 
-          {/* Mobile pan hint — fades out after 3s */}
-          {isMobile && currentRoomId !== 'door' && (
-            <MobilePanHint />
-          )}
+          {/* Mobile pan hint — hides on first scroll */}
+          <AnimatePresence>
+            {panHintVisible && <MobilePanHint key="pan-hint" />}
+          </AnimatePresence>
 
         </motion.div>
       </AnimatePresence>
@@ -181,15 +201,6 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
 
 // ── Mobile pan hint ───────────────────────────────────────────────────────────
 function MobilePanHint() {
-  const [visible, setVisible] = useState(true)
-
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(false), 2800)
-    return () => clearTimeout(t)
-  }, [])
-
-  if (!visible) return null
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -198,13 +209,10 @@ function MobilePanHint() {
       transition={{ duration: 0.4, delay: 0.8 }}
       style={{
         position: 'absolute',
-        bottom: '20px',
+        top: '50%',
         left: '50%',
-        transform: 'translateX(-50%)',
+        transform: 'translate(-50%, -50%)',
         pointerEvents: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
       }}
     >
       <span style={{

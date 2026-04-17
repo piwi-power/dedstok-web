@@ -157,12 +157,14 @@ export default function ExploreOverlay() {
                 style={{
                   position: 'absolute',
                   bottom: '32px',
-                  right: 'clamp(24px, 6vw, 96px)',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
                   fontFamily: 'var(--font-dm-mono)',
                   color: 'rgba(245,237,224,0.12)',
                   fontSize: '9px',
                   letterSpacing: '0.2em',
                   textTransform: 'uppercase',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 One drop. One winner. Every week.
