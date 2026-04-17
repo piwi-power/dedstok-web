@@ -53,7 +53,7 @@ export default async function EnterPage({
       padding: '96px 24px',
     }}>
       <div style={{ width: '100%', maxWidth: '480px' }}>
-        <BackButton href={`/drops/${slug}`} />
+        <BackButton href="/drops" />
         <EntryConfirm
           dropId={id}
           dropSlug={slug}

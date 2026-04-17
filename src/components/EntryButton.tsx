@@ -37,12 +37,24 @@ export default function EntryButton({ dropId, dropSlug, spotsRemaining, isActive
     )
   }
 
+  const enterUrl = `/enter?drop=${dropSlug}&spots=${spots}&id=${dropId}`
+  const loginUrl = `/login?next=${enterUrl}`
+
+  function handlePrefetch() {
+    // Prefetch on hover so the page is ready before the click lands
+    if (isLoggedIn) {
+      router.prefetch(enterUrl)
+    } else {
+      router.prefetch(loginUrl)
+    }
+  }
+
   function handleEnter() {
     if (!isLoggedIn) {
-      router.push(`/login?next=/enter?drop=${dropSlug}&spots=${spots}&id=${dropId}`)
+      router.push(loginUrl)
       return
     }
-    router.push(`/enter?drop=${dropSlug}&spots=${spots}&id=${dropId}`)
+    router.push(enterUrl)
   }
 
   return (
@@ -144,7 +156,7 @@ export default function EntryButton({ dropId, dropSlug, spotsRemaining, isActive
           width: '100%',
           transition: 'opacity 150ms',
         }}
-        onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
+        onMouseEnter={e => { handlePrefetch(); e.currentTarget.style.opacity = '0.88' }}
         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
       >
         Enter the Drop
