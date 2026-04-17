@@ -121,6 +121,7 @@ export async function POST(request: NextRequest) {
     winning_ticket: winningIndex,
     verification_hash: verificationHash,
     draw_inputs: drawInputs,
+    announced: true,
   })
 
   if (winnerError) {
