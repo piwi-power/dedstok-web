@@ -78,14 +78,37 @@ export async function POST(request: NextRequest) {
   if (existingWinner) return NextResponse.json({ error: 'Winner already drawn' }, { status: 409 })
 
   // Pull real tickets — one row per ticket, ordered by ticket_number
-  const { data: tickets } = await supabase
+  const { data: rawTickets } = await supabase
     .from('tickets')
     .select('ticket_number, user_id')
     .eq('drop_id', drop_id)
     .order('ticket_number', { ascending: true })
 
-  if (!tickets || tickets.length === 0) {
-    return NextResponse.json({ error: 'No tickets found for this drop' }, { status: 400 })
+  let tickets: { ticket_number: number; user_id: string }[]
+
+  if (!rawTickets || rawTickets.length === 0) {
+    // Fallback: reconstruct tickets from entries (handles entries made before tickets table was live)
+    const { data: entries, error: entriesError } = await supabase
+      .from('entries')
+      .select('user_id, spots_count')
+      .eq('drop_id', drop_id)
+      .order('created_at', { ascending: true })
+
+    if (entriesError || !entries || entries.length === 0) {
+      return NextResponse.json({ error: 'No entries found for this drop' }, { status: 400 })
+    }
+
+    const synthetic: { ticket_number: number; user_id: string }[] = []
+    let counter = 1
+    for (const entry of entries) {
+      for (let i = 0; i < (entry.spots_count ?? 1); i++) {
+        synthetic.push({ ticket_number: counter++, user_id: entry.user_id })
+      }
+    }
+    tickets = synthetic
+    console.log(`[admin/draw] tickets table empty — reconstructed ${tickets.length} tickets from ${entries.length} entries`)
+  } else {
+    tickets = rawTickets
   }
 
   const totalTickets = tickets.length

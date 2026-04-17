@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
   // 3–7. Run all independent operations in parallel
   const pointCost = pointsSpots * entryPriceNum * 5
 
-  const [ticketResult] = await Promise.all([
+  const [ticketResult, , , , , ,] = await Promise.all([
     // Assign real ticket numbers (atomic, race-condition safe)
     supabase.rpc('create_tickets', {
       p_drop_id: drop_id,
@@ -207,6 +207,7 @@ export async function POST(request: NextRequest) {
   ])
 
   // 8. Confirmation email with real ticket numbers
+  if (ticketResult?.error) console.error('[webhook] create_tickets RPC failed:', ticketResult.error)
   const ticketNumbers: number[] = Array.isArray(ticketResult?.data) ? ticketResult.data : []
   if (customerEmail) {
     try { await sendConfirmationEmail(customerEmail, ticketNumbers, pointsEarned) } catch {}
