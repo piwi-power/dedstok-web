@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
       await getTwilio().messages.create({
         from: TWILIO_FROM,
         to: winnerUser.phone,
-        body: `DEDSTOK: You won this week's drop. Ticket #${String(winningTicketNumber).padStart(4, '0')} of ${totalTickets}. Check your email for next steps.`,
+        body: `DEDSTOK: You won this week's drop. Ticket #${String(winningIndex + 1).padStart(4, '0')} of ${totalTickets}. Check your email for next steps.`,
       })
     } catch (err) {
       console.error('[admin/draw] Winner SMS failed:', err)
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
     success: true,
     winner_id: winnerId,
     winner_email: winnerUser?.email,
-    winning_ticket: winningTicketNumber,
+    winning_ticket: winningIndex,
     total_tickets: totalTickets,
     verification_hash: verificationHash,
   })
