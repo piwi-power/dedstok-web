@@ -77,64 +77,48 @@ export async function POST(request: NextRequest) {
 
   if (existingWinner) return NextResponse.json({ error: 'Winner already drawn' }, { status: 409 })
 
-  // Pull real tickets — one row per ticket, ordered by ticket_number
-  const { data: rawTickets } = await supabase
-    .from('tickets')
-    .select('ticket_number, user_id')
+  // Entries are the canonical ticket pool — ordered by purchase time, each spot = one ticket
+  const { data: entries, error: entriesError } = await supabase
+    .from('entries')
+    .select('id, user_id, spots_count')
     .eq('drop_id', drop_id)
-    .order('ticket_number', { ascending: true })
+    .order('created_at', { ascending: true })
 
-  let tickets: { ticket_number: number; user_id: string }[]
-
-  if (!rawTickets || rawTickets.length === 0) {
-    // Fallback: reconstruct tickets from entries (handles entries made before tickets table was live)
-    const { data: entries, error: entriesError } = await supabase
-      .from('entries')
-      .select('user_id, spots_count')
-      .eq('drop_id', drop_id)
-      .order('created_at', { ascending: true })
-
-    if (entriesError || !entries || entries.length === 0) {
-      return NextResponse.json({ error: 'No entries found for this drop' }, { status: 400 })
-    }
-
-    const synthetic: { ticket_number: number; user_id: string }[] = []
-    let counter = 1
-    for (const entry of entries) {
-      for (let i = 0; i < (entry.spots_count ?? 1); i++) {
-        synthetic.push({ ticket_number: counter++, user_id: entry.user_id })
-      }
-    }
-    tickets = synthetic
-    console.log(`[admin/draw] tickets table empty — reconstructed ${tickets.length} tickets from ${entries.length} entries`)
-  } else {
-    tickets = rawTickets
+  if (entriesError || !entries || entries.length === 0) {
+    return NextResponse.json({ error: 'No entries found for this drop' }, { status: 400 })
   }
 
-  const totalTickets = tickets.length
-  const winningIndex = randomInt(0, totalTickets)
-  const winningTicketRow = tickets[winningIndex]
-  const winnerId = winningTicketRow.user_id
-  const winningTicketNumber = winningTicketRow.ticket_number
+  // Expand entries into 0-indexed ticket slots
+  const ticketSlots: { ticketIndex: number; userId: string }[] = []
+  for (const entry of entries) {
+    for (let i = 0; i < (entry.spots_count ?? 1); i++) {
+      ticketSlots.push({ ticketIndex: ticketSlots.length, userId: entry.user_id })
+    }
+  }
 
-  // Hash: drop_id + all ticket numbers in order + winning ticket number
-  const ticketNumbersCsv = tickets.map(t => t.ticket_number).join(',')
-  const hashInput = `${drop_id}|${ticketNumbersCsv}|${winningTicketNumber}`
+  const totalTickets = ticketSlots.length
+  const winningIndex = randomInt(0, totalTickets)
+  const winnerId = ticketSlots[winningIndex].userId
+  const entryIdsInOrder = entries.map(e => e.id)
+
+  // Hash: drop_id | entry_ids_csv | winning_ticket_index
+  const hashInput = `${drop_id}|${entryIdsInOrder.join(',')}|${winningIndex}`
   const verificationHash = createHash('sha256').update(hashInput).digest('hex')
 
   const drawInputs = {
     drop_id,
+    entry_ids_in_order: entryIdsInOrder,
     total_tickets: totalTickets,
-    winning_ticket_number: winningTicketNumber,
+    winning_ticket_index: winningIndex,
     algorithm: 'Node.js crypto.randomInt — cryptographically secure CSPRNG',
-    verification_note: 'SHA-256(drop_id + "|" + ticket_numbers_csv + "|" + winning_ticket_number) = verification_hash',
+    verification_note: 'SHA-256(drop_id + "|" + entry_ids_csv + "|" + winning_ticket_index) = verification_hash',
   }
 
   const { error: winnerError } = await supabase.from('winners').insert({
     drop_id,
     user_id: winnerId,
     total_tickets: totalTickets,
-    winning_ticket: winningTicketNumber,
+    winning_ticket: winningIndex,
     verification_hash: verificationHash,
     draw_inputs: drawInputs,
   })
@@ -153,7 +137,7 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (winnerUser?.email) {
-    const ticketId = String(winningTicketNumber).padStart(4, '0')
+    const ticketId = String(winningIndex + 1).padStart(4, '0')
     const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok-web.vercel.app'}/verify/${drop_id}`
     const quote = pickQuote()
 

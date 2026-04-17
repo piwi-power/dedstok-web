@@ -18,7 +18,7 @@ export default async function VerifyPage({ params }: Props) {
     .eq('drop_id', dropId)
     .single()
 
-  if (!winner || !winner.announced) notFound()
+  if (!winner) notFound()
 
   const inputs = winner.draw_inputs as {
     drop_id: string
@@ -27,7 +27,9 @@ export default async function VerifyPage({ params }: Props) {
     winning_ticket_index: number
     algorithm: string
     verification_note: string
-  }
+  } | null
+
+  if (!inputs?.entry_ids_in_order) notFound()
 
   // Reconstruct the exact string that was hashed
   const hashInput = `${inputs.drop_id}|${inputs.entry_ids_in_order.join(',')}|${inputs.winning_ticket_index}`
