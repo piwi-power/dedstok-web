@@ -128,7 +128,7 @@ export default async function DropPage({ params }: Props) {
             >
               <p style={{
                 fontFamily: 'var(--font-dm-mono)',
-                color: 'rgba(245,237,224,0.35)',
+                color: 'rgba(245,237,224,0.50)',
                 fontSize: '8px',
                 letterSpacing: '0.2em',
                 textTransform: 'uppercase',
@@ -152,11 +152,11 @@ export default async function DropPage({ params }: Props) {
         {/* Quote */}
         {drop.quote && (
           <div style={{ marginBottom: '28px', maxWidth: '580px', borderLeft: '2px solid rgba(202,138,4,0.3)', paddingLeft: '20px' }}>
-            <p style={{ fontFamily: 'var(--font-jost)', fontStyle: 'italic', color: 'rgba(245,237,224,0.45)', fontSize: '14px', lineHeight: 1.7, marginBottom: '6px' }}>
+            <p style={{ fontFamily: 'var(--font-jost)', fontStyle: 'italic', color: 'rgba(245,237,224,0.62)', fontSize: '14px', lineHeight: 1.7, marginBottom: '6px' }}>
               &ldquo;{drop.quote}&rdquo;
             </p>
             {drop.quote_attribution && (
-              <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.2)', fontSize: '9px', letterSpacing: '0.12em' }}>
+              <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.40)', fontSize: '9px', letterSpacing: '0.12em' }}>
                 &mdash; {drop.quote_attribution}
               </p>
             )}
@@ -165,13 +165,13 @@ export default async function DropPage({ params }: Props) {
 
         {/* Description */}
         {drop.description && (
-          <p style={{ fontFamily: 'var(--font-jost)', color: 'var(--cream-dim)', fontSize: '14px', lineHeight: 1.75, marginBottom: '36px', maxWidth: '560px' }}>
+          <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.82)', fontSize: '14px', lineHeight: 1.75, marginBottom: '36px', maxWidth: '560px' }}>
             {drop.description}
           </p>
         )}
 
         {/* Draw date + countdown */}
-        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '16px' }}>
+        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.50)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '16px' }}>
           Draw &mdash; {drawDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>
         {isActive && (

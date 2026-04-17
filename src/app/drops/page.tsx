@@ -166,7 +166,7 @@ export default async function DropsPage() {
                 &ldquo;{activeDrop.quote}&rdquo;
               </p>
               {activeDrop.quote_attribution && (
-                <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.22)', fontSize: '9px', letterSpacing: '0.12em' }}>
+                <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.40)', fontSize: '9px', letterSpacing: '0.12em' }}>
                   &mdash; {activeDrop.quote_attribution}
                 </p>
               )}
@@ -187,7 +187,7 @@ export default async function DropsPage() {
                 padding: '12px 16px',
                 borderRight: i < stats.length - 1 ? '1px solid rgba(202,138,4,0.1)' : 'none',
               }}>
-                <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '7px', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '4px', whiteSpace: 'nowrap' }}>
+                <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.5)', fontSize: '7px', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '4px', whiteSpace: 'nowrap' }}>
                   {stat.label}
                 </p>
                 <p style={{ fontFamily: 'var(--font-bebas)', color: 'var(--cream)', fontSize: '22px', lineHeight: 1 }}>
@@ -203,10 +203,10 @@ export default async function DropsPage() {
               <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${progressPct}%`, background: 'var(--gold)' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.2)', fontSize: '9px' }}>
+              <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.38)', fontSize: '9px' }}>
                 {activeDrop.spots_sold} taken
               </p>
-              <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.2)', fontSize: '9px' }}>
+              <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.38)', fontSize: '9px' }}>
                 {spotsRemaining} left of {activeDrop.total_spots}
               </p>
             </div>

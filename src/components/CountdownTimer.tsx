@@ -38,7 +38,7 @@ export default function CountdownTimer({ drawDate }: Props) {
     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
       <p style={{
         fontFamily: 'var(--font-dm-mono)',
-        color: 'rgba(245,237,224,0.25)',
+        color: 'rgba(245,237,224,0.52)',
         fontSize: '9px',
         letterSpacing: '0.25em',
         textTransform: 'uppercase',
@@ -69,7 +69,7 @@ export default function CountdownTimer({ drawDate }: Props) {
               </p>
               <p style={{
                 fontFamily: 'var(--font-dm-mono)',
-                color: 'rgba(245,237,224,0.25)',
+                color: 'rgba(245,237,224,0.52)',
                 fontSize: '7px',
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',

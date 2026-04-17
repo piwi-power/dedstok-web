@@ -120,7 +120,7 @@ export default function EntryButton({ dropId, dropSlug, spotsRemaining, isActive
 
         <span style={{
           fontFamily: 'var(--font-dm-mono)',
-          color: 'rgba(245,237,224,0.2)',
+          color: 'rgba(245,237,224,0.38)',
           fontSize: '9px',
           letterSpacing: '0.15em',
         }}>
