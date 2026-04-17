@@ -29,14 +29,46 @@ export default async function DropsPage() {
 
   if (!activeDrop) {
     return (
-      <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '40px' }}>
-        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase' }}>
+      <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', textAlign: 'center' }}>
+        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '20px' }}>
           No Active Drop
         </p>
-        <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: 'clamp(40px, 8vw, 80px)', letterSpacing: '0.02em', textAlign: 'center', lineHeight: 1 }}>
+        <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: 'clamp(40px, 8vw, 80px)', letterSpacing: '0.02em', lineHeight: 1, marginBottom: '48px' }}>
           NEXT DROP SUNDAY
         </h1>
-        <Link href="/drops/archive" style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase', textDecoration: 'none', marginTop: '12px' }}>
+
+        {/* Instagram CTA */}
+        <div style={{ borderTop: '1px solid rgba(245,237,224,0.07)', paddingTop: '40px', marginBottom: '40px' }}>
+          <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.35)', fontSize: '14px', lineHeight: 1.7, marginBottom: '20px', maxWidth: '340px' }}>
+            Drops sell out fast. Be there when it goes live.
+          </p>
+          <a
+            href="https://www.instagram.com/dedstokdedstok"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              fontFamily: 'var(--font-dm-mono)',
+              fontSize: '11px',
+              letterSpacing: '0.15em',
+              color: 'var(--cream)',
+              textDecoration: 'none',
+              border: '1px solid rgba(245,237,224,0.12)',
+              padding: '12px 20px',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+            @dedstokdedstok
+          </a>
+        </div>
+
+        <Link href="/drops/archive" style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.2)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase', textDecoration: 'none' }}>
           Past Drops →
         </Link>
       </main>

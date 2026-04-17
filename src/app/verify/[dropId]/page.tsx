@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import VerifyClient from './VerifyClient'
+import BackButton from '@/components/BackButton'
+import CopyButton from '@/components/CopyButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,6 +38,8 @@ export default async function VerifyPage({ params }: Props) {
 
   return (
     <main style={{ minHeight: '100vh', padding: '80px 24px 120px', maxWidth: '760px', margin: '0 auto' }}>
+      <BackButton href="/drops/archive" />
+
       {/* Header */}
       <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '16px' }}>
         Draw Verification
@@ -97,7 +101,10 @@ export default async function VerifyPage({ params }: Props) {
         </p>
         <div style={{ paddingLeft: '36px' }}>
           <div style={{ background: 'rgba(245,237,224,0.04)', border: '1px solid rgba(245,237,224,0.08)', padding: '16px' }}>
-            <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.35)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Exact string (copy this)</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.35)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Exact string (copy this)</p>
+              <CopyButton text={hashInput} />
+            </div>
             <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--cream)', fontSize: '11px', wordBreak: 'break-all', lineHeight: 1.6 }}>{hashInput}</p>
           </div>
         </div>
@@ -111,7 +118,7 @@ export default async function VerifyPage({ params }: Props) {
         </div>
         <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.5)', fontSize: '13px', lineHeight: 1.7, marginBottom: '20px', paddingLeft: '36px' }}>
           Paste the string above into any SHA-256 calculator (try{' '}
-          <span style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '12px' }}>emn178.github.io/online-tools/sha256.html</span>
+          <a href="https://emn178.github.io/online-tools/sha256.html" target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '12px', textDecoration: 'none', borderBottom: '1px solid rgba(202,138,4,0.35)' }}>emn178.github.io/online-tools/sha256.html</a>
           ) or click the button below to verify it right here in your browser. The result must match the hash below exactly.
         </p>
         <div style={{ paddingLeft: '36px' }}>

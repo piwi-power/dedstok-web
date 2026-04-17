@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 
+// Fast-travel: links go to homepage with ?room= param.
+// RoomNavigator reads the param and starts at that room.
 const ROOMS = [
-  { index: '01', name: 'THE LOBBY',   desc: 'The entrance',              href: '/' },
-  { index: '02', name: 'THE VAULT',   desc: "This week's drop",          href: '/drops' },
-  { index: '03', name: 'THE HALL',    desc: 'Top earners, all time',     href: '/leaderboard' },
-  { index: '04', name: 'THE GALLERY', desc: 'Every drop. Every winner.', href: '/drops/archive' },
-  { index: '05', name: 'THE STUDY',   desc: 'Culture & stories',         href: '/articles' },
+  { index: '01', name: 'THE LOBBY',    desc: 'The entrance',              href: '/?room=lobby' },
+  { index: '02', name: 'THE VAULT',    desc: "This week's drop",          href: '/?room=vault' },
+  { index: '03', name: 'THE HALL',     desc: 'Top earners, all time',     href: '/?room=hall' },
+  { index: '04', name: 'THE GALLERY',  desc: 'Every drop. Every winner.', href: '/?room=gallery' },
+  { index: '05', name: 'THE STUDY',    desc: 'Culture & stories',         href: '/?room=study' },
 ]
 
 export default function ExploreOverlay() {
