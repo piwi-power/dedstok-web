@@ -17,7 +17,7 @@ export default async function AccountPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/?auth=required')
+  if (!user) redirect('/login?next=/account')
 
   // Fetch user profile, entry history, and influencer code in parallel
   const [profileResult, entriesResult, influencerResult] = await Promise.all([

@@ -39,14 +39,14 @@ export default function EntryButton({ dropId, dropSlug, spotsRemaining, isActive
 
   function handleEnter() {
     if (!isLoggedIn) {
-      router.push(`/?auth=required&next=/enter?drop=${dropSlug}&spots=${spots}&id=${dropId}`)
+      router.push(`/login?next=/enter?drop=${dropSlug}&spots=${spots}&id=${dropId}`)
       return
     }
     router.push(`/enter?drop=${dropSlug}&spots=${spots}&id=${dropId}`)
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '16px' }}>
 
       {/* Spots stepper */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -141,7 +141,7 @@ export default function EntryButton({ dropId, dropSlug, spotsRemaining, isActive
           padding: '16px 40px',
           border: 'none',
           cursor: 'pointer',
-          alignSelf: 'flex-start',
+          width: '100%',
           transition: 'opacity 150ms',
         }}
         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}

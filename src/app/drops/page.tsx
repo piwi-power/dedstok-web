@@ -129,19 +129,6 @@ export default async function DropsPage() {
             </p>
           </div>
 
-          {/* Quote overlay */}
-          {activeDrop.quote && (
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, rgba(12,10,9,0.88))', padding: '60px 28px 28px' }}>
-              <p style={{ fontFamily: 'var(--font-jost)', fontStyle: 'italic', color: 'rgba(245,237,224,0.55)', fontSize: '13px', lineHeight: 1.6, marginBottom: '6px' }}>
-                &ldquo;{activeDrop.quote}&rdquo;
-              </p>
-              {activeDrop.quote_attribution && (
-                <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.25)', fontSize: '9px', letterSpacing: '0.1em' }}>
-                  &mdash; {activeDrop.quote_attribution}
-                </p>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Right: Info */}
@@ -167,9 +154,23 @@ export default async function DropsPage() {
           </h1>
 
           {activeDrop.description && (
-            <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.45)', fontSize: '14px', lineHeight: 1.75, marginBottom: '36px', maxWidth: '480px' }}>
+            <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.65)', fontSize: '14px', lineHeight: 1.75, marginBottom: '28px', maxWidth: '480px' }}>
               {activeDrop.description}
             </p>
+          )}
+
+          {/* Quote */}
+          {activeDrop.quote && (
+            <div style={{ borderLeft: '2px solid rgba(202,138,4,0.35)', paddingLeft: '16px', marginBottom: '32px', maxWidth: '420px' }}>
+              <p style={{ fontFamily: 'var(--font-jost)', fontStyle: 'italic', color: 'rgba(245,237,224,0.45)', fontSize: '13px', lineHeight: 1.65, marginBottom: activeDrop.quote_attribution ? '6px' : '0' }}>
+                &ldquo;{activeDrop.quote}&rdquo;
+              </p>
+              {activeDrop.quote_attribution && (
+                <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.22)', fontSize: '9px', letterSpacing: '0.12em' }}>
+                  &mdash; {activeDrop.quote_attribution}
+                </p>
+              )}
+            </div>
           )}
 
           {/* Countdown */}

@@ -75,7 +75,7 @@ export default async function Nav() {
             Account
           </Link>
         ) : (
-          <Link href="/?auth=required" style={{
+          <Link href="/login" style={{
             fontFamily: 'var(--font-jost)',
             fontSize: '12px',
             fontWeight: 600,

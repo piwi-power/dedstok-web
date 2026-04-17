@@ -16,7 +16,7 @@ export default async function EnterPage({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/?auth=required')
+  if (!user) redirect('/login')
 
   const { drop: slug, spots, code, id } = await searchParams
 
