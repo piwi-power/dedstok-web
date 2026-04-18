@@ -47,7 +47,7 @@ export const ROOMS: Record<string, Room> = {
   door: {
     id: 'door',
     name: 'The Entrance',
-    image: '/rooms/door.jpg',
+    image: '/rooms/door.png',
     gradient: 'radial-gradient(ellipse at 50% 55%, #2c1f12 0%, #0c0a09 70%)',
     imageNote: 'POV standing outside. Dark arched double door center. Light bleeding through the gap. Walnut paneling.',
     hotspots: [
@@ -65,7 +65,7 @@ export const ROOMS: Record<string, Room> = {
   lobby: {
     id: 'lobby',
     name: 'The Lobby',
-    image: '/rooms/lobby.jpg',
+    image: '/rooms/lobby.png',
     gradient: 'linear-gradient(160deg, #1C1917 0%, #0c0a09 50%, #1C1917 100%)',
     imageNote: 'Three archways. Center door slightly ajar with warm light (= vault). Right arch = study. Left arch = hall. Dark walnut paneling.',
     hotspots: [
