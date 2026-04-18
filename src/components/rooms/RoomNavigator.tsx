@@ -128,7 +128,7 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
               fill
               style={{ objectFit: 'cover', objectPosition: 'center' }}
               priority
-              quality={90}
+              quality={100}
               onError={() => setImgError(prev => ({ ...prev, [currentRoomId]: true }))}
             />
           )}
