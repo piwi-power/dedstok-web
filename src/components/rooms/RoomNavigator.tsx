@@ -231,8 +231,6 @@ function MobilePanHint() {
 
 // ── Door overlay ──────────────────────────────────────────────────────────────
 function DoorOverlay() {
-  const [logoError, setLogoError] = useState(false)
-
   return (
     <>
       <motion.div
@@ -260,28 +258,6 @@ function DoorOverlay() {
         </p>
       </motion.div>
 
-      {!logoError && (
-        <div style={{
-          position: 'absolute',
-          left: '83%',
-          top: '28%',
-          transform: 'translate(-50%, -50%)',
-          width: '80px',
-          height: '52px',
-          pointerEvents: 'none',
-          mixBlendMode: 'luminosity',
-          opacity: 0.8,
-        }}>
-          <Image
-            src="/ds-logo-gold.png"
-            alt=""
-            fill
-            unoptimized
-            style={{ objectFit: 'contain' }}
-            onError={() => setLogoError(true)}
-          />
-        </div>
-      )}
     </>
   )
 }
