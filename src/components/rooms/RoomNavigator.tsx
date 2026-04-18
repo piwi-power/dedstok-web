@@ -170,7 +170,6 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
               hotspot={hotspot}
               onNavigateRoom={handleNavigateRoom}
               onNavigatePage={handleNavigatePage}
-              isBackButton={hotspot.id === 'back'}
             />
           ))}
 
@@ -283,54 +282,27 @@ function DoorOverlay() {
   )
 }
 
-// ── Vault overlay ─────────────────────────────────────────────────────────────
+// ── Vault overlay — ambient gold glow only ────────────────────────────────────
 function VaultOverlay() {
   return (
-    <>
-      <motion.div
-        animate={{
-          opacity: [0.3, 0.55, 0.3],
-          scale: [1, 1.08, 1],
-        }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: '48%',
-          transform: 'translate(-50%, -50%)',
-          width: '320px',
-          height: '200px',
-          borderRadius: '50%',
-          background: 'radial-gradient(ellipse, rgba(202,138,4,0.18) 0%, transparent 70%)',
-          pointerEvents: 'none',
-          mixBlendMode: 'screen',
-        }}
-      />
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6, duration: 0.5 }}
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: '22%',
-          transform: 'translateX(-50%)',
-          textAlign: 'center',
-          pointerEvents: 'none',
-        }}
-      >
-        <p style={{
-          fontFamily: 'var(--font-dm-mono)',
-          fontSize: '9px',
-          letterSpacing: '0.3em',
-          textTransform: 'uppercase',
-          color: 'rgba(245,237,224,0.55)',
-          whiteSpace: 'nowrap',
-        }}>
-          This week's drop
-        </p>
-      </motion.div>
-    </>
+    <motion.div
+      animate={{
+        opacity: [0.3, 0.55, 0.3],
+        scale: [1, 1.08, 1],
+      }}
+      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+      style={{
+        position: 'absolute',
+        left: '50%',
+        top: '48%',
+        transform: 'translate(-50%, -50%)',
+        width: '320px',
+        height: '200px',
+        borderRadius: '50%',
+        background: 'radial-gradient(ellipse, rgba(202,138,4,0.18) 0%, transparent 70%)',
+        pointerEvents: 'none',
+        mixBlendMode: 'screen',
+      }}
+    />
   )
 }

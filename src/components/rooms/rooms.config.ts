@@ -2,14 +2,13 @@
 //
 // Architecture:
 //   door → lobby
-//   lobby: center = vault | right = study | left = hall
-//   vault: display case → /drops | right edge button → gallery | back → lobby
-//   gallery: leaderboard hotspot → /leaderboard | left edge button → vault | back → lobby
-//   study: articles hotspot → /articles | back → lobby
-//   hall: leaderboard hotspot → /leaderboard | back → lobby
+//   lobby ↔ vault ↔ gallery
+//   lobby ↔ study
+//   lobby ↔ hall
 //
-// Hotspot (x, y) are % of viewport. Adjust after final images are in.
-// navButtons appear at the left/right edge of the screen, expand on hover.
+// All room-to-room navigation uses circle-nav variant.
+// Page navigation (↑ pill) for /drops, /articles, /leaderboard, /drops/archive.
+// No back buttons — every room has an explicit circle-nav back to its parent.
 
 export type HotspotAction =
   | { type: 'navigate-room'; target: string }
@@ -24,13 +23,13 @@ export interface Hotspot {
   action: HotspotAction
   requiresAuth?: boolean
   arrowDirection?: 'left' | 'right'   // default right
-  variant?: 'circle-nav'              // circle button style (for in-image nav)
+  variant?: 'circle-nav'              // circle button — room-to-room lateral nav
 }
 
 export interface RoomNavButton {
   id: string
   direction: 'left' | 'right'
-  label: string      // shown on hover
+  label: string
   action: HotspotAction
 }
 
@@ -58,8 +57,8 @@ export const ROOMS: Record<string, Room> = {
         x: 50,
         y: 52,
         label: 'Enter',
-        sublabel: 'One drop. One winner.',
         action: { type: 'navigate-room', target: 'lobby' },
+        variant: 'circle-nav',
       },
     ],
   },
@@ -72,13 +71,13 @@ export const ROOMS: Record<string, Room> = {
     imageNote: 'Three archways. Center door slightly ajar with warm light (= vault). Right arch = study. Left arch = hall. Dark walnut paneling.',
     hotspots: [
       {
-        // Center door — lit from behind, the main attraction
+        // Center door — lit from behind, main attraction
         id: 'vault',
         x: 45,
         y: 50,
         label: 'The Vault',
-        sublabel: "This week's drop",
         action: { type: 'navigate-room', target: 'vault' },
+        variant: 'circle-nav',
       },
       {
         // Right archway
@@ -86,8 +85,8 @@ export const ROOMS: Record<string, Room> = {
         x: 78,
         y: 46,
         label: 'The Study',
-        sublabel: 'Culture & articles',
         action: { type: 'navigate-room', target: 'study' },
+        variant: 'circle-nav',
         arrowDirection: 'right',
       },
       {
@@ -96,8 +95,8 @@ export const ROOMS: Record<string, Room> = {
         x: 24,
         y: 46,
         label: 'The Hall',
-        sublabel: 'Rankings',
         action: { type: 'navigate-room', target: 'hall' },
+        variant: 'circle-nav',
         arrowDirection: 'left',
       },
     ],
@@ -111,15 +110,16 @@ export const ROOMS: Record<string, Room> = {
     imageNote: 'Vault door center, IBCA decks left wall, DS monogram floor, gallery door right.',
     hotspots: [
       {
+        // Moved lower so label lands on dark floor, not bright vault door
         id: 'drop-case',
         x: 50,
-        y: 45,
+        y: 58,
         label: "This Week's Drop",
         sublabel: 'Enter the draw',
         action: { type: 'navigate-page', target: '/drops' },
       },
       {
-        // Circle-nav button ON the right vault door leading to gallery
+        // Right vault door → gallery
         id: 'to-gallery',
         x: 77,
         y: 50,
@@ -128,11 +128,14 @@ export const ROOMS: Record<string, Room> = {
         variant: 'circle-nav',
       },
       {
-        id: 'back',
-        x: 7,
-        y: 90,
-        label: 'Lobby',
+        // Left side → back to lobby
+        id: 'to-lobby',
+        x: 16,
+        y: 50,
+        label: 'The Lobby',
         action: { type: 'navigate-room', target: 'lobby' },
+        variant: 'circle-nav',
+        arrowDirection: 'left',
       },
     ],
   },
@@ -145,15 +148,16 @@ export const ROOMS: Record<string, Room> = {
     imageNote: 'KAWS figures center, Kate Moss + Mike Tyson posters, DS monogram floor, empty pedestals.',
     hotspots: [
       {
+        // Floor center — open floor in front of figures
         id: 'archive',
         x: 50,
-        y: 72,
+        y: 80,
         label: 'Past Drops',
         sublabel: 'Every drop. Every winner.',
         action: { type: 'navigate-page', target: '/drops/archive' },
       },
       {
-        // Circle-nav button ON the left gallery doorway leading back to vault
+        // Left gallery doorway → vault
         id: 'to-vault',
         x: 16,
         y: 50,
@@ -161,13 +165,6 @@ export const ROOMS: Record<string, Room> = {
         action: { type: 'navigate-room', target: 'vault' },
         variant: 'circle-nav',
         arrowDirection: 'left',
-      },
-      {
-        id: 'back',
-        x: 7,
-        y: 90,
-        label: 'Lobby',
-        action: { type: 'navigate-room', target: 'lobby' },
       },
     ],
   },
@@ -188,11 +185,14 @@ export const ROOMS: Record<string, Room> = {
         action: { type: 'navigate-page', target: '/articles' },
       },
       {
-        id: 'back',
-        x: 7,
-        y: 90,
-        label: 'Lobby',
+        // Left doorway → back to lobby
+        id: 'to-lobby',
+        x: 16,
+        y: 50,
+        label: 'The Lobby',
         action: { type: 'navigate-room', target: 'lobby' },
+        variant: 'circle-nav',
+        arrowDirection: 'left',
       },
     ],
   },
@@ -205,19 +205,23 @@ export const ROOMS: Record<string, Room> = {
     imageNote: 'Supreme x Everlast boxing ring, director chair center, sneaker boxes, money stacks.',
     hotspots: [
       {
+        // Lifted so expanded label grazes rope, not below it
         id: 'leaderboard',
         x: 50,
-        y: 44,
+        y: 36,
         label: 'The Hall of Records',
         sublabel: 'Rankings',
         action: { type: 'navigate-page', target: '/leaderboard' },
       },
       {
-        id: 'back',
-        x: 7,
-        y: 90,
-        label: 'Lobby',
+        // Left side → back to lobby
+        id: 'to-lobby',
+        x: 16,
+        y: 50,
+        label: 'The Lobby',
         action: { type: 'navigate-room', target: 'lobby' },
+        variant: 'circle-nav',
+        arrowDirection: 'left',
       },
     ],
   },
