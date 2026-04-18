@@ -247,9 +247,9 @@ function DoorOverlay() {
       {/* Static wrapper handles centering — keeps transform separate from Framer Motion's y animation */}
       <div style={{
         position: 'absolute',
-        top: '50%',
+        bottom: '36px',
         left: '50%',
-        transform: 'translate(-50%, -50%)',
+        transform: 'translateX(-50%)',
         textAlign: 'center',
         pointerEvents: 'none',
       }}>
