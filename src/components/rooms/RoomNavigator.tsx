@@ -244,31 +244,31 @@ function MobilePanHint() {
 function DoorOverlay() {
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        style={{
-          position: 'absolute',
-          bottom: '48px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          textAlign: 'center',
-          pointerEvents: 'none',
-        }}
-      >
-        <p style={{
-          fontFamily: 'var(--font-dm-mono)',
-          fontSize: '10px',
-          letterSpacing: '0.35em',
-          textTransform: 'uppercase',
-          color: 'rgba(245,237,224,0.45)',
-          whiteSpace: 'nowrap',
-        }}>
+      {/* Static wrapper handles centering — keeps transform separate from Framer Motion's y animation */}
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        textAlign: 'center',
+        pointerEvents: 'none',
+      }}>
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            fontFamily: 'var(--font-dm-mono)',
+            fontSize: '10px',
+            letterSpacing: '0.35em',
+            textTransform: 'uppercase',
+            color: 'rgba(245,237,224,0.45)',
+            whiteSpace: 'nowrap',
+          }}
+        >
           One drop.&nbsp; One winner.&nbsp; Every week.
-        </p>
-      </motion.div>
-
+        </motion.p>
+      </div>
     </>
   )
 }
