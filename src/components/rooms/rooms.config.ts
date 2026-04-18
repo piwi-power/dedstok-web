@@ -23,6 +23,8 @@ export interface Hotspot {
   sublabel?: string
   action: HotspotAction
   requiresAuth?: boolean
+  arrowDirection?: 'left' | 'right'   // default right
+  variant?: 'circle-nav'              // circle button style (for in-image nav)
 }
 
 export interface RoomNavButton {
@@ -72,7 +74,7 @@ export const ROOMS: Record<string, Room> = {
       {
         // Center door — lit from behind, the main attraction
         id: 'vault',
-        x: 50,
+        x: 45,
         y: 50,
         label: 'The Vault',
         sublabel: "This week's drop",
@@ -81,20 +83,22 @@ export const ROOMS: Record<string, Room> = {
       {
         // Right archway
         id: 'study',
-        x: 83,
+        x: 78,
         y: 46,
         label: 'The Study',
         sublabel: 'Culture & articles',
         action: { type: 'navigate-room', target: 'study' },
+        arrowDirection: 'right',
       },
       {
         // Left archway
         id: 'hall',
-        x: 16,
+        x: 24,
         y: 46,
         label: 'The Hall',
         sublabel: 'Rankings',
         action: { type: 'navigate-room', target: 'hall' },
+        arrowDirection: 'left',
       },
     ],
   },
@@ -115,19 +119,20 @@ export const ROOMS: Record<string, Room> = {
         action: { type: 'navigate-page', target: '/drops' },
       },
       {
+        // Circle-nav button ON the right vault door leading to gallery
+        id: 'to-gallery',
+        x: 77,
+        y: 50,
+        label: 'The Gallery',
+        action: { type: 'navigate-room', target: 'gallery' },
+        variant: 'circle-nav',
+      },
+      {
         id: 'back',
         x: 7,
         y: 90,
         label: 'Lobby',
         action: { type: 'navigate-room', target: 'lobby' },
-      },
-    ],
-    navButtons: [
-      {
-        id: 'to-gallery',
-        direction: 'right',
-        label: 'The Gallery',
-        action: { type: 'navigate-room', target: 'gallery' },
       },
     ],
   },
@@ -200,7 +205,7 @@ export const ROOMS: Record<string, Room> = {
       {
         id: 'leaderboard',
         x: 50,
-        y: 42,
+        y: 28,
         label: 'The Hall of Records',
         sublabel: 'Rankings',
         action: { type: 'navigate-page', target: '/leaderboard' },
