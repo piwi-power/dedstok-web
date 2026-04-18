@@ -140,12 +140,12 @@ export const ROOMS: Record<string, Room> = {
     imageNote: 'Dark gallery. Gold-framed canvases with plaques. Track lighting. Center perspective.',
     hotspots: [
       {
-        id: 'leaderboard',
+        id: 'archive',
         x: 50,
         y: 42,
-        label: 'The Hall of Records',
-        sublabel: 'All-time rankings',
-        action: { type: 'navigate-page', target: '/leaderboard' },
+        label: 'Past Drops',
+        sublabel: 'Every drop. Every winner.',
+        action: { type: 'navigate-page', target: '/drops/archive' },
       },
       {
         id: 'back',

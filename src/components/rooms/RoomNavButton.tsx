@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { RoomNavButton as RoomNavButtonConfig } from './rooms.config'
 
@@ -12,7 +12,15 @@ interface Props {
 
 export default function RoomNavButton({ navBtn, onNavigateRoom, onNavigatePage }: Props) {
   const [hovered, setHovered] = useState(false)
+  const [isTouch, setIsTouch] = useState(false)
   const isRight = navBtn.direction === 'right'
+
+  // On touch devices hover never fires — always show label so users know where the button goes
+  useEffect(() => {
+    setIsTouch(window.matchMedia('(hover: none)').matches)
+  }, [])
+
+  const showLabel = hovered || isTouch
 
   function handleClick() {
     if (navBtn.action.type === 'navigate-room') {
@@ -90,7 +98,7 @@ export default function RoomNavButton({ navBtn, onNavigateRoom, onNavigatePage }
         {!isRight && <ArrowIcon />}
 
         <AnimatePresence>
-          {hovered && (
+          {showLabel && (
             <motion.span
               key="label"
               initial={{ width: 0, opacity: 0, marginLeft: isRight ? 0 : 10, marginRight: isRight ? 10 : 0 }}
