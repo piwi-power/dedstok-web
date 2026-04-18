@@ -110,9 +110,9 @@ export const ROOMS: Record<string, Room> = {
     imageNote: 'Vault door center, IBCA decks left wall, DS monogram floor, gallery door right.',
     hotspots: [
       {
-        // x aligned with vault handle shaft (slightly left of dead center)
+        // x aligned with vault handle shaft (slightly right of dead center)
         id: 'drop-case',
-        x: 45,
+        x: 55,
         y: 58,
         label: "This Week's Drop",
         sublabel: 'Enter the draw',
