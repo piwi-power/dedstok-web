@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { ROOMS } from './rooms.config'
 import Hotspot from './Hotspot'
+import RoomNavButton from './RoomNavButton'
 
 interface RoomNavigatorProps {
   isAuthenticated: boolean
@@ -160,6 +161,16 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
               onNavigateRoom={handleNavigateRoom}
               onNavigatePage={handleNavigatePage}
               isBackButton={hotspot.id === 'back'}
+            />
+          ))}
+
+          {/* ── Edge nav buttons ─────────────────────── */}
+          {currentRoom.navButtons?.map(navBtn => (
+            <RoomNavButton
+              key={navBtn.id}
+              navBtn={navBtn}
+              onNavigateRoom={handleNavigateRoom}
+              onNavigatePage={handleNavigatePage}
             />
           ))}
 
