@@ -147,7 +147,7 @@ export const ROOMS: Record<string, Room> = {
       {
         id: 'archive',
         x: 50,
-        y: 58,
+        y: 72,
         label: 'Past Drops',
         sublabel: 'Every drop. Every winner.',
         action: { type: 'navigate-page', target: '/drops/archive' },
@@ -205,7 +205,7 @@ export const ROOMS: Record<string, Room> = {
       {
         id: 'leaderboard',
         x: 50,
-        y: 28,
+        y: 44,
         label: 'The Hall of Records',
         sublabel: 'Rankings',
         action: { type: 'navigate-page', target: '/leaderboard' },
