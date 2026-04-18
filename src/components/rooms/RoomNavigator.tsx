@@ -202,7 +202,7 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
                 fontSize: '9px',
                 letterSpacing: '0.3em',
                 textTransform: 'uppercase',
-                color: 'rgba(245,237,224,0.25)',
+                color: 'rgba(245,237,224,0.5)',
               }}>
                 {currentRoom.name}
               </p>
@@ -238,7 +238,7 @@ function MobilePanHint() {
     >
       <span style={{
         fontFamily: 'var(--font-dm-mono)',
-        color: 'rgba(245,237,224,0.3)',
+        color: 'rgba(245,237,224,0.55)',
         fontSize: '9px',
         letterSpacing: '0.2em',
         textTransform: 'uppercase',
@@ -272,7 +272,7 @@ function DoorOverlay() {
             fontSize: '10px',
             letterSpacing: '0.35em',
             textTransform: 'uppercase',
-            color: 'rgba(245,237,224,0.45)',
+            color: 'rgba(245,237,224,0.65)',
             whiteSpace: 'nowrap',
           }}
         >
@@ -325,7 +325,7 @@ function VaultOverlay() {
           fontSize: '9px',
           letterSpacing: '0.3em',
           textTransform: 'uppercase',
-          color: 'rgba(245,237,224,0.3)',
+          color: 'rgba(245,237,224,0.55)',
           whiteSpace: 'nowrap',
         }}>
           This week's drop

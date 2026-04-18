@@ -150,7 +150,7 @@ export default function ExploreOverlay() {
                   fontSize: '9px',
                   letterSpacing: '0.25em',
                   textTransform: 'uppercase',
-                  color: 'rgba(245,237,224,0.3)',
+                  color: 'rgba(245,237,224,0.55)',
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
@@ -158,7 +158,7 @@ export default function ExploreOverlay() {
                   transition: 'color 150ms',
                 }}
                 onMouseEnter={e => (e.currentTarget.style.color = 'var(--cream)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,237,224,0.3)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,237,224,0.55)')}
               >
                 ESC to close
               </button>
@@ -170,7 +170,7 @@ export default function ExploreOverlay() {
                 transition={{ delay: 0.08, duration: 0.3 }}
                 style={{
                   fontFamily: 'var(--font-dm-mono)',
-                  color: 'rgba(245,237,224,0.2)',
+                  color: 'rgba(245,237,224,0.5)',
                   fontSize: '9px',
                   letterSpacing: '0.45em',
                   textTransform: 'uppercase',
@@ -205,7 +205,7 @@ export default function ExploreOverlay() {
                   left: '50%',
                   transform: 'translateX(-50%)',
                   fontFamily: 'var(--font-dm-mono)',
-                  color: 'rgba(245,237,224,0.12)',
+                  color: 'rgba(245,237,224,0.4)',
                   fontSize: '9px',
                   letterSpacing: '0.2em',
                   textTransform: 'uppercase',
@@ -254,7 +254,7 @@ function RoomRow({
         style={{
           fontFamily: 'var(--font-dm-mono)',
           fontSize: '11px',
-          color: hovered ? 'rgba(202,138,4,0.6)' : 'rgba(245,237,224,0.18)',
+          color: hovered ? 'rgba(202,138,4,0.75)' : 'rgba(245,237,224,0.45)',
           letterSpacing: '0.08em',
           minWidth: '28px',
           transition: 'color 200ms ease-out',
@@ -283,7 +283,7 @@ function RoomRow({
         style={{
           fontFamily: 'var(--font-dm-mono)',
           fontSize: '9px',
-          color: hovered ? 'rgba(245,237,224,0.4)' : 'rgba(245,237,224,0.18)',
+          color: hovered ? 'rgba(245,237,224,0.7)' : 'rgba(245,237,224,0.45)',
           letterSpacing: '0.18em',
           textTransform: 'uppercase',
           transition: 'color 200ms ease-out',
