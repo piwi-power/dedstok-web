@@ -1,8 +1,41 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
+
+// Matches the hotspot pill aesthetic — animated ›› chevrons inside frosted pill
+function ExploreChevrons({ active }: { active: boolean }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+      {[0, 1].map(i => (
+        <motion.svg
+          key={i}
+          width="8"
+          height="13"
+          viewBox="0 0 8 13"
+          fill="none"
+          animate={active
+            ? { opacity: 1 }
+            : { opacity: [0.3, 0.9, 0.3] }
+          }
+          transition={active
+            ? { duration: 0.15 }
+            : { duration: 1.6, repeat: Infinity, delay: i * 0.28, ease: 'easeInOut' }
+          }
+        >
+          <path
+            d="M1.5 1.5L6.5 6.5L1.5 11.5"
+            stroke={active ? '#ca8a04' : 'rgba(245,237,224,0.85)'}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </motion.svg>
+      ))}
+    </div>
+  )
+}
 
 // Fast-travel: links go to homepage with ?room= param.
 // RoomNavigator reads the param and starts at that room.
@@ -34,32 +67,44 @@ export default function ExploreOverlay() {
 
   return (
     <>
-      {/* Trigger */}
+      {/* Trigger — frosted pill matching hotspot language */}
       <button
         onClick={() => setOpen(true)}
-        style={{
-          fontFamily: 'var(--font-dm-mono)',
-          fontSize: '10px',
-          letterSpacing: '0.2em',
-          textTransform: 'uppercase',
-          color: 'var(--cream-dim)',
-          background: 'none',
-          border: '1px solid rgba(245,237,224,0.15)',
-          cursor: 'pointer',
-          padding: '6px 14px',
-          borderRadius: '2px',
-          transition: 'color 150ms, border-color 150ms',
-        }}
         onMouseEnter={e => {
-          (e.currentTarget as HTMLButtonElement).style.color = 'var(--cream)'
-          ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(245,237,224,0.4)'
+          const el = e.currentTarget as HTMLButtonElement
+          el.style.borderColor = 'rgba(202,138,4,0.38)'
         }}
         onMouseLeave={e => {
-          (e.currentTarget as HTMLButtonElement).style.color = 'var(--cream-dim)'
-          ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(245,237,224,0.15)'
+          const el = e.currentTarget as HTMLButtonElement
+          el.style.borderColor = 'rgba(245,237,224,0.13)'
         }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          background: 'rgba(10,8,4,0.68)',
+          backdropFilter: 'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
+          border: '1px solid rgba(245,237,224,0.13)',
+          borderRadius: '100px',
+          padding: '8px 16px',
+          cursor: 'pointer',
+          transition: 'border-color 220ms ease',
+        }}
+        aria-label="Explore rooms"
       >
-        Explore
+        <ExploreChevrons active={open} />
+        <span style={{
+          fontFamily: 'var(--font-dm-mono)',
+          fontSize: '10px',
+          letterSpacing: '0.22em',
+          textTransform: 'uppercase',
+          color: open ? '#ca8a04' : 'rgba(245,237,224,0.75)',
+          transition: 'color 200ms ease',
+          whiteSpace: 'nowrap',
+        }}>
+          Explore
+        </span>
       </button>
 
       <AnimatePresence>
