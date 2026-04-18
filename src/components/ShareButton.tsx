@@ -12,22 +12,25 @@ export default function ShareButton({ title, text, url }: Props) {
   const [copied, setCopied] = useState(false)
 
   async function handleShare() {
-    // Native share sheet (mobile)
+    const shareUrl = url || window.location.href
+
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
-        await navigator.share({ title, text, url })
-      } catch {
-        // user cancelled — do nothing
+        await navigator.share({ title, text, url: shareUrl })
+        return // success — native sheet handled it
+      } catch (err) {
+        // User dismissed the share sheet — do nothing
+        if (err instanceof Error && err.name === 'AbortError') return
+        // Any other failure (e.g. desktop Chrome quirks) — fall through to clipboard
       }
-      return
     }
 
-    // Desktop fallback: copy URL to clipboard
+    // Clipboard copy
     try {
-      await navigator.clipboard.writeText(url)
+      await navigator.clipboard.writeText(shareUrl)
     } catch {
       const el = document.createElement('input')
-      el.value = url
+      el.value = shareUrl
       document.body.appendChild(el)
       el.select()
       document.execCommand('copy')
