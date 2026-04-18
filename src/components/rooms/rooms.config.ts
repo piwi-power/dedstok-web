@@ -112,7 +112,7 @@ export const ROOMS: Record<string, Room> = {
       {
         // x aligned with vault handle shaft (slightly right of dead center)
         id: 'drop-case',
-        x: 51,
+        x: 50.3,
         y: 58,
         label: "This Week's Drop",
         sublabel: 'Enter the draw',
