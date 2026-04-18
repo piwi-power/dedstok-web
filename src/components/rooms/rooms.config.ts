@@ -153,19 +153,21 @@ export const ROOMS: Record<string, Room> = {
         action: { type: 'navigate-page', target: '/drops/archive' },
       },
       {
+        // Circle-nav button ON the left gallery doorway leading back to vault
+        id: 'to-vault',
+        x: 16,
+        y: 50,
+        label: 'The Vault',
+        action: { type: 'navigate-room', target: 'vault' },
+        variant: 'circle-nav',
+        arrowDirection: 'left',
+      },
+      {
         id: 'back',
         x: 7,
         y: 90,
         label: 'Lobby',
         action: { type: 'navigate-room', target: 'lobby' },
-      },
-    ],
-    navButtons: [
-      {
-        id: 'to-vault',
-        direction: 'left',
-        label: 'The Vault',
-        action: { type: 'navigate-room', target: 'vault' },
       },
     ],
   },

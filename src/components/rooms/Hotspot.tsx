@@ -165,9 +165,23 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
     )
   }
 
-  // ── Circle-nav variant (vault → gallery button) ─────────────────────────────
+  // ── Circle-nav variant (lateral room-to-room buttons on doorways) ────────────
   if (hotspot.variant === 'circle-nav') {
     const showLabel = hovered || tapped
+    const active = showLabel
+    const isCircleLeft = hotspot.arrowDirection === 'left'
+
+    // Label expands on the opposite side of the arrow so it doesn't clip
+    const labelInitial = isCircleLeft
+      ? { width: 0, opacity: 0, marginLeft: 0 }
+      : { width: 0, opacity: 0, marginRight: 0 }
+    const labelAnimate = isCircleLeft
+      ? { width: 'auto', opacity: 1, marginLeft: 10 }
+      : { width: 'auto', opacity: 1, marginRight: 10 }
+    const labelExit = isCircleLeft
+      ? { width: 0, opacity: 0, marginLeft: 0 }
+      : { width: 0, opacity: 0, marginRight: 0 }
+
     return (
       <div
         style={{ position: 'absolute', left: `${hotspot.x}%`, top: `${hotspot.y}%`, transform: 'translate(-50%, -50%)', zIndex: 10 }}
@@ -175,19 +189,38 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
         onMouseLeave={() => !isTouch && setHovered(false)}
         onClick={(e) => { e.stopPropagation(); isTouch ? setTapped(!tapped) : handleClick() }}
       >
+        {/* Pulsing outer ring — fades out when active */}
+        <motion.div
+          animate={active
+            ? { opacity: 0, scale: 1 }
+            : { opacity: [0.45, 0, 0.45], scale: [1, 1.45, 1] }
+          }
+          transition={active
+            ? { duration: 0.2 }
+            : { duration: 2.6, repeat: Infinity, ease: 'easeInOut' }
+          }
+          style={{
+            position: 'absolute',
+            inset: -8,
+            borderRadius: '100px',
+            border: '1px solid rgba(202,138,4,0.55)',
+            pointerEvents: 'none',
+          }}
+        />
+
         <motion.button
           layout
           onClick={!isTouch ? handleClick : undefined}
           transition={{ layout: { duration: 0.22, ease: 'easeOut' } }}
           style={{
             display: 'flex',
-            flexDirection: 'row-reverse',
+            flexDirection: isCircleLeft ? 'row' : 'row-reverse',
             alignItems: 'center',
             gap: 0,
             background: 'rgba(10,8,4,0.68)',
             backdropFilter: 'blur(18px)',
             WebkitBackdropFilter: 'blur(18px)',
-            border: `1px solid ${hovered || tapped ? 'rgba(202,138,4,0.4)' : 'rgba(245,237,224,0.14)'}`,
+            border: `1px solid ${active ? 'rgba(202,138,4,0.4)' : 'rgba(245,237,224,0.14)'}`,
             borderRadius: '100px',
             padding: '13px',
             cursor: 'pointer',
@@ -196,22 +229,34 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
           }}
           aria-label={hotspot.label}
         >
+          {/* Direction-aware arrow */}
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ flexShrink: 0 }}>
-            <path
-              d="M3 9H15M15 9L10 4.5M15 9L10 13.5"
-              stroke={hovered || tapped ? '#ca8a04' : 'rgba(245,237,224,0.6)'}
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            {isCircleLeft ? (
+              <path
+                d="M15 9H3M3 9L8 4.5M3 9L8 13.5"
+                stroke={active ? '#ca8a04' : 'rgba(245,237,224,0.6)'}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ) : (
+              <path
+                d="M3 9H15M15 9L10 4.5M15 9L10 13.5"
+                stroke={active ? '#ca8a04' : 'rgba(245,237,224,0.6)'}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
           </svg>
+
           <AnimatePresence>
             {showLabel && (
               <motion.span
                 key="label"
-                initial={{ width: 0, opacity: 0, marginRight: 0 }}
-                animate={{ width: 'auto', opacity: 1, marginRight: 10 }}
-                exit={{ width: 0, opacity: 0, marginRight: 0 }}
+                initial={labelInitial}
+                animate={labelAnimate}
+                exit={labelExit}
                 transition={{ duration: 0.22, ease: 'easeOut' }}
                 style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#ca8a04', whiteSpace: 'nowrap', overflow: 'hidden', display: 'block' }}
               >
