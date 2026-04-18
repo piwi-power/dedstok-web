@@ -114,10 +114,14 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
   }
 
   const handleTap = (e: React.MouseEvent) => {
-    if (!isTouch) return
+    if (!isTouch) {
+      // Desktop: click always navigates (label is shown on hover)
+      handleClick()
+      return
+    }
+    // Mobile: first tap reveals label, second tap navigates
     e.stopPropagation()
     if (tapped) {
-      // Second tap on active hotspot = navigate
       handleClick()
     } else {
       setTapped(true)
