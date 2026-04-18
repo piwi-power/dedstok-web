@@ -110,9 +110,9 @@ export const ROOMS: Record<string, Room> = {
     imageNote: 'Vault door center, IBCA decks left wall, DS monogram floor, gallery door right.',
     hotspots: [
       {
-        // Moved lower so label lands on dark floor, not bright vault door
+        // x aligned with vault handle shaft (slightly left of dead center)
         id: 'drop-case',
-        x: 50,
+        x: 45,
         y: 58,
         label: "This Week's Drop",
         sublabel: 'Enter the draw',
@@ -214,14 +214,13 @@ export const ROOMS: Record<string, Room> = {
         action: { type: 'navigate-page', target: '/leaderboard' },
       },
       {
-        // Left side → back to lobby
+        // Right side → back to lobby (entered from left, exit to right)
         id: 'to-lobby',
-        x: 16,
+        x: 84,
         y: 50,
         label: 'The Lobby',
         action: { type: 'navigate-room', target: 'lobby' },
         variant: 'circle-nav',
-        arrowDirection: 'left',
       },
     ],
   },

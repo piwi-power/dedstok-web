@@ -42,6 +42,16 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
+  // Keep URL in sync when room changes via hotspot (so address bar always reflects current room)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const currentParam = new URLSearchParams(window.location.search).get('room') ?? ''
+    const expected = currentRoomId === 'door' ? '' : currentRoomId
+    if (currentParam === expected) return
+    const newUrl = currentRoomId === 'door' ? '/' : `/?room=${currentRoomId}`
+    router.replace(newUrl, { scroll: false })
+  }, [currentRoomId, router])
+
   // Mobile detection: landscape room images need horizontal panning on portrait screens
   useEffect(() => {
     const check = () => {
