@@ -2,6 +2,7 @@
 // Server component: reads auth state, passes to client navigator.
 // The room navigator handles all interaction and transitions.
 
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import RoomNavigator from '@/components/rooms/RoomNavigator'
 
@@ -18,10 +19,12 @@ export default async function HomePage() {
     // No padding-top here — the room fills the full viewport including behind the nav.
     // The nav's transparent mode on the homepage means it floats over the room image.
     <div style={{ position: 'fixed', inset: 0 }}>
-      <RoomNavigator
-        isAuthenticated={!!user}
-        userEmail={user?.email}
-      />
+      <Suspense fallback={null}>
+        <RoomNavigator
+          isAuthenticated={!!user}
+          userEmail={user?.email}
+        />
+      </Suspense>
     </div>
   )
 }

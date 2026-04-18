@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ROOMS } from './rooms.config'
 import Hotspot from './Hotspot'
 import RoomNavButton from './RoomNavButton'
@@ -21,6 +21,7 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
   const [panHintVisible, setPanHintVisible] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   // Read ?room= URL param before first paint — no flash, instant start at correct room
   useLayoutEffect(() => {
@@ -31,6 +32,15 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
       setCurrentRoomId(room)
     }
   }, [])
+
+  // React to URL changes driven by ExploreOverlay links (same-page soft nav)
+  useEffect(() => {
+    const room = searchParams.get('room')
+    if (room && ROOMS[room] && room !== currentRoomId) {
+      setCurrentRoomId(room)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   // Mobile detection: landscape room images need horizontal panning on portrait screens
   useEffect(() => {
