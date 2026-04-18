@@ -6,6 +6,7 @@ import { ARTICLE_BY_SLUG_QUERY, ALL_ARTICLE_SLUGS_QUERY } from '@/lib/sanity/que
 import type { SanityArticle } from '@/types'
 import imageUrlBuilder from '@sanity/image-url'
 import ShareButton from '@/components/ShareButton'
+import BackButton from '@/components/BackButton'
 
 export const revalidate = 60
 
@@ -50,6 +51,7 @@ export default async function ArticlePage({ params }: Props) {
 
   return (
     <main style={{ minHeight: '100vh', padding: '80px 24px 120px', maxWidth: '680px', margin: '0 auto' }}>
+      <BackButton href="/articles" />
       <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.35em', textTransform: 'uppercase', marginBottom: '16px' }}>
         {article.category}
       </p>
