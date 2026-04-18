@@ -11,8 +11,37 @@ interface HotspotProps {
   isBackButton?: boolean
 }
 
-// ── Animated chevron pair — the "light moving inside" ─────────────────────────
-function ChevronPair({ active, isLeft }: { active: boolean; isLeft: boolean }) {
+// ── Animated chevrons — the "light moving inside" ─────────────────────────────
+// Room nav: double sideways ›› or ‹‹  |  Page nav: single upward ↑
+function ChevronPair({ active, isLeft, isPageNav }: { active: boolean; isLeft: boolean; isPageNav: boolean }) {
+  const stroke = active ? '#ca8a04' : 'rgba(245,237,224,0.92)'
+
+  if (isPageNav) {
+    // Single upward chevron — "open / enter page"
+    return (
+      <motion.svg
+        width="15"
+        height="9"
+        viewBox="0 0 15 9"
+        fill="none"
+        animate={active ? { opacity: 1 } : { opacity: [0.28, 0.9, 0.28] }}
+        transition={active
+          ? { duration: 0.15 }
+          : { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
+        }
+      >
+        <path
+          d="M1.5 7.5L7.5 1.5L13.5 7.5"
+          stroke={stroke}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </motion.svg>
+    )
+  }
+
+  // Double sideways chevrons — room-to-room navigation
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
       {[0, 1].map(i => (
@@ -34,7 +63,7 @@ function ChevronPair({ active, isLeft }: { active: boolean; isLeft: boolean }) {
           {isLeft ? (
             <path
               d="M7 1.5L1.5 7.5L7 13.5"
-              stroke={active ? '#ca8a04' : 'rgba(245,237,224,0.92)'}
+              stroke={stroke}
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -42,7 +71,7 @@ function ChevronPair({ active, isLeft }: { active: boolean; isLeft: boolean }) {
           ) : (
             <path
               d="M2 1.5L7.5 7.5L2 13.5"
-              stroke={active ? '#ca8a04' : 'rgba(245,237,224,0.92)'}
+              stroke={stroke}
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -193,6 +222,7 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
 
   // ── Standard pill hotspot ────────────────────────────────────────────────────
   const isLeft = hotspot.arrowDirection === 'left'
+  const isPageNav = hotspot.action.type === 'navigate-page'
   const active = isTouch ? tapped : hovered
 
   return (
@@ -219,7 +249,7 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
         }}
         aria-label={hotspot.label}
       >
-        <ChevronPair active={active} isLeft={isLeft} />
+        <ChevronPair active={active} isLeft={isLeft} isPageNav={isPageNav} />
       </div>
 
       {/* Label — appears below the pill */}
