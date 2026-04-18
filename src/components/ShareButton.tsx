@@ -8,34 +8,33 @@ interface Props {
   url: string
 }
 
-export default function ShareButton({ title, text, url }: Props) {
+export default function ShareButton({ title: _title, text: _text, url }: Props) {
   const [copied, setCopied] = useState(false)
 
-  async function handleShare() {
+  function handleShare() {
     const shareUrl = url || window.location.href
 
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share({ title, text, url: shareUrl })
-        return // success — native sheet handled it
-      } catch (err) {
-        // User dismissed the share sheet — do nothing
-        if (err instanceof Error && err.name === 'AbortError') return
-        // Any other failure (e.g. desktop Chrome quirks) — fall through to clipboard
-      }
+    // Always copy to clipboard — reliable on every browser/device
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      }).catch(() => execCommandFallback(shareUrl))
+    } else {
+      execCommandFallback(shareUrl)
     }
+  }
 
-    // Clipboard copy
-    try {
-      await navigator.clipboard.writeText(shareUrl)
-    } catch {
-      const el = document.createElement('input')
-      el.value = shareUrl
-      document.body.appendChild(el)
-      el.select()
-      document.execCommand('copy')
-      document.body.removeChild(el)
-    }
+  function execCommandFallback(shareUrl: string) {
+    const el = document.createElement('input')
+    el.value = shareUrl
+    el.style.position = 'fixed'
+    el.style.opacity = '0'
+    document.body.appendChild(el)
+    el.focus()
+    el.select()
+    try { document.execCommand('copy') } catch { /* silent */ }
+    document.body.removeChild(el)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -73,7 +72,6 @@ export default function ShareButton({ title, text, url }: Props) {
     >
       {copied ? (
         <>
-          {/* Checkmark */}
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="2,6 4.5,8.5 10,3" />
           </svg>
@@ -81,7 +79,6 @@ export default function ShareButton({ title, text, url }: Props) {
         </>
       ) : (
         <>
-          {/* Share icon */}
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="9.5" cy="2" r="1.5" />
             <circle cx="2" cy="6" r="1.5" />
