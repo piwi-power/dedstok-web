@@ -17,65 +17,35 @@ function ChevronPair({ active, isLeft, isPageNav }: { active: boolean; isLeft: b
   const stroke = active ? '#ca8a04' : 'rgba(245,237,224,0.92)'
 
   if (isPageNav) {
-    // Single upward chevron — "open / enter page"
     return (
       <motion.svg
-        width="15"
-        height="9"
-        viewBox="0 0 15 9"
-        fill="none"
+        width="15" height="9" viewBox="0 0 15 9" fill="none"
         animate={active ? { opacity: 1 } : { opacity: [0.28, 0.9, 0.28] }}
         transition={active
           ? { duration: 0.15 }
           : { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
         }
       >
-        <path
-          d="M1.5 7.5L7.5 1.5L13.5 7.5"
-          stroke={stroke}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+        <path d="M1.5 7.5L7.5 1.5L13.5 7.5" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </motion.svg>
     )
   }
 
-  // Double sideways chevrons — room-to-room navigation
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
       {[0, 1].map(i => (
         <motion.svg
-          key={i}
-          width="9"
-          height="15"
-          viewBox="0 0 9 15"
-          fill="none"
-          animate={active
-            ? { opacity: 1 }
-            : { opacity: [0.28, 0.9, 0.28] }
-          }
+          key={i} width="9" height="15" viewBox="0 0 9 15" fill="none"
+          animate={active ? { opacity: 1 } : { opacity: [0.28, 0.9, 0.28] }}
           transition={active
             ? { duration: 0.15 }
             : { duration: 1.6, repeat: Infinity, delay: i * 0.28, ease: 'easeInOut' }
           }
         >
           {isLeft ? (
-            <path
-              d="M7 1.5L1.5 7.5L7 13.5"
-              stroke={stroke}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <path d="M7 1.5L1.5 7.5L7 13.5" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           ) : (
-            <path
-              d="M2 1.5L7.5 7.5L2 13.5"
-              stroke={stroke}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <path d="M2 1.5L7.5 7.5L2 13.5" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           )}
         </motion.svg>
       ))}
@@ -115,7 +85,6 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
 
   const handleTap = (e: React.MouseEvent) => {
     if (!isTouch) {
-      // Desktop: click always navigates (label is shown on hover)
       handleClick()
       return
     }
@@ -128,50 +97,36 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
     }
   }
 
-  // ── Back button ─────────────────────────────────────────────────────────────
+  // ── Back button (legacy — kept for safety, no longer in config) ─────────────
   if (isBackButton) {
     return (
       <button
         onClick={handleClick}
         style={{
-          position: 'absolute',
-          left: `${hotspot.x}%`,
-          top: `${hotspot.y}%`,
-          transform: 'translate(-50%, -50%)',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '8px',
-          zIndex: 10,
+          position: 'absolute', left: `${hotspot.x}%`, top: `${hotspot.y}%`,
+          transform: 'translate(-50%, -50%)', background: 'none', border: 'none',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', zIndex: 10,
         }}
         aria-label={`Go to ${hotspot.label}`}
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M10 3L5 8L10 13" stroke="rgba(245,237,224,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        <span style={{
-          fontFamily: 'var(--font-dm-mono)',
-          fontSize: '9px',
-          letterSpacing: '0.2em',
-          textTransform: 'uppercase',
-          color: 'rgba(245,237,224,0.4)',
-        }}>
+        <span style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,237,224,0.4)' }}>
           {hotspot.label}
         </span>
       </button>
     )
   }
 
-  // ── Circle-nav variant (lateral room-to-room buttons on doorways) ────────────
+  // ── Circle-nav variant ───────────────────────────────────────────────────────
   if (hotspot.variant === 'circle-nav') {
     const showLabel = hovered || tapped
     const active = showLabel
     const isCircleLeft = hotspot.arrowDirection === 'left'
+    const isCircleDown = hotspot.arrowDirection === 'down'
 
-    // Label expands on the opposite side of the arrow so it doesn't clip
+    // Label expands on the side opposite the arrow direction
     const labelInitial = isCircleLeft
       ? { width: 0, opacity: 0, marginLeft: 0 }
       : { width: 0, opacity: 0, marginRight: 0 }
@@ -182,14 +137,26 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
       ? { width: 0, opacity: 0, marginLeft: 0 }
       : { width: 0, opacity: 0, marginRight: 0 }
 
+    const handleCircleTap = (e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (!isTouch) {
+        handleClick()
+      } else if (tapped) {
+        // Second tap navigates
+        handleClick()
+      } else {
+        setTapped(true)
+      }
+    }
+
     return (
       <div
         style={{ position: 'absolute', left: `${hotspot.x}%`, top: `${hotspot.y}%`, transform: 'translate(-50%, -50%)', zIndex: 10 }}
         onMouseEnter={() => !isTouch && setHovered(true)}
         onMouseLeave={() => !isTouch && setHovered(false)}
-        onClick={(e) => { e.stopPropagation(); isTouch ? setTapped(!tapped) : handleClick() }}
+        onClick={handleCircleTap}
       >
-        {/* Pulsing outer ring — fades out when active */}
+        {/* Pulsing outer ring */}
         <motion.div
           animate={active
             ? { opacity: 0, scale: 1 }
@@ -200,17 +167,14 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
             : { duration: 2.6, repeat: Infinity, ease: 'easeInOut' }
           }
           style={{
-            position: 'absolute',
-            inset: -8,
-            borderRadius: '100px',
-            border: '1px solid rgba(202,138,4,0.55)',
-            pointerEvents: 'none',
+            position: 'absolute', inset: -8, borderRadius: '100px',
+            border: '1px solid rgba(202,138,4,0.55)', pointerEvents: 'none',
           }}
         />
 
         <motion.button
           layout
-          onClick={!isTouch ? handleClick : undefined}
+          onClick={undefined}
           transition={{ layout: { duration: 0.22, ease: 'easeOut' } }}
           style={{
             display: 'flex',
@@ -231,21 +195,23 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
         >
           {/* Direction-aware arrow */}
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ flexShrink: 0 }}>
-            {isCircleLeft ? (
+            {isCircleDown ? (
+              <path
+                d="M9 3V15M9 15L4.5 10M9 15L13.5 10"
+                stroke={active ? '#ca8a04' : 'rgba(245,237,224,0.6)'}
+                strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+              />
+            ) : isCircleLeft ? (
               <path
                 d="M15 9H3M3 9L8 4.5M3 9L8 13.5"
                 stroke={active ? '#ca8a04' : 'rgba(245,237,224,0.6)'}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
               />
             ) : (
               <path
                 d="M3 9H15M15 9L10 4.5M15 9L10 13.5"
                 stroke={active ? '#ca8a04' : 'rgba(245,237,224,0.6)'}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
               />
             )}
           </svg>
@@ -258,7 +224,11 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
                 animate={labelAnimate}
                 exit={labelExit}
                 transition={{ duration: 0.22, ease: 'easeOut' }}
-                style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#ca8a04', whiteSpace: 'nowrap', overflow: 'hidden', display: 'block' }}
+                style={{
+                  fontFamily: 'var(--font-dm-mono)', fontSize: '10px', letterSpacing: '0.22em',
+                  textTransform: 'uppercase', color: '#ca8a04', whiteSpace: 'nowrap',
+                  overflow: 'hidden', display: 'block',
+                }}
               >
                 {hotspot.label}
               </motion.span>
@@ -284,16 +254,11 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
       {/* Pill */}
       <div
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0,
+          display: 'flex', alignItems: 'center', gap: 0,
           background: 'rgba(10,8,4,0.68)',
-          backdropFilter: 'blur(18px)',
-          WebkitBackdropFilter: 'blur(18px)',
+          backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
           border: `1px solid ${active ? 'rgba(202,138,4,0.38)' : 'rgba(245,237,224,0.13)'}`,
-          borderRadius: '100px',
-          padding: '10px 16px',
-          cursor: 'pointer',
+          borderRadius: '100px', padding: '10px 16px', cursor: 'pointer',
           transition: 'border-color 220ms ease',
         }}
         aria-label={hotspot.label}
@@ -301,7 +266,7 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
         <ChevronPair active={active} isLeft={isLeft} isPageNav={isPageNav} />
       </div>
 
-      {/* Label — appears below the pill */}
+      {/* Label — tappable on mobile so second tap on label also navigates */}
       <AnimatePresence>
         {active && (
           <motion.div
@@ -309,26 +274,20 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            style={{ textAlign: 'center', marginTop: 12, pointerEvents: 'none' }}
+            onClick={(e) => { e.stopPropagation(); handleClick() }}
+            style={{ textAlign: 'center', marginTop: 12, cursor: 'pointer' }}
           >
             <p style={{
-              fontFamily: 'var(--font-dm-mono)',
-              fontSize: '10px',
-              letterSpacing: '0.28em',
-              textTransform: 'uppercase',
-              color: '#ca8a04',
-              whiteSpace: 'nowrap',
+              fontFamily: 'var(--font-dm-mono)', fontSize: '10px', letterSpacing: '0.28em',
+              textTransform: 'uppercase', color: '#ca8a04', whiteSpace: 'nowrap',
               textShadow: '0 0 20px rgba(0,0,0,1), 0 1px 4px rgba(0,0,0,0.9)',
             }}>
               {hotspot.label}
             </p>
             {hotspot.sublabel && (
               <p style={{
-                fontFamily: 'var(--font-jost)',
-                fontSize: '11px',
-                color: 'rgba(245,237,224,0.5)',
-                marginTop: 3,
-                whiteSpace: 'nowrap',
+                fontFamily: 'var(--font-jost)', fontSize: '11px',
+                color: 'rgba(245,237,224,0.5)', marginTop: 3, whiteSpace: 'nowrap',
                 textShadow: '0 0 12px rgba(0,0,0,1)',
               }}>
                 {hotspot.sublabel}

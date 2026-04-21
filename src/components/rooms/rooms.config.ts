@@ -22,7 +22,7 @@ export interface Hotspot {
   sublabel?: string
   action: HotspotAction
   requiresAuth?: boolean
-  arrowDirection?: 'left' | 'right'   // default right
+  arrowDirection?: 'left' | 'right' | 'down'   // default right
   variant?: 'circle-nav'              // circle button — room-to-room lateral nav
 }
 
@@ -98,6 +98,16 @@ export const ROOMS: Record<string, Room> = {
         action: { type: 'navigate-room', target: 'hall' },
         variant: 'circle-nav',
         arrowDirection: 'left',
+      },
+      {
+        // Bottom center — exit back to door
+        id: 'to-door',
+        x: 50,
+        y: 88,
+        label: 'Exit',
+        action: { type: 'navigate-room', target: 'door' },
+        variant: 'circle-nav',
+        arrowDirection: 'down',
       },
     ],
   },
