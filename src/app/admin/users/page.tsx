@@ -15,7 +15,7 @@ export default async function AdminUsersPage() {
 
   const { data: users } = await supabase
     .from('users')
-    .select('id, email, phone, phone_verified, full_name, created_at, total_entries, total_referrals, points_balance, points_earned_all_time, referral_code, referrer_id')
+    .select('id, email, username, phone, phone_verified, auth_provider, full_name, created_at, total_entries, total_referrals, points_balance, points_earned_all_time, referral_code, referrer_id')
     .order('created_at', { ascending: false })
 
   const { data: entries } = await supabase
@@ -97,9 +97,11 @@ export default async function AdminUsersPage() {
 
         {/* Table */}
         <div style={{ border: '1px solid rgba(245,237,224,0.08)', borderRadius: '4px', overflowX: 'auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 0.8fr 0.8fr 0.7fr 0.7fr 0.7fr 0.9fr 1.2fr', minWidth: '1100px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1.5fr 1fr 0.7fr 0.7fr 0.6fr 0.6fr 0.7fr 0.8fr 1fr', minWidth: '1300px' }}>
 
             {/* Header row */}
+            {col('Username')}
+            {col('Auth')}
             {col('Email')}
             {col('Phone')}
             {col('Joined')}
@@ -122,6 +124,21 @@ export default async function AdminUsersPage() {
 
               return (
                 <>
+                  {cell(
+                    <span style={{ color: user.username ? 'var(--gold)' : 'rgba(245,237,224,0.25)', fontFamily: 'var(--font-dm-mono)', fontSize: '11px', letterSpacing: '0.05em' }}>
+                      {user.username ? `@${user.username}` : 'Not set'}
+                    </span>
+                  )}
+                  {cell(
+                    <span style={{
+                      fontSize: '9px', letterSpacing: '0.1em', padding: '2px 6px', borderRadius: '2px',
+                      background: user.auth_provider === 'google' ? 'rgba(66,133,244,0.15)' : 'rgba(202,138,4,0.12)',
+                      color: user.auth_provider === 'google' ? '#4285F4' : 'var(--gold)',
+                      fontFamily: 'var(--font-dm-mono)',
+                    }}>
+                      {user.auth_provider === 'google' ? 'Google' : 'Email'}
+                    </span>
+                  )}
                   {cell(
                     <span style={{ color: 'rgba(245,237,224,0.8)', fontFamily: 'monospace', fontSize: '11px' }}>
                       {user.email}

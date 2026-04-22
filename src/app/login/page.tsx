@@ -9,11 +9,12 @@ export const metadata: Metadata = {
 }
 
 interface Props {
-  searchParams: Promise<{ next?: string; error?: string }>
+  searchParams: Promise<{ next?: string; error?: string; tab?: string }>
 }
 
 export default async function LoginPage({ searchParams }: Props) {
-  const { next, error } = await searchParams
+  const { next, error, tab } = await searchParams
+  const defaultTab = tab === 'signup' ? 'signup' : 'signin'
 
   const supabase = await createClient()
   const { data: activeDrop } = await supabase
@@ -161,7 +162,7 @@ export default async function LoginPage({ searchParams }: Props) {
             marginBottom: '8px',
             letterSpacing: '-0.01em',
           }}>
-            Sign in
+            {defaultTab === 'signup' ? 'Create account' : 'Welcome back'}
           </h1>
           <p style={{
             fontFamily: 'var(--font-jost)',
@@ -170,11 +171,11 @@ export default async function LoginPage({ searchParams }: Props) {
             lineHeight: 1.6,
             marginBottom: '48px',
           }}>
-            One account. Every drop. No password.
+            One account. Every drop. Every week.
           </p>
 
           {/* Form */}
-          <AuthForm redirectTo={next ?? '/'} error={error} />
+          <AuthForm redirectTo={next ?? '/'} defaultTab={defaultTab} error={error} />
 
         </div>
       </main>

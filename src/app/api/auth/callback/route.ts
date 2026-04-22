@@ -34,19 +34,35 @@ export async function GET(request: NextRequest) {
         referrerId = referrer?.id ?? null
       }
 
-      // Upsert user row — set referral_code and referrer_id only on first creation
+      // Upsert user row
       await service.from('users').upsert(
         {
           id: userId,
           email,
           referral_code: referralCode,
+          auth_provider: 'google',
           ...(referrerId ? { referrer_id: referrerId } : {}),
         },
         {
           onConflict: 'id',
-          ignoreDuplicates: false, // update email if changed, but referral_code won't overwrite due to unique constraint
+          ignoreDuplicates: false,
         }
       )
+
+      // Google users who haven't set a username or verified their phone
+      // get routed to onboarding before entering the site
+      const { data: profile } = await service
+        .from('users')
+        .select('username, phone_verified')
+        .eq('id', userId)
+        .single()
+
+      const needsOnboarding = !profile?.username || !profile?.phone_verified
+      if (needsOnboarding) {
+        const onboardUrl = new URL(`${origin}/onboarding`)
+        onboardUrl.searchParams.set('next', next)
+        return NextResponse.redirect(onboardUrl.toString())
+      }
 
       return NextResponse.redirect(`${origin}${next}`)
     }

@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ROOMS } from './rooms.config'
 import Hotspot from './Hotspot'
 import RoomNavButton from './RoomNavButton'
+import AuthGateMessage from '@/components/AuthGateMessage'
 
 interface RoomNavigatorProps {
   isAuthenticated: boolean
@@ -19,6 +20,8 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
   const [isMobile, setIsMobile] = useState(false)
   const [mobileWidth, setMobileWidth] = useState(0)
   const [panHintVisible, setPanHintVisible] = useState(false)
+  const [gateVisible, setGateVisible] = useState(false)
+  const [gatePendingUrl, setGatePendingUrl] = useState('/')
   const scrollRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -102,8 +105,13 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
   }, [])
 
   const handleNavigatePage = useCallback((url: string) => {
+    if (!isAuthenticated) {
+      setGatePendingUrl(url)
+      setGateVisible(true)
+      return
+    }
     router.push(url)
-  }, [router])
+  }, [isAuthenticated, router])
 
   return (
     <div
@@ -225,6 +233,12 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
 
         </motion.div>
       </AnimatePresence>
+      {/* Auth gate bottom sheet */}
+      <AuthGateMessage
+        visible={gateVisible}
+        returnTo={gatePendingUrl}
+        onDismiss={() => setGateVisible(false)}
+      />
     </div>
   )
 }
