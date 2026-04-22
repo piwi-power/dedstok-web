@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { COUNTRIES, detectCountryCode, getCountry, toE164, type Country } from '@/lib/countries'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -451,6 +451,7 @@ export default function AuthForm({
   error?: string
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -481,15 +482,24 @@ export default function AuthForm({
   const [localPhone, setLocalPhone] = useState('')
   const [countryModalOpen, setCountryModalOpen] = useState(false)
 
+  // Referral
+  const [referralCode, setReferralCode] = useState('')
+  const [refLocked, setRefLocked] = useState(false) // true when pre-filled from URL
+
   // OTP
   const [otp, setOtp] = useState('')
   const [maskedPhone, setMaskedPhone] = useState('')
   const [resendCountdown, setResendCountdown] = useState(0)
 
-  // Auto-detect country on mount
+  // Auto-detect country + read referral param on mount
   useEffect(() => {
     setCountry(getCountry(detectCountryCode()))
-  }, [])
+    const ref = searchParams.get('ref')
+    if (ref) {
+      setReferralCode(ref.toUpperCase())
+      setRefLocked(true)
+    }
+  }, [searchParams])
 
   // Resend countdown
   useEffect(() => {
@@ -540,6 +550,7 @@ export default function AuthForm({
     setError(null)
     const callbackUrl = new URL(`${window.location.origin}/api/auth/callback`)
     callbackUrl.searchParams.set('next', redirectTo)
+    if (referralCode) callbackUrl.searchParams.set('ref', referralCode)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: callbackUrl.toString() },
@@ -633,7 +644,7 @@ export default function AuthForm({
     const res = await fetch('/api/auth/complete-signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: suEmail, username: suUsername, phone, password: suPassword, code: otp }),
+      body: JSON.stringify({ email: suEmail, username: suUsername, phone, password: suPassword, code: otp, referralCode: referralCode || undefined }),
     })
     const data = await res.json()
 
@@ -857,6 +868,46 @@ export default function AuthForm({
             hintColor={suConfirm.length > 0 ? (pwMatch ? '#22c55e' : '#ef4444') : undefined}
             suffix={<EyeToggle show={showConfirmPw} onToggle={() => setShowConfirmPw(v => !v)} />}
           />
+
+          {/* Referral code — optional, locked if from URL */}
+          <div style={{ position: 'relative', paddingTop: '20px', marginBottom: '28px' }}>
+            <label style={{
+              position: 'absolute', left: 0, top: '0px',
+              fontFamily: 'var(--font-dm-mono)', fontSize: '9px',
+              letterSpacing: '0.15em', textTransform: 'uppercase',
+              color: refLocked ? 'var(--gold)' : 'rgba(245,237,224,0.35)',
+              lineHeight: 1, pointerEvents: 'none',
+            }}>
+              Referral Code{!refLocked && ' (optional)'}
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+              <input
+                type="text"
+                value={referralCode}
+                onChange={e => !refLocked && setReferralCode(e.target.value.toUpperCase())}
+                readOnly={refLocked}
+                placeholder={refLocked ? '' : 'Enter code if you have one'}
+                style={{
+                  flex: 1, background: 'transparent', border: 'none',
+                  borderBottom: `1px solid ${refLocked ? 'rgba(202,138,4,0.4)' : 'rgba(245,237,224,0.15)'}`,
+                  color: refLocked ? 'var(--gold)' : 'var(--cream)',
+                  fontFamily: 'var(--font-dm-mono)', fontSize: '13px',
+                  letterSpacing: refLocked ? '0.15em' : '0.05em',
+                  padding: '8px 0', outline: 'none', boxSizing: 'border-box',
+                  cursor: refLocked ? 'default' : 'text',
+                }}
+              />
+              {refLocked && (
+                <span style={{
+                  fontFamily: 'var(--font-dm-mono)', fontSize: '9px',
+                  letterSpacing: '0.1em', color: 'rgba(202,138,4,0.6)',
+                  marginLeft: '8px', flexShrink: 0,
+                }}>
+                  Locked
+                </span>
+              )}
+            </div>
+          </div>
 
           <ErrorBlock message={error} />
           <GoldButton loading={loading} disabled={usernameStatus === 'checking'}>

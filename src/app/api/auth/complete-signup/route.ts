@@ -8,7 +8,7 @@ const USERNAME_RE = /^[a-z0-9_]{3,20}$/
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function POST(request: NextRequest) {
-  const { email, username, phone, password, code } = await request.json()
+  const { email, username, phone, password, code, referralCode } = await request.json()
 
   // ── Validate inputs ───────────────────────────────────────────────────────────
   if (!email || !EMAIL_RE.test(email)) {
@@ -81,7 +81,19 @@ export async function POST(request: NextRequest) {
   }
 
   const userId = authData.user.id
-  const referralCode = userId.replace(/-/g, '').slice(0, 8).toLowerCase()
+  const ownReferralCode = userId.replace(/-/g, '').slice(0, 8).toLowerCase()
+
+  // ── Resolve referrer (permanent — not settable after signup) ──────────────────
+  let referrerId: string | null = null
+  if (referralCode && typeof referralCode === 'string') {
+    const { data: referrer } = await service
+      .from('users')
+      .select('id')
+      .eq('referral_code', referralCode.toLowerCase())
+      .neq('id', userId)
+      .maybeSingle()
+    referrerId = referrer?.id ?? null
+  }
 
   // ── Mark OTP used ─────────────────────────────────────────────────────────────
   await service.from('phone_otps').update({ used: true }).eq('id', otp.id)
@@ -96,7 +108,8 @@ export async function POST(request: NextRequest) {
       phone,
       phone_verified: true,
       auth_provider: 'email',
-      referral_code: referralCode,
+      referral_code: ownReferralCode,
+      ...(referrerId ? { referrer_id: referrerId } : {}),
     },
     { onConflict: 'id' }
   )

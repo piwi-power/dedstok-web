@@ -21,7 +21,7 @@ export default function AuthGateMessage({ visible, returnTo, onDismiss }: AuthGa
   }, [visible, onDismiss])
 
   function handleEnter() {
-    const url = `/login?next=${encodeURIComponent(returnTo)}`
+    const url = `/login?next=${encodeURIComponent(returnTo)}&tab=signup`
     router.push(url)
   }
 
