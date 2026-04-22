@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
+import { useRouter } from 'next/navigation'
 import { COUNTRIES, detectCountryCode, getCountry, toE164, type Country } from '@/lib/countries'
+import type { EntryRow, InfluencerCodeRow } from './page'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -234,8 +237,15 @@ function Section({ children }: { children: React.ReactNode }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
+function nextPayoutDate(): string {
+  const now = new Date()
+  const next = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+  return next.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+}
+
 export default function AccountClient({
   email, username, phone, phoneVerified, authProvider, referralCode,
+  totalReferrals, entries, influencerCode,
 }: {
   email: string
   username: string | null
@@ -243,7 +253,21 @@ export default function AccountClient({
   phoneVerified: boolean
   authProvider: string
   referralCode: string | null
+  totalReferrals: number
+  entries: EntryRow[]
+  influencerCode: InfluencerCodeRow | null
 }) {
+  const router = useRouter()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
+  }
   // Phone change state
   const [phoneStep, setPhoneStep] = useState<'idle' | 'enter' | 'otp'>('idle')
   const [country, setCountry] = useState<Country>(() => getCountry(detectCountryCode()))
@@ -481,9 +505,16 @@ export default function AccountClient({
       {/* ── Referral link ── */}
       {referralCode && (
         <Section>
-          <SectionLabel>Your Referral Link</SectionLabel>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '20px' }}>
+            <SectionLabel>Your Referral Link</SectionLabel>
+            {totalReferrals > 0 && (
+              <span style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '9px', letterSpacing: '0.12em', color: 'var(--gold)' }}>
+                {totalReferrals} referral{totalReferrals !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
           <p style={{ fontFamily: 'var(--font-jost)', fontSize: '13px', color: 'rgba(245,237,224,0.4)', marginBottom: '16px', lineHeight: 1.5 }}>
-            Share this link. Anyone who signs up through it is permanently linked to you.
+            Share this link. Anyone who signs up through it is permanently linked to you. Every time they buy a spot, you earn points.
           </p>
           <div style={{
             background: 'rgba(245,237,224,0.03)', border: '1px solid rgba(245,237,224,0.08)',
@@ -512,6 +543,192 @@ export default function AccountClient({
           </p>
         </Section>
       )}
+
+      {/* ── Creator earnings (influencer code holders only) ── */}
+      {influencerCode && (
+        <Section>
+          <SectionLabel>Creator Earnings</SectionLabel>
+          <div style={{ background: 'rgba(202,138,4,0.04)', border: '1px solid rgba(202,138,4,0.25)', borderRadius: '4px', padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+              <div>
+                <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '16px', fontWeight: 700, marginBottom: '4px' }}>
+                  {influencerCode.code}
+                </p>
+                {influencerCode.instagram_handle && (
+                  <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.4)', fontSize: '12px' }}>
+                    {influencerCode.instagram_handle}
+                  </p>
+                )}
+              </div>
+              <span style={{
+                fontFamily: 'var(--font-dm-mono)', fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase',
+                padding: '4px 10px', borderRadius: '2px',
+                background: influencerCode.deleted_at ? 'rgba(239,68,68,0.08)' : influencerCode.is_active ? 'rgba(34,197,94,0.1)' : 'rgba(245,237,224,0.06)',
+                color: influencerCode.deleted_at ? 'rgba(239,68,68,0.6)' : influencerCode.is_active ? '#22c55e' : 'rgba(245,237,224,0.35)',
+              }}>
+                {influencerCode.deleted_at ? 'Deactivated' : influencerCode.is_active ? 'Active' : 'Paused'}
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '16px' }}>
+              {[
+                { label: 'Tickets Driven', value: influencerCode.total_tickets_credited.toString() },
+                { label: `${Math.round(influencerCode.commission_rate * 100)}% per ticket`, value: `$${influencerCode.total_commission_earned.toFixed(2)} earned` },
+                { label: 'Pending Payout', value: `$${influencerCode.total_pending_payout.toFixed(2)}`, highlight: influencerCode.total_pending_payout > 0 },
+                { label: 'Last Payout', value: influencerCode.last_payout_date ? new Date(influencerCode.last_payout_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'None yet' },
+              ].map(s => (
+                <div key={s.label} style={{ background: 'rgba(245,237,224,0.03)', border: '1px solid rgba(245,237,224,0.07)', borderRadius: '2px', padding: '14px 16px' }}>
+                  <p style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '8px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(245,237,224,0.3)', marginBottom: '6px' }}>{s.label}</p>
+                  <p style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '16px', color: s.highlight ? 'var(--gold)' : 'var(--cream)' }}>{s.value}</p>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontFamily: 'var(--font-jost)', fontSize: '12px', color: 'rgba(245,237,224,0.3)', borderTop: '1px solid rgba(245,237,224,0.07)', paddingTop: '14px' }}>
+              {influencerCode.total_pending_payout > 0
+                ? `Next payout: ${nextPayoutDate()} — processed on the 1st of every month.`
+                : 'Payouts are processed on the 1st of every month.'}
+            </p>
+          </div>
+        </Section>
+      )}
+
+      {/* ── Entry history ── */}
+      <Section>
+        <SectionLabel>Entry History</SectionLabel>
+        {entries.length === 0 ? (
+          <div style={{ padding: '32px', textAlign: 'center', border: '1px solid rgba(245,237,224,0.06)', borderRadius: '2px' }}>
+            <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.3)', fontSize: '14px', marginBottom: '16px' }}>No entries yet.</p>
+            <a href="/" style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)', textDecoration: 'none' }}>
+              View Current Drop
+            </a>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            {entries.map(entry => {
+              const drop = entry.drops
+              const statusColor = drop?.status === 'drawn' ? 'var(--gold)' : drop?.status === 'active' ? '#22c55e' : 'rgba(245,237,224,0.3)'
+              const statusBg = drop?.status === 'drawn' ? 'rgba(202,138,4,0.1)' : drop?.status === 'active' ? 'rgba(34,197,94,0.1)' : 'rgba(245,237,224,0.04)'
+              return (
+                <div key={entry.id} style={{
+                  background: 'rgba(245,237,224,0.02)', border: '1px solid rgba(245,237,224,0.06)',
+                  borderRadius: '2px', padding: '16px 18px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+                }}>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{
+                      fontFamily: 'var(--font-barlow-condensed)', fontWeight: 700, fontSize: '15px',
+                      letterSpacing: '0.03em', textTransform: 'uppercase',
+                      color: 'var(--cream)', marginBottom: '4px',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {drop?.item_name ?? 'Drop'}
+                    </p>
+                    <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.35)', fontSize: '10px', letterSpacing: '0.05em' }}>
+                      {entry.spots_count} spot{entry.spots_count > 1 ? 's' : ''} &middot; ${Number(entry.total_paid).toFixed(2)} &middot; {new Date(entry.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <span style={{
+                    fontFamily: 'var(--font-dm-mono)', fontSize: '8px', letterSpacing: '0.15em',
+                    textTransform: 'uppercase', padding: '3px 8px', borderRadius: '2px',
+                    color: statusColor, background: statusBg, flexShrink: 0,
+                  }}>
+                    {drop?.status ?? 'pending'}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </Section>
+
+      {/* ── Sign out + Delete account ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', paddingTop: '16px' }}>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontFamily: 'var(--font-dm-mono)', fontSize: '9px', letterSpacing: '0.22em',
+            textTransform: 'uppercase', color: 'rgba(245,237,224,0.35)',
+            padding: '8px 0',
+          }}
+        >
+          Sign Out
+        </button>
+        <DeleteAccount />
+      </div>
+    </div>
+  )
+}
+
+// ── Delete account ────────────────────────────────────────────────────────────
+
+function DeleteAccount() {
+  const [step, setStep] = useState<'idle' | 'confirm' | 'loading'>('idle')
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleDelete() {
+    setStep('loading')
+    setError(null)
+    const res = await fetch('/api/account/delete', { method: 'DELETE' })
+    const data = await res.json()
+    if (!res.ok || !data.success) {
+      setError(data.error ?? 'Something went wrong. Try again.')
+      setStep('confirm')
+      return
+    }
+    window.location.href = '/'
+  }
+
+  if (step === 'idle') {
+    return (
+      <button
+        onClick={() => setStep('confirm')}
+        style={{
+          fontFamily: 'var(--font-dm-mono)', fontSize: '9px', letterSpacing: '0.15em',
+          textTransform: 'uppercase', background: 'none', border: 'none',
+          cursor: 'pointer', color: 'rgba(239,68,68,0.4)', padding: '8px 0',
+        }}
+      >
+        Delete Account
+      </button>
+    )
+  }
+
+  return (
+    <div style={{ border: '1px solid rgba(239,68,68,0.25)', borderRadius: '4px', padding: '20px', background: 'rgba(239,68,68,0.04)', width: '100%', maxWidth: '400px' }}>
+      <p style={{ fontFamily: 'var(--font-jost)', color: 'var(--cream)', fontSize: '15px', fontWeight: 500, marginBottom: '8px' }}>
+        Delete your account?
+      </p>
+      <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.45)', fontSize: '13px', lineHeight: 1.6, marginBottom: '20px' }}>
+        Permanent. Your entries, points, and history will be erased. Spots in active drops are removed with no refund.
+      </p>
+      {error && <p style={{ fontFamily: 'var(--font-dm-mono)', color: '#f87171', fontSize: '10px', marginBottom: '12px' }}>{error}</p>}
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button
+          onClick={handleDelete}
+          disabled={step === 'loading'}
+          style={{
+            fontFamily: 'var(--font-dm-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase',
+            background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)',
+            color: '#f87171', padding: '10px 18px', borderRadius: '2px',
+            cursor: step === 'loading' ? 'not-allowed' : 'pointer',
+            opacity: step === 'loading' ? 0.5 : 1,
+          }}
+        >
+          {step === 'loading' ? 'Deleting...' : 'Yes, delete everything'}
+        </button>
+        <button
+          onClick={() => { setStep('idle'); setError(null) }}
+          disabled={step === 'loading'}
+          style={{
+            fontFamily: 'var(--font-dm-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase',
+            background: 'transparent', border: '1px solid rgba(245,237,224,0.12)',
+            color: 'rgba(245,237,224,0.35)', padding: '10px 18px', borderRadius: '2px', cursor: 'pointer',
+          }}
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   )
 }

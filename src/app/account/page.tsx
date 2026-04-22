@@ -17,11 +17,29 @@ export default async function AccountPage() {
   if (!user) redirect('/login?next=/account')
 
   const service = createServiceClient()
-  const { data: profile } = await service
-    .from('users')
-    .select('username, email, phone, phone_verified, auth_provider, points_balance, total_entries, total_wins, referral_code')
-    .eq('id', user.id)
-    .single()
+
+  const [profileResult, entriesResult, influencerResult] = await Promise.all([
+    service
+      .from('users')
+      .select('username, email, phone, phone_verified, auth_provider, points_balance, total_entries, total_wins, referral_code, total_referrals')
+      .eq('id', user.id)
+      .single(),
+    service
+      .from('entries')
+      .select('id, spots_count, total_paid, created_at, drop_id, drops(item_name, slug, draw_date, status)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20),
+    service
+      .from('influencer_codes')
+      .select('code, influencer_name, instagram_handle, commission_rate, total_tickets_credited, total_commission_earned, total_pending_payout, last_payout_date, is_active, deleted_at')
+      .eq('user_id', user.id)
+      .maybeSingle(),
+  ])
+
+  const profile = profileResult.data
+  const entries = entriesResult.data ?? []
+  const influencerCode = influencerResult.data ?? null
 
   return (
     <main style={{
@@ -29,40 +47,42 @@ export default async function AccountPage() {
       minHeight: '100vh',
       padding: '80px 24px 60px',
     }}>
-      <div style={{ maxWidth: '480px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '560px', margin: '0 auto' }}>
 
         {/* Header */}
-        <div style={{ marginBottom: '48px' }}>
-          <p style={{
-            fontFamily: 'var(--font-anton)',
-            fontSize: '13px',
-            letterSpacing: '0.12em',
-            color: 'var(--gold)',
-            textTransform: 'uppercase',
-            marginBottom: '32px',
-          }}>
-            DEDSTOK
-          </p>
-          <div style={{ width: '32px', height: '1px', background: 'rgba(202,138,4,0.4)', marginBottom: '20px' }} />
-          <h1 style={{
-            fontFamily: 'var(--font-jost)',
-            fontWeight: 300,
-            color: 'var(--cream)',
-            fontSize: '26px',
-            letterSpacing: '-0.01em',
-            marginBottom: '4px',
-          }}>
-            {profile?.username ? `@${profile.username}` : 'Your Account'}
-          </h1>
-          <p style={{
-            fontFamily: 'var(--font-dm-mono)',
-            fontSize: '9px',
-            letterSpacing: '0.25em',
-            textTransform: 'uppercase',
-            color: 'rgba(245,237,224,0.3)',
-          }}>
-            {profile?.auth_provider === 'google' ? 'Google account' : 'Email account'}
-          </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '48px' }}>
+          <div>
+            <p style={{
+              fontFamily: 'var(--font-anton)',
+              fontSize: '13px',
+              letterSpacing: '0.12em',
+              color: 'var(--gold)',
+              textTransform: 'uppercase',
+              marginBottom: '24px',
+            }}>
+              DEDSTOK
+            </p>
+            <div style={{ width: '32px', height: '1px', background: 'rgba(202,138,4,0.4)', marginBottom: '16px' }} />
+            <h1 style={{
+              fontFamily: 'var(--font-jost)',
+              fontWeight: 300,
+              color: 'var(--cream)',
+              fontSize: '26px',
+              letterSpacing: '-0.01em',
+              marginBottom: '4px',
+            }}>
+              {profile?.username ? `@${profile.username}` : 'Your Account'}
+            </h1>
+            <p style={{
+              fontFamily: 'var(--font-dm-mono)',
+              fontSize: '9px',
+              letterSpacing: '0.25em',
+              textTransform: 'uppercase',
+              color: 'rgba(245,237,224,0.3)',
+            }}>
+              {profile?.auth_provider === 'google' ? 'Google account' : 'Email account'}
+            </p>
+          </div>
         </div>
 
         {/* Stats bar */}
@@ -77,9 +97,9 @@ export default async function AccountPage() {
           marginBottom: '48px',
         }}>
           {[
-            { label: 'Points', value: profile?.points_balance ?? 0 },
-            { label: 'Drops Entered', value: profile?.total_entries ?? 0 },
-            { label: 'Wins', value: profile?.total_wins ?? 0 },
+            { label: 'Points', value: (profile?.points_balance ?? 0).toLocaleString() },
+            { label: 'Drops Entered', value: (profile?.total_entries ?? 0).toString() },
+            { label: 'Wins', value: (profile?.total_wins ?? 0).toString() },
           ].map(stat => (
             <div key={stat.label} style={{ background: 'rgba(245,237,224,0.02)', padding: '20px 16px', textAlign: 'center' }}>
               <p style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '20px', color: 'var(--cream)', marginBottom: '4px' }}>
@@ -92,7 +112,6 @@ export default async function AccountPage() {
           ))}
         </div>
 
-        {/* Client-side form for editable fields */}
         <AccountClient
           email={profile?.email ?? user.email ?? ''}
           username={profile?.username ?? null}
@@ -100,22 +119,34 @@ export default async function AccountPage() {
           phoneVerified={profile?.phone_verified ?? false}
           authProvider={profile?.auth_provider ?? 'email'}
           referralCode={profile?.referral_code ?? null}
+          totalReferrals={profile?.total_referrals ?? 0}
+          entries={entries as unknown as EntryRow[]}
+          influencerCode={influencerCode}
         />
-
-        {/* Back to site */}
-        <div style={{ marginTop: '48px', paddingTop: '24px', borderTop: '1px solid rgba(245,237,224,0.06)' }}>
-          <a href="/" style={{
-            fontFamily: 'var(--font-dm-mono)',
-            fontSize: '9px',
-            letterSpacing: '0.22em',
-            textTransform: 'uppercase',
-            color: 'rgba(245,237,224,0.3)',
-            textDecoration: 'none',
-          }}>
-            Back to site
-          </a>
-        </div>
       </div>
     </main>
   )
+}
+
+// Type exported for AccountClient
+export type EntryRow = {
+  id: string
+  spots_count: number
+  total_paid: number
+  created_at: string
+  drop_id: string
+  drops: { item_name: string; slug: string; draw_date: string; status: string } | null
+}
+
+export type InfluencerCodeRow = {
+  code: string
+  influencer_name: string
+  instagram_handle: string | null
+  commission_rate: number
+  total_tickets_credited: number
+  total_commission_earned: number
+  total_pending_payout: number
+  last_payout_date: string | null
+  is_active: boolean
+  deleted_at?: string | null
 }
