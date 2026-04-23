@@ -32,10 +32,16 @@ export default async function EnterPage({
       .single(),
     supabase
       .from('users')
-      .select('points_balance')
+      .select('points_balance, phone_verified')
       .eq('id', user.id)
       .single(),
   ])
+
+  // Phone gate — redirect before rendering anything
+  if (!userRecord?.phone_verified) {
+    const returnUrl = `/enter?drop=${slug}&spots=${spotsCount}&id=${id}${code ? `&code=${code}` : ''}`
+    redirect(`/account/verify-phone?return=${encodeURIComponent(returnUrl)}`)
+  }
 
   if (!liveDrop || liveDrop.status !== 'active') redirect(`/drops/${slug}`)
 
