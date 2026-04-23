@@ -6,8 +6,8 @@ import type { RoomNavButton as RoomNavButtonConfig } from './rooms.config'
 
 interface Props {
   navBtn: RoomNavButtonConfig
-  onNavigateRoom: (roomId: string) => void
-  onNavigatePage: (url: string) => void
+  onNavigateRoom: (roomId: string, x: number, y: number) => void
+  onNavigatePage: (url: string, x: number, y: number) => void
 }
 
 export default function RoomNavButton({ navBtn, onNavigateRoom, onNavigatePage }: Props) {
@@ -22,11 +22,11 @@ export default function RoomNavButton({ navBtn, onNavigateRoom, onNavigatePage }
 
   const showLabel = hovered || isTouch
 
-  function handleClick() {
+  function handleClick(x: number, y: number) {
     if (navBtn.action.type === 'navigate-room') {
-      onNavigateRoom(navBtn.action.target)
+      onNavigateRoom(navBtn.action.target, x, y)
     } else {
-      onNavigatePage(navBtn.action.target)
+      onNavigatePage(navBtn.action.target, x, y)
     }
   }
 
@@ -71,7 +71,7 @@ export default function RoomNavButton({ navBtn, onNavigateRoom, onNavigatePage }
     >
       <motion.button
         layout
-        onClick={handleClick}
+        onClick={(e) => handleClick(e.clientX, e.clientY)}
         onHoverStart={() => setHovered(true)}
         onHoverEnd={() => setHovered(false)}
         transition={{ layout: { duration: 0.2, ease: 'easeOut' } }}

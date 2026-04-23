@@ -6,8 +6,8 @@ import type { Hotspot as HotspotConfig } from './rooms.config'
 
 interface HotspotProps {
   hotspot: HotspotConfig
-  onNavigateRoom: (roomId: string) => void
-  onNavigatePage: (url: string) => void
+  onNavigateRoom: (roomId: string, x: number, y: number) => void
+  onNavigatePage: (url: string, x: number, y: number) => void
   isBackButton?: boolean
 }
 
@@ -75,23 +75,23 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
     }
   }, [tapped])
 
-  const handleClick = () => {
+  const handleClick = (x: number, y: number) => {
     if (hotspot.action.type === 'navigate-room') {
-      onNavigateRoom(hotspot.action.target)
+      onNavigateRoom(hotspot.action.target, x, y)
     } else {
-      onNavigatePage(hotspot.action.target)
+      onNavigatePage(hotspot.action.target, x, y)
     }
   }
 
   const handleTap = (e: React.MouseEvent) => {
     if (!isTouch) {
-      handleClick()
+      handleClick(e.clientX, e.clientY)
       return
     }
     // Mobile: first tap reveals label, second tap navigates
     e.stopPropagation()
     if (tapped) {
-      handleClick()
+      handleClick(e.clientX, e.clientY)
     } else {
       setTapped(true)
     }
@@ -101,7 +101,7 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
   if (isBackButton) {
     return (
       <button
-        onClick={handleClick}
+        onClick={(e) => handleClick(e.clientX, e.clientY)}
         style={{
           position: 'absolute', left: `${hotspot.x}%`, top: `${hotspot.y}%`,
           transform: 'translate(-50%, -50%)', background: 'none', border: 'none',
@@ -140,10 +140,10 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
     const handleCircleTap = (e: React.MouseEvent) => {
       e.stopPropagation()
       if (!isTouch) {
-        handleClick()
+        handleClick(e.clientX, e.clientY)
       } else if (tapped) {
         // Second tap navigates
-        handleClick()
+        handleClick(e.clientX, e.clientY)
       } else {
         setTapped(true)
       }
@@ -274,7 +274,7 @@ export default function Hotspot({ hotspot, onNavigateRoom, onNavigatePage, isBac
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            onClick={(e) => { e.stopPropagation(); handleClick() }}
+            onClick={(e) => { e.stopPropagation(); handleClick(e.clientX, e.clientY) }}
             style={{ textAlign: 'center', marginTop: 12, cursor: 'pointer' }}
           >
             <p style={{

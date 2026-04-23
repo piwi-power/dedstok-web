@@ -8,6 +8,7 @@ import { ROOMS } from './rooms.config'
 import Hotspot from './Hotspot'
 import RoomNavButton from './RoomNavButton'
 import AuthGateMessage from '@/components/AuthGateMessage'
+import { useInkTransition } from '@/components/InkTransitionProvider'
 
 interface RoomNavigatorProps {
   isAuthenticated: boolean
@@ -25,6 +26,7 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
   const scrollRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { playInk } = useInkTransition()
 
   // Read ?room= URL param before first paint — no flash, instant start at correct room
   useLayoutEffect(() => {
@@ -100,18 +102,18 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
 
   const currentRoom = ROOMS[currentRoomId]
 
-  const handleNavigateRoom = useCallback((targetRoomId: string) => {
-    setCurrentRoomId(targetRoomId)
-  }, [])
+  const handleNavigateRoom = useCallback((targetRoomId: string, x: number, y: number) => {
+    playInk(x, y, () => setCurrentRoomId(targetRoomId))
+  }, [playInk])
 
-  const handleNavigatePage = useCallback((url: string) => {
+  const handleNavigatePage = useCallback((url: string, x: number, y: number) => {
     if (!isAuthenticated) {
       setGatePendingUrl(url)
       setGateVisible(true)
       return
     }
-    router.push(url)
-  }, [isAuthenticated, router])
+    playInk(x, y, () => router.push(url))
+  }, [isAuthenticated, router, playInk])
 
   return (
     <div
@@ -131,7 +133,7 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1.0] }}
+          transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1.0] }}
           style={{
             position: 'absolute',
             top: 0,
