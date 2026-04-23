@@ -112,7 +112,8 @@ export const metadata: Metadata = {
   description:
     'A weekly raffle for curated streetwear grails. One item, one winner, pure luck. Based in Lebanon.',
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok.com'
+    process.env.NEXT_PUBLIC_SITE_URL
+      ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3001')
   ),
   openGraph: {
     siteName: 'DEDSTOK',

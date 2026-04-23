@@ -103,7 +103,8 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
   const currentRoom = ROOMS[currentRoomId]
 
   const handleNavigateRoom = useCallback((targetRoomId: string, x: number, y: number) => {
-    playInk(x, y, () => setCurrentRoomId(targetRoomId))
+    const label = ROOMS[targetRoomId]?.name ?? ''
+    playInk(x, y, () => setCurrentRoomId(targetRoomId), label)
   }, [playInk])
 
   const handleNavigatePage = useCallback((url: string, x: number, y: number) => {
@@ -112,7 +113,8 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
       setGateVisible(true)
       return
     }
-    playInk(x, y, () => router.push(url))
+    // waitForNav = true: ink holds until pathname changes so old room never flashes
+    playInk(x, y, () => router.push(url), undefined, true)
   }, [isAuthenticated, router, playInk])
 
   return (
