@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useLayoutEffect, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -23,6 +23,7 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
   const [panHintVisible, setPanHintVisible] = useState(false)
   const [gateVisible, setGateVisible] = useState(false)
   const [gatePendingUrl, setGatePendingUrl] = useState('/')
+  const [preloadIds, setPreloadIds] = useState<string[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -100,6 +101,18 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
     return () => el.removeEventListener('scroll', handler)
   }, [panHintVisible])
 
+  // Preload adjacent room images ~1.5s after current room is shown
+  // This warms Next.js image cache so transitions are instant
+  useEffect(() => {
+    const adjacent = ROOMS[currentRoomId].hotspots
+      .filter(h => h.action.type === 'navigate-room')
+      .map(h => (h.action as { type: 'navigate-room'; target: string }).target)
+      .filter(id => !imgError[id])
+
+    const timer = setTimeout(() => setPreloadIds(adjacent), 1500)
+    return () => clearTimeout(timer)
+  }, [currentRoomId, imgError])
+
   const currentRoom = ROOMS[currentRoomId]
 
   const handleNavigateRoom = useCallback((targetRoomId: string, x: number, y: number) => {
@@ -159,7 +172,8 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
               fill
               style={{ objectFit: 'cover', objectPosition: 'center' }}
               priority
-              quality={100}
+              quality={85}
+              sizes="(max-width: 768px) 177vw, 100vw"
               onError={() => setImgError(prev => ({ ...prev, [currentRoomId]: true }))}
             />
           )}
@@ -236,6 +250,22 @@ export default function RoomNavigator({ isAuthenticated, userEmail }: RoomNaviga
 
         </motion.div>
       </AnimatePresence>
+      {/* Preload adjacent room images in background once current room is displayed */}
+      {preloadIds.length > 0 && (
+        <div aria-hidden="true" style={{ position: 'fixed', inset: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
+          {preloadIds.map(id => (
+            <Image
+              key={id}
+              src={ROOMS[id].image}
+              alt=""
+              fill
+              quality={85}
+              sizes="(max-width: 768px) 177vw, 100vw"
+            />
+          ))}
+        </div>
+      )}
+
       {/* Auth gate bottom sheet */}
       <AuthGateMessage
         visible={gateVisible}

@@ -48,7 +48,7 @@ export const ROOMS: Record<string, Room> = {
   door: {
     id: 'door',
     name: 'The Entrance',
-    image: '/rooms/door.png',
+    image: '/rooms/door.webp',
     gradient: 'radial-gradient(ellipse at 50% 55%, #2c1f12 0%, #0c0a09 70%)',
     imageNote: 'POV standing outside. Dark arched double door center. Light bleeding through the gap. Walnut paneling.',
     hotspots: [
@@ -66,7 +66,7 @@ export const ROOMS: Record<string, Room> = {
   lobby: {
     id: 'lobby',
     name: 'The Lobby',
-    image: '/rooms/lobby.png',
+    image: '/rooms/lobby.webp',
     gradient: 'linear-gradient(160deg, #1C1917 0%, #0c0a09 50%, #1C1917 100%)',
     imageNote: 'Three archways. Center door slightly ajar with warm light (= vault). Right arch = study. Left arch = hall. Dark walnut paneling.',
     hotspots: [
@@ -115,7 +115,7 @@ export const ROOMS: Record<string, Room> = {
   vault: {
     id: 'vault',
     name: 'The Vault',
-    image: '/rooms/vault.png',
+    image: '/rooms/vault.webp',
     gradient: 'radial-gradient(ellipse at 50% 52%, #3d2b1a 0%, #0c0a09 65%)',
     imageNote: 'Vault door center, IBCA decks left wall, DS monogram floor, gallery door right.',
     hotspots: [
@@ -153,7 +153,7 @@ export const ROOMS: Record<string, Room> = {
   gallery: {
     id: 'gallery',
     name: 'The Gallery',
-    image: '/rooms/gallery.png',
+    image: '/rooms/gallery.webp',
     gradient: 'linear-gradient(180deg, #0a0804 0%, #1a1208 50%, #0c0a09 100%)',
     imageNote: 'KAWS figures center, Kate Moss + Mike Tyson posters, DS monogram floor, empty pedestals.',
     hotspots: [
@@ -182,7 +182,7 @@ export const ROOMS: Record<string, Room> = {
   study: {
     id: 'study',
     name: 'The Study',
-    image: '/rooms/study.png',
+    image: '/rooms/study.webp',
     gradient: 'radial-gradient(ellipse at 38% 58%, #2c1f12 0%, #0a0804 70%)',
     imageNote: 'Doorway POV. Dark bookshelves, leather couch, vinyl player, skate decks, collectibles.',
     hotspots: [
@@ -210,7 +210,7 @@ export const ROOMS: Record<string, Room> = {
   hall: {
     id: 'hall',
     name: 'The Hall',
-    image: '/rooms/hall.png',
+    image: '/rooms/hall.webp',
     gradient: 'linear-gradient(180deg, #0a0804 0%, #0c0a09 50%, #0a0804 100%)',
     imageNote: 'Supreme x Everlast boxing ring, director chair center, sneaker boxes, money stacks.',
     hotspots: [
