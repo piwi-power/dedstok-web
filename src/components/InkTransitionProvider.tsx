@@ -3,11 +3,14 @@
 import { createContext, useContext, useRef, useState, useCallback, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 
+interface PlayInkOpts {
+  label?:        string   // Destination room name (room-to-room nav)
+  waitForNav?:   boolean  // Hold until pathname changes
+  showPreloader?: boolean // Show full DEDSTOK animation (page nav)
+}
+
 interface InkCtx {
-  // label   — shown centered on the overlay while ink is spread (room name, etc.)
-  // waitForNav — if true, ink contracts only after the URL pathname changes
-  //              (use for page navigation so the old room never flashes through)
-  playInk: (x: number, y: number, onCovered: () => void, label?: string, waitForNav?: boolean) => void
+  playInk: (x: number, y: number, onCovered: () => void, opts?: PlayInkOpts) => void
 }
 
 const InkContext = createContext<InkCtx>({ playInk: () => {} })
@@ -15,33 +18,54 @@ export const useInkTransition = () => useContext(InkContext)
 
 export default function InkTransitionProvider({ children }: { children: React.ReactNode }) {
   const [visible, setVisible] = useState(false)
+
+  // Circle
   const circleRef = useRef<HTMLDivElement>(null)
-  const labelRef  = useRef<HTMLSpanElement>(null)
-  const timers    = useRef<ReturnType<typeof setTimeout>[]>([])
-  // Holds the contract function while waiting for page navigation to complete
+
+  // Room label content
+  const roomWrapRef = useRef<HTMLDivElement>(null)
+  const roomNameRef = useRef<HTMLSpanElement>(null)
+
+  // Page preloader content
+  const pageWrapRef    = useRef<HTMLDivElement>(null)
+  const wordmarkRef    = useRef<HTMLDivElement>(null)
+  const accentLineRef  = useRef<HTMLDivElement>(null)
+  const taglineRef     = useRef<HTMLDivElement>(null)
+  const loadingBarRef  = useRef<HTMLDivElement>(null)
+
+  const timers      = useRef<ReturnType<typeof setTimeout>[]>([])
   const contractRef = useRef<(() => void) | null>(null)
+  const rafRef      = useRef<number | null>(null)
 
   const pathname    = usePathname()
-  const prevPathname = useRef(pathname)
+  const prevPath    = useRef(pathname)
 
-  function clearTimers() {
-    timers.current.forEach(clearTimeout)
-    timers.current = []
-  }
+  function clearTimers() { timers.current.forEach(clearTimeout); timers.current = [] }
   function after(fn: () => void, ms: number) {
-    const id = setTimeout(fn, ms)
-    timers.current.push(id)
-    return id
+    const id = setTimeout(fn, ms); timers.current.push(id); return id
   }
 
-  // When the pathname changes, the new page has mounted — fire pending contract
+  function stopLoadingAnim() {
+    if (rafRef.current != null) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+  }
+  function startLoadingAnim(el: HTMLDivElement) {
+    stopLoadingAnim()
+    let t = 0
+    const tick = () => {
+      t += 0.04
+      el.style.transform = `translateX(${Math.sin(t) * 26}px)`
+      rafRef.current = requestAnimationFrame(tick)
+    }
+    rafRef.current = requestAnimationFrame(tick)
+  }
+
+  // Pathname change → new page mounted → fire pending contract
   useEffect(() => {
-    if (pathname === prevPathname.current) return
-    prevPathname.current = pathname
+    if (pathname === prevPath.current) return
+    prevPath.current = pathname
     const fn = contractRef.current
     if (!fn) return
     contractRef.current = null
-    // 200 ms grace so the new page paints before ink reveals it
     setTimeout(fn, 200)
   }, [pathname])
 
@@ -49,21 +73,35 @@ export default function InkTransitionProvider({ children }: { children: React.Re
     x: number,
     y: number,
     onCovered: () => void,
-    label?: string,
-    waitForNav?: boolean,
+    opts: PlayInkOpts = {},
   ) => {
-    const circle  = circleRef.current
-    const labelEl = labelRef.current
+    const { label, waitForNav, showPreloader } = opts
+    const circle       = circleRef.current
+    const roomWrap     = roomWrapRef.current
+    const roomName     = roomNameRef.current
+    const pageWrap     = pageWrapRef.current
+    const wordmark     = wordmarkRef.current
+    const accentLine   = accentLineRef.current
+    const tagline      = taglineRef.current
+    const loadingBar   = loadingBarRef.current
     if (!circle) return
+
     clearTimers()
+    stopLoadingAnim()
     contractRef.current = null
 
-    const maxR = Math.hypot(
-      Math.max(x, window.innerWidth  - x),
-      Math.max(y, window.innerHeight - y),
-    ) * 2.6
+    // ── Reset all overlay content ──────────────────────────────────────────────
+    const none = (el: HTMLElement | null) => { if (el) { el.style.transition = 'none'; el.style.opacity = '0' } }
+    none(roomWrap)
+    none(pageWrap)
+    none(tagline)
+    none(loadingBar)
+    if (accentLine) { accentLine.style.transition = 'none'; accentLine.style.opacity = '0'; accentLine.style.transform = 'scaleX(0)' }
+    if (wordmark)   { wordmark.style.transition = 'none'; wordmark.style.clipPath = 'inset(0 100% 0 0)' }
+    if (loadingBar) { loadingBar.style.transform = 'translateX(0)' }
 
-    // ── Reset to 0 with no transition ──────────────────────────────────────────
+    // ── Reset circle ───────────────────────────────────────────────────────────
+    const maxR = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)) * 2.6
     circle.style.transition = 'none'
     circle.style.left    = x + 'px'
     circle.style.top     = y + 'px'
@@ -71,68 +109,125 @@ export default function InkTransitionProvider({ children }: { children: React.Re
     circle.style.height  = '0px'
     circle.style.opacity = '1'
 
-    if (labelEl) {
-      labelEl.style.transition = 'none'
-      labelEl.style.opacity    = '0'
-      labelEl.textContent      = label ?? ''
-    }
-
+    if (label && roomName) roomName.textContent = label
     setVisible(true)
 
-    // ── Next frame: start expansion ────────────────────────────────────────────
     requestAnimationFrame(() => {
-      circle.style.transition = [
-        'width 0.62s cubic-bezier(0.4,0,0.2,1)',
-        'height 0.62s cubic-bezier(0.4,0,0.2,1)',
-      ].join(', ')
+      // Expand ink
+      circle.style.transition = 'width 0.62s cubic-bezier(0.4,0,0.2,1), height 0.62s cubic-bezier(0.4,0,0.2,1)'
       circle.style.width  = maxR + 'px'
       circle.style.height = maxR + 'px'
 
-      // ── Screen is covered ────────────────────────────────────────────────────
       after(() => {
+        // ── Screen covered ─────────────────────────────────────────────────────
         onCovered()
 
-        // Fade in label (if any) after onCovered
-        if (label && labelEl) {
-          after(() => {
-            labelEl.style.transition = 'opacity 0.25s ease'
-            labelEl.style.opacity    = '1'
-          }, 60)
-        }
+        // ── A. PAGE TRANSITION — full DEDSTOK preloader ───────────────────────
+        if (showPreloader && waitForNav && pageWrap && wordmark && accentLine && tagline && loadingBar) {
+          pageWrap.style.opacity = '1'
 
-        // ── Contract ─────────────────────────────────────────────────────────
-        const doContract = () => {
-          // Fade label out first
-          if (labelEl && parseFloat(labelEl.style.opacity || '0') > 0) {
-            labelEl.style.transition = 'opacity 0.15s ease'
-            labelEl.style.opacity    = '0'
+          // Phase 1: wordmark fills to 80% in 700ms
+          requestAnimationFrame(() => {
+            wordmark.style.transition = 'clip-path 700ms cubic-bezier(0.4, 0, 0.2, 1)'
+            wordmark.style.clipPath = 'inset(0 20% 0 0)'
+          })
+
+          let navDone = false
+
+          const contractCircle = () => {
+            after(() => {
+              circle.style.transition = 'width 0.52s cubic-bezier(0.4,0,0.8,1), height 0.52s cubic-bezier(0.4,0,0.8,1), opacity 0.52s ease'
+              circle.style.width   = '0px'
+              circle.style.height  = '0px'
+              circle.style.opacity = '0'
+              after(() => setVisible(false), 540)
+            }, 200)
           }
-          const labelDelay = label ? 180 : 0
+
+          const finishAndOpen = () => {
+            if (navDone) return
+            navDone = true
+            stopLoadingAnim()
+
+            // Hide loading bar
+            loadingBar.style.transition = 'opacity 0.2s ease'
+            loadingBar.style.opacity = '0'
+            loadingBar.style.transform = 'translateX(0)'
+
+            // Snap wordmark to 100%
+            wordmark.style.transition = 'clip-path 150ms ease-out'
+            wordmark.style.clipPath = 'inset(0 0% 0 0)'
+
+            // Accent line expands from center
+            after(() => {
+              accentLine.style.transition = 'opacity 0.3s ease, transform 0.4s cubic-bezier(0.4,0,0.2,1)'
+              accentLine.style.opacity   = '1'
+              accentLine.style.transform = 'scaleX(1)'
+            }, 160)
+
+            // Tagline fades in
+            after(() => {
+              tagline.style.transition = 'opacity 0.3s ease'
+              tagline.style.opacity    = '1'
+            }, 200)
+
+            // Hold then contract
+            after(() => {
+              pageWrap.style.transition = 'opacity 0.2s ease'
+              pageWrap.style.opacity    = '0'
+              contractCircle()
+            }, 700)
+          }
+
+          // Register for pathname change
+          contractRef.current = finishAndOpen
+
+          // After 700ms: if nav not done yet, show loading state
           after(() => {
-            circle.style.transition = [
-              'width 0.52s cubic-bezier(0.4,0,0.8,1)',
-              'height 0.52s cubic-bezier(0.4,0,0.8,1)',
-              'opacity 0.52s ease',
-            ].join(', ')
+            if (navDone) return
+            loadingBar.style.transition = 'opacity 0.3s ease'
+            loadingBar.style.opacity    = '1'
+            startLoadingAnim(loadingBar)
+            // contractRef still holds finishAndOpen — pathname change will call it
+          }, 700)
+
+          // 6s safety
+          after(() => { if (contractRef.current) { contractRef.current = null; finishAndOpen() } }, 6000)
+
+        // ── B. ROOM TRANSITION — destination room name (Anton, big, longer) ───
+        } else if (label && roomWrap) {
+          after(() => {
+            roomWrap.style.transition = 'opacity 0.25s ease'
+            roomWrap.style.opacity    = '1'
+          }, 60)
+
+          after(() => {
+            roomWrap.style.transition = 'opacity 0.2s ease'
+            roomWrap.style.opacity    = '0'
+            after(() => {
+              circle.style.transition = 'width 0.52s cubic-bezier(0.4,0,0.8,1), height 0.52s cubic-bezier(0.4,0,0.8,1), opacity 0.52s ease'
+              circle.style.width   = '0px'
+              circle.style.height  = '0px'
+              circle.style.opacity = '0'
+              after(() => setVisible(false), 540)
+            }, 220)
+          }, 820) // label stays visible for 820ms
+
+        // ── C. FALLBACK — no content, contract after fixed delay ──────────────
+        } else {
+          const doContract = () => {
+            circle.style.transition = 'width 0.52s cubic-bezier(0.4,0,0.8,1), height 0.52s cubic-bezier(0.4,0,0.8,1), opacity 0.52s ease'
             circle.style.width   = '0px'
             circle.style.height  = '0px'
             circle.style.opacity = '0'
             after(() => setVisible(false), 540)
-          }, labelDelay)
-        }
-
-        if (waitForNav) {
-          // Hold until pathname changes (new page mounted), 3 s max
-          contractRef.current = doContract
-          after(() => {
-            if (contractRef.current) {
-              contractRef.current = null
-              doContract()
-            }
-          }, 3000)
-        } else {
-          // Fixed hold — room-to-room navigation (synchronous state update)
-          after(doContract, 320)
+          }
+          if (waitForNav) {
+            contractRef.current = doContract
+            after(() => { if (contractRef.current) { contractRef.current = null; doContract() } }, 3000)
+          } else {
+            after(doContract, 320)
+          }
         }
 
       }, 640)
@@ -143,46 +238,51 @@ export default function InkTransitionProvider({ children }: { children: React.Re
     <InkContext.Provider value={{ playInk }}>
       {children}
 
-      {/* Ink overlay — fixed, lives outside page flow */}
       <div
         aria-hidden="true"
-        style={{
-          position: 'fixed', inset: 0, zIndex: 9998,
-          pointerEvents: visible ? 'all' : 'none',
-          overflow: 'hidden',
-        }}
+        style={{ position: 'fixed', inset: 0, zIndex: 9998, pointerEvents: visible ? 'all' : 'none', overflow: 'hidden' }}
       >
-        {/* Expanding ink circle */}
-        <div
-          ref={circleRef}
-          style={{
-            position: 'absolute',
-            borderRadius: '50%',
-            background: '#080604',
-            transform: 'translate(-50%, -50%)',
-            width: 0, height: 0, opacity: 0,
-          }}
-        />
+        {/* Ink circle */}
+        <div ref={circleRef} style={{ position: 'absolute', borderRadius: '50%', background: '#080604', transform: 'translate(-50%, -50%)', width: 0, height: 0, opacity: 0 }} />
 
-        {/* Centered label — destination room name */}
-        <div
-          style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            pointerEvents: 'none',
-          }}
-        >
+        {/* ── Room transition: destination name ── */}
+        <div ref={roomWrapRef} style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, pointerEvents: 'none' }}>
           <span
-            ref={labelRef}
+            ref={roomNameRef}
             style={{
-              fontFamily: 'var(--font-dm-mono)',
-              fontSize: 'clamp(9px, 1.4vw, 13px)',
-              letterSpacing: '0.38em',
+              fontFamily: 'var(--font-anton)',
+              fontSize: 'clamp(40px, 7vw, 88px)',
+              letterSpacing: '0.1em',
               textTransform: 'uppercase',
-              color: 'rgba(245,237,224,0.55)',
-              opacity: 0,
+              color: '#f5ede0',
             }}
           />
+        </div>
+
+        {/* ── Page transition: full DEDSTOK preloader ── */}
+        <div ref={pageWrapRef} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0, pointerEvents: 'none' }}>
+
+          {/* Wordmark fill */}
+          <div ref={wordmarkRef} style={{ clipPath: 'inset(0 100% 0 0)', willChange: 'clip-path' }}>
+            <span style={{ fontFamily: 'var(--font-anton)', fontSize: 'clamp(52px, 9vw, 112px)', letterSpacing: '0.08em', color: '#f5ede0', display: 'block', lineHeight: 1 }}>
+              DEDSTOK
+            </span>
+          </div>
+
+          {/* Loading bar — oscillates while waiting */}
+          <div style={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div ref={loadingBarRef} style={{ width: 36, height: 2, background: '#CA8A04', opacity: 0, transformOrigin: 'center', transform: 'translateX(0)' }} />
+          </div>
+
+          {/* Gold accent line — appears on page load */}
+          <div ref={accentLineRef} style={{ width: 48, height: 1, background: 'rgba(202,138,4,0.55)', opacity: 0, transform: 'scaleX(0)', transformOrigin: 'center', marginBottom: 20 }} />
+
+          {/* Tagline */}
+          <div ref={taglineRef} style={{ opacity: 0 }}>
+            <span style={{ fontFamily: 'var(--font-dm-mono)', fontSize: 'clamp(7px, 1vw, 11px)', letterSpacing: '0.38em', textTransform: 'uppercase', color: '#CA8A04', display: 'block', textAlign: 'center' }}>
+              One drop. One winner. Every week.
+            </span>
+          </div>
         </div>
       </div>
     </InkContext.Provider>
