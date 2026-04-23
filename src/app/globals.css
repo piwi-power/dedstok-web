@@ -152,3 +152,18 @@ body {
 .beacon {
   animation: beacon-pulse 2.5s ease-in-out infinite;
 }
+
+/* ── Utility links ────────────────────────────────────── */
+.link-ghost {
+  color: rgba(245,237,224,0.28);
+  font-family: var(--font-dm-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 150ms ease, text-shadow 150ms ease;
+}
+.link-ghost:hover {
+  color: #f5ede0;
+  text-shadow: 0 0 14px rgba(245,237,224,0.45);
+}

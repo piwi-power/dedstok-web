@@ -60,19 +60,7 @@ export default async function ArchivePage() {
         <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: 'clamp(48px, 8vw, 80px)', letterSpacing: '0.02em', lineHeight: 1 }}>
           THE ARCHIVE
         </h1>
-        <Link
-          href="/winners"
-          style={{
-            fontFamily: 'var(--font-dm-mono)',
-            color: 'rgba(245,237,224,0.3)',
-            fontSize: '9px',
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            textDecoration: 'none',
-            paddingBottom: '6px',
-            flexShrink: 0,
-          }}
-        >
+        <Link href="/winners" className="link-ghost" style={{ paddingBottom: '6px', flexShrink: 0 }}>
           All Winners →
         </Link>
       </div>

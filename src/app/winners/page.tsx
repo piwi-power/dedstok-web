@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import WinnerCopyHash from './WinnerCopyHash'
+import BackButton from './BackButton'
 
 export const metadata: Metadata = {
   title: 'Winners',
@@ -32,6 +33,8 @@ export default async function WinnersPage() {
 
   return (
     <main style={{ minHeight: '100vh', padding: '56px 32px 120px', maxWidth: '900px', margin: '0 auto' }}>
+
+      <BackButton />
 
       {/* Header */}
       <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '12px' }}>

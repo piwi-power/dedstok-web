@@ -34,8 +34,7 @@ export default async function LeaderboardPage() {
         <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase' }}>
           Hall of Records
         </p>
-        <Link href="/winners" style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', textDecoration: 'none', transition: 'color 0.15s ease' }}
-          onMouseEnter={undefined}>
+        <Link href="/winners" className="link-ghost">
           All Winners →
         </Link>
       </div>
