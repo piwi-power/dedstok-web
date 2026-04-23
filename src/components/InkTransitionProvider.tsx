@@ -27,9 +27,7 @@ export default function InkTransitionProvider({ children }: { children: React.Re
 
   // Page preloader content
   const pageWrapRef    = useRef<HTMLDivElement>(null)
-  const wordmarkRef    = useRef<HTMLDivElement>(null)   // clip-path fill
-  const loadingBarRef  = useRef<HTMLDivElement>(null)   // wrapper (opacity)
-  const loadingClipRef = useRef<HTMLDivElement>(null)   // clip-path fill (bar)
+  const wordmarkRef    = useRef<HTMLDivElement>(null)
   const accentLineRef  = useRef<HTMLDivElement>(null)
   const taglineRef     = useRef<HTMLDivElement>(null)
 
@@ -61,15 +59,13 @@ export default function InkTransitionProvider({ children }: { children: React.Re
     opts: PlayInkOpts = {},
   ) => {
     const { label, waitForNav, showPreloader } = opts
-    const circle      = circleRef.current
-    const roomWrap    = roomWrapRef.current
-    const roomName    = roomNameRef.current
-    const pageWrap    = pageWrapRef.current
-    const wordmark    = wordmarkRef.current
-    const loadingBar  = loadingBarRef.current
-    const loadingClip = loadingClipRef.current
-    const accentLine  = accentLineRef.current
-    const tagline     = taglineRef.current
+    const circle     = circleRef.current
+    const roomWrap   = roomWrapRef.current
+    const roomName   = roomNameRef.current
+    const pageWrap   = pageWrapRef.current
+    const wordmark   = wordmarkRef.current
+    const accentLine = accentLineRef.current
+    const tagline    = taglineRef.current
     if (!circle) return
 
     clearTimers()
@@ -79,11 +75,9 @@ export default function InkTransitionProvider({ children }: { children: React.Re
     const hide = (el: HTMLElement | null) => { if (el) { el.style.transition = 'none'; el.style.opacity = '0' } }
     hide(roomWrap)
     hide(pageWrap)
-    hide(loadingBar)
     hide(tagline)
-    if (wordmark)    { wordmark.style.transition    = 'none'; wordmark.style.clipPath    = 'inset(0 100% 0 0)' }
-    if (loadingClip) { loadingClip.style.transition = 'none'; loadingClip.style.clipPath = 'inset(0 100% 0 0)' }
-    if (accentLine)  { accentLine.style.transition  = 'none'; accentLine.style.opacity  = '0'; accentLine.style.transform = 'scaleX(0)' }
+    if (wordmark)    { wordmark.style.transition   = 'none'; wordmark.style.clipPath = 'inset(0 100% 0 0)' }
+    if (accentLine)  { accentLine.style.transition = 'none'; accentLine.style.width  = '0%' }
 
     // ── Reset circle ───────────────────────────────────────────────────────────
     const maxR = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)) * 2.6
@@ -106,16 +100,30 @@ export default function InkTransitionProvider({ children }: { children: React.Re
         onCovered()
 
         // ── A. PAGE TRANSITION — full DEDSTOK preloader ───────────────────────
-        if (showPreloader && waitForNav && pageWrap && wordmark && loadingBar && loadingClip && accentLine && tagline) {
+        if (showPreloader && waitForNav && pageWrap && wordmark && accentLine && tagline) {
           pageWrap.style.opacity = '1'
 
-          // Phase 1: wordmark fills to 80% over 700ms
-          requestAnimationFrame(() => {
-            wordmark.style.transition = 'clip-path 700ms cubic-bezier(0.4, 0, 0.2, 1)'
-            wordmark.style.clipPath   = 'inset(0 20% 0 0)'
-          })
-
+          // Local state for this transition
           let navDone = false
+          let lineOpen = false
+          let navPulseInterval: ReturnType<typeof setInterval> | null = null
+
+          const startPulse = () => {
+            let expanding = false // first step is compress
+            const step = () => {
+              accentLine.style.transition = 'width 480ms cubic-bezier(0.4, 0, 0.2, 1)'
+              accentLine.style.width = expanding ? '100%' : '0%'
+              expanding = !expanding
+            }
+            navPulseInterval = setInterval(step, 580)
+          }
+
+          const stopPulse = (then: () => void) => {
+            if (navPulseInterval) { clearInterval(navPulseInterval); navPulseInterval = null }
+            accentLine.style.transition = 'width 300ms cubic-bezier(0.4, 0, 0.2, 1)'
+            accentLine.style.width = '100%'
+            setTimeout(then, 320)
+          }
 
           const contractCircle = () => {
             after(() => {
@@ -127,31 +135,19 @@ export default function InkTransitionProvider({ children }: { children: React.Re
             }, 180)
           }
 
-          const finishAndOpen = () => {
+          const doFinish = () => {
             if (navDone) return
             navDone = true
-
-            // Snap loading bar to 100% then hide it
-            loadingClip.style.transition = 'clip-path 120ms ease-out'
-            loadingClip.style.clipPath   = 'inset(0 0% 0 0)'
-            after(() => { loadingBar.style.transition = 'opacity 180ms ease'; loadingBar.style.opacity = '0' }, 130)
 
             // Snap wordmark to 100%
             wordmark.style.transition = 'clip-path 120ms ease-out'
             wordmark.style.clipPath   = 'inset(0 0% 0 0)'
 
-            // Accent line
-            after(() => {
-              accentLine.style.transition = 'opacity 0.3s ease, transform 0.45s cubic-bezier(0.4,0,0.2,1)'
-              accentLine.style.opacity    = '1'
-              accentLine.style.transform  = 'scaleX(1)'
-            }, 180)
-
             // Tagline
             after(() => {
               tagline.style.transition = 'opacity 0.3s ease'
               tagline.style.opacity    = '1'
-            }, 240)
+            }, 160)
 
             // Hold then contract
             after(() => {
@@ -161,21 +157,51 @@ export default function InkTransitionProvider({ children }: { children: React.Re
             }, 800)
           }
 
+          // finishAndOpen: called when pathname changes (new page mounted)
+          // If pulse is running, stop it cleanly first; else finish directly
+          const finishAndOpen = () => {
+            if (navPulseInterval) {
+              stopPulse(doFinish)
+            } else if (lineOpen) {
+              doFinish()
+            } else {
+              // Nav completed before line finished expanding — mark navDone,
+              // the after(500) below will call doFinish directly
+              navDone = false // reset so doFinish can run
+              doFinish()
+            }
+          }
+
           contractRef.current = finishAndOpen
 
-          // After 700ms: if nav not done, show loading bar (same fill technique)
+          // Phase 1: DEDSTOK fills 0 → 100% over 700ms
+          requestAnimationFrame(() => {
+            wordmark.style.transition = 'clip-path 700ms cubic-bezier(0.4, 0, 0.2, 1)'
+            wordmark.style.clipPath   = 'inset(0 0% 0 0)'
+          })
+
+          // Phase 2: Gold line expands left to right (700ms after start)
           after(() => {
-            if (navDone) return
-            loadingBar.style.transition  = 'opacity 0.25s ease'
-            loadingBar.style.opacity     = '1'
-            requestAnimationFrame(() => {
-              loadingClip.style.transition = 'clip-path 900ms cubic-bezier(0.4, 0, 0.2, 1)'
-              loadingClip.style.clipPath   = 'inset(0 20% 0 0)'
-            })
+            accentLine.style.transition = 'width 480ms cubic-bezier(0.4, 0, 0.2, 1)'
+            accentLine.style.width = '100%'
+
+            after(() => {
+              lineOpen = true
+              if (navDone) {
+                doFinish()
+              } else {
+                startPulse()
+              }
+            }, 500)
           }, 700)
 
           // 6s safety
-          after(() => { if (contractRef.current) { contractRef.current = null; finishAndOpen() } }, 6000)
+          after(() => {
+            if (contractRef.current) {
+              contractRef.current = null
+              if (navPulseInterval) { stopPulse(doFinish) } else { doFinish() }
+            }
+          }, 6000)
 
         // ── B. ROOM TRANSITION — destination name in Anton, large, longer hold ─
         } else if (label && roomWrap) {
@@ -234,22 +260,21 @@ export default function InkTransitionProvider({ children }: { children: React.Re
         {/* ── Page transition: full DEDSTOK preloader ── */}
         <div ref={pageWrapRef} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0, pointerEvents: 'none' }}>
 
-          {/* Wordmark + loading bar share width so bar tracks under text */}
-          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'stretch' }}>
-            <div ref={wordmarkRef} style={{ clipPath: 'inset(0 100% 0 0)', willChange: 'clip-path' }}>
-              <span style={{ fontFamily: 'var(--font-anton)', fontSize: 'clamp(52px, 9vw, 112px)', letterSpacing: '0.08em', color: '#f5ede0', display: 'block', lineHeight: 1 }}>
-                DEDSTOK
-              </span>
-            </div>
-
-            {/* Loading bar — fills left to right, same technique as wordmark */}
-            <div ref={loadingBarRef} style={{ height: 3, opacity: 0, marginTop: 10 }}>
-              <div ref={loadingClipRef} style={{ height: '100%', background: '#CA8A04', clipPath: 'inset(0 100% 0 0)', willChange: 'clip-path' }} />
-            </div>
+          {/* Wordmark */}
+          <div ref={wordmarkRef} style={{ clipPath: 'inset(0 100% 0 0)', willChange: 'clip-path' }}>
+            <span style={{ fontFamily: 'var(--font-anton)', fontSize: 'clamp(52px, 9vw, 112px)', letterSpacing: '0.08em', color: '#f5ede0', display: 'block', lineHeight: 1 }}>
+              DEDSTOK
+            </span>
           </div>
 
-          {/* Gold accent line — expands from center when page is ready */}
-          <div ref={accentLineRef} style={{ width: 48, height: 1, background: 'rgba(202,138,4,0.55)', opacity: 0, transform: 'scaleX(0)', transformOrigin: 'center', marginTop: 28, marginBottom: 18 }} />
+          {/* Gold gradient line — width pulses while waiting for nav */}
+          <div style={{ width: '100%', maxWidth: '480px', marginTop: 28, marginBottom: 18, overflow: 'hidden' }}>
+            <div ref={accentLineRef} style={{
+              height: 1,
+              width: '0%',
+              background: 'linear-gradient(to right, rgba(202,138,4,0.15), rgba(202,138,4,0.75))',
+            }} />
+          </div>
 
           {/* Tagline */}
           <div ref={taglineRef} style={{ opacity: 0 }}>

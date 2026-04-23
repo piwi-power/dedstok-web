@@ -3,103 +3,106 @@
 import { useEffect, useRef } from 'react'
 
 export default function PagePreloader() {
-  const overlayRef      = useRef<HTMLDivElement>(null)
-  const fillRef         = useRef<HTMLDivElement>(null)  // wordmark clip container
-  const loadingBarRef   = useRef<HTMLDivElement>(null)  // loading bar wrapper (opacity)
-  const loadingClipRef  = useRef<HTMLDivElement>(null)  // loading bar clip-path fill
-  const accentLineRef   = useRef<HTMLDivElement>(null)
-  const taglineRef      = useRef<HTMLDivElement>(null)
+  const overlayRef    = useRef<HTMLDivElement>(null)
+  const fillRef       = useRef<HTMLDivElement>(null)
+  const accentLineRef = useRef<HTMLDivElement>(null)
+  const taglineRef    = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const overlay     = overlayRef.current
-    const fill        = fillRef.current
-    const loadingBar  = loadingBarRef.current
-    const loadingClip = loadingClipRef.current
-    const accentLine  = accentLineRef.current
-    const tagline     = taglineRef.current
-    if (!overlay || !fill || !loadingBar || !loadingClip || !accentLine || !tagline) return
+    const overlay    = overlayRef.current
+    const fill       = fillRef.current
+    const accentLine = accentLineRef.current
+    const tagline    = taglineRef.current
+    if (!overlay || !fill || !accentLine || !tagline) return
 
     const timers: ReturnType<typeof setTimeout>[] = []
+    let pulseInterval: ReturnType<typeof setInterval> | null = null
     const after = (fn: () => void, ms: number) => { const id = setTimeout(fn, ms); timers.push(id) }
 
-    let completed       = false
-    let minTimePassed   = false
-    let pendingComplete = false
+    let finished   = false
+    let pageLoaded = false
+    let lineOpen   = false
 
-    const complete = () => {
-      if (completed) return
-      completed = true
+    // ── Pulse: compress → expand loop while page loads ──────────────────────
+    const startPulse = () => {
+      let expanding = false // first step is compress
+      const step = () => {
+        accentLine.style.transition = 'width 480ms cubic-bezier(0.4, 0, 0.2, 1)'
+        accentLine.style.width = expanding ? '100%' : '0%'
+        expanding = !expanding
+      }
+      pulseInterval = setInterval(step, 580)
+    }
+
+    const stopPulse = (then: () => void) => {
+      if (pulseInterval) { clearInterval(pulseInterval); pulseInterval = null }
+      accentLine.style.transition = 'width 300ms cubic-bezier(0.4, 0, 0.2, 1)'
+      accentLine.style.width = '100%'
+      setTimeout(then, 320)
+    }
+
+    // ── Finish: tagline → hold → fade out ───────────────────────────────────
+    const finish = () => {
+      if (finished) return
+      finished = true
       overlay.style.pointerEvents = 'none'
 
-      // Snap loading bar to 100% then fade it out
-      loadingClip.style.transition = 'clip-path 120ms ease-out'
-      loadingClip.style.clipPath   = 'inset(0 0% 0 0)'
-      after(() => {
-        loadingBar.style.transition = 'opacity 180ms ease'
-        loadingBar.style.opacity    = '0'
-      }, 140)
+      tagline.style.transition = 'opacity 0.35s ease'
+      tagline.style.opacity = '1'
 
-      // Snap wordmark to 100%
-      fill.style.transition = 'clip-path 120ms ease-out'
-      fill.style.clipPath   = 'inset(0 0% 0 0)'
-
-      // Accent line expands from center
-      after(() => {
-        accentLine.style.transition = 'opacity 0.3s ease, transform 0.45s cubic-bezier(0.4,0,0.2,1)'
-        accentLine.style.opacity    = '1'
-        accentLine.style.transform  = 'scaleX(1)'
-      }, 180)
-
-      // Tagline fades in
-      after(() => {
-        tagline.style.transition = 'opacity 0.3s ease'
-        tagline.style.opacity    = '1'
-      }, 240)
-
-      // Hold, then fade overlay out
       after(() => {
         overlay.style.transition = 'opacity 520ms ease'
-        overlay.style.opacity    = '0'
+        overlay.style.opacity = '0'
         after(() => { overlay.style.display = 'none' }, 540)
       }, 860)
     }
 
-    const tryComplete = () => {
-      if (minTimePassed) { complete() } else { pendingComplete = true }
+    // ── Page load signal ─────────────────────────────────────────────────────
+    const onLoaded = () => {
+      pageLoaded = true
+      if (lineOpen) {
+        // Pulse is running (or just started) — stop cleanly then finish
+        stopPulse(finish)
+      }
+      // If lineOpen is still false, the after(500) callback will see
+      // pageLoaded === true and call finish() directly (no pulse needed)
     }
 
-    // Phase 1: wordmark fills to 80% over 700ms
+    // ── Phase 1: DEDSTOK fills 0 → 100% over 700ms ──────────────────────────
     requestAnimationFrame(() => {
       fill.style.transition = 'clip-path 700ms cubic-bezier(0.4, 0, 0.2, 1)'
-      fill.style.clipPath   = 'inset(0 20% 0 0)'
+      fill.style.clipPath = 'inset(0 0% 0 0)'
     })
 
-    // After 700ms: check if page loaded
+    // ── Phase 2: Gold line expands left to right (starts at 700ms) ──────────
     after(() => {
-      minTimePassed = true
-      if (pendingComplete || document.readyState === 'complete') {
-        complete()
-      } else {
-        // Page not ready — show loading bar filling left to right
-        loadingBar.style.transition  = 'opacity 0.25s ease'
-        loadingBar.style.opacity     = '1'
-        requestAnimationFrame(() => {
-          loadingClip.style.transition = 'clip-path 900ms cubic-bezier(0.4, 0, 0.2, 1)'
-          loadingClip.style.clipPath   = 'inset(0 20% 0 0)' // fills to 80%, holds until load
-        })
-      }
+      accentLine.style.transition = 'width 480ms cubic-bezier(0.4, 0, 0.2, 1)'
+      accentLine.style.width = '100%'
+
+      // After line fully open: check load state
+      after(() => {
+        lineOpen = true
+        if (pageLoaded) {
+          finish()
+        } else {
+          startPulse()
+        }
+      }, 500)
     }, 700)
 
+    // 7s safety so we never get stuck
+    after(() => { if (!finished) onLoaded() }, 7000)
+
     if (document.readyState === 'complete') {
-      tryComplete()
+      onLoaded()
     } else {
-      window.addEventListener('load', tryComplete, { once: true })
-      after(tryComplete, 7000)
+      window.addEventListener('load', onLoaded, { once: true })
     }
 
     return () => {
       timers.forEach(clearTimeout)
-      window.removeEventListener('load', tryComplete)
+      if (pulseInterval) clearInterval(pulseInterval)
+      window.removeEventListener('load', onLoaded)
     }
   }, [])
 
@@ -114,27 +117,24 @@ export default function PagePreloader() {
         pointerEvents: 'all',
       }}
     >
-      {/* Wordmark + loading bar share the same inline block so bar matches text width */}
-      <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'stretch' }}>
-
-        {/* Wordmark — clip-path fills left to right */}
-        <div ref={fillRef} style={{ clipPath: 'inset(0 100% 0 0)', willChange: 'clip-path' }}>
-          <span style={{
-            fontFamily: 'var(--font-anton)', fontSize: 'clamp(52px, 9vw, 112px)',
-            letterSpacing: '0.08em', color: '#f5ede0', display: 'block', lineHeight: 1,
-          }}>
-            DEDSTOK
-          </span>
-        </div>
-
-        {/* Loading bar — same clip-path technique, appears while waiting for window.onload */}
-        <div ref={loadingBarRef} style={{ height: 3, opacity: 0, marginTop: 10 }}>
-          <div ref={loadingClipRef} style={{ height: '100%', background: '#CA8A04', clipPath: 'inset(0 100% 0 0)', willChange: 'clip-path' }} />
-        </div>
+      {/* Wordmark — clip-path fills left to right */}
+      <div ref={fillRef} style={{ clipPath: 'inset(0 100% 0 0)', willChange: 'clip-path' }}>
+        <span style={{
+          fontFamily: 'var(--font-anton)', fontSize: 'clamp(52px, 9vw, 112px)',
+          letterSpacing: '0.08em', color: '#f5ede0', display: 'block', lineHeight: 1,
+        }}>
+          DEDSTOK
+        </span>
       </div>
 
-      {/* Gold accent line — expands from center once page is ready */}
-      <div ref={accentLineRef} style={{ width: 48, height: 1, background: 'rgba(202,138,4,0.55)', opacity: 0, transform: 'scaleX(0)', transformOrigin: 'center', marginTop: 28, marginBottom: 18 }} />
+      {/* Gold gradient line — width pulses left-to-right while loading */}
+      <div style={{ width: '100%', maxWidth: '480px', marginTop: 28, marginBottom: 18, overflow: 'hidden' }}>
+        <div ref={accentLineRef} style={{
+          height: 1,
+          width: '0%',
+          background: 'linear-gradient(to right, rgba(202,138,4,0.15), rgba(202,138,4,0.75))',
+        }} />
+      </div>
 
       {/* Tagline */}
       <div ref={taglineRef} style={{ opacity: 0 }}>
