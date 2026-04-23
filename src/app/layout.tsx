@@ -1,12 +1,9 @@
 import type { Metadata } from 'next'
 import { Bodoni_Moda, Jost, DM_Mono, Bebas_Neue, Cinzel, Cormorant_Garamond, Playfair_Display, Alex_Brush, Italiana, Anton, Black_Han_Sans, Barlow_Condensed } from 'next/font/google'
 import { headers } from 'next/headers'
-import dynamic from 'next/dynamic'
 import './globals.css'
 import Nav from '@/components/Nav'
-import InkTransitionProvider from '@/components/InkTransitionProvider'
-
-const PagePreloader = dynamic(() => import('@/components/PagePreloader'), { ssr: false })
+import ClientProviders from '@/components/ClientProviders'
 
 const bodoni = Bodoni_Moda({
   variable: '--font-bodoni',
@@ -157,15 +154,14 @@ export default async function RootLayout({
       `}
     >
       <body className="min-h-full bg-[var(--bg)] text-[var(--cream)] antialiased">
-        <InkTransitionProvider>
+        <ClientProviders>
           {!isAdmin && <Nav />}
           {/* Homepage: room fills the full viewport, nav floats over it transparently.
               All other pages: 64px offset below the fixed nav (nav height = 64px). */}
           <div style={isAdmin || isHomepage ? {} : { paddingTop: '64px' }}>
             {children}
           </div>
-          <PagePreloader />
-        </InkTransitionProvider>
+        </ClientProviders>
       </body>
     </html>
   )
