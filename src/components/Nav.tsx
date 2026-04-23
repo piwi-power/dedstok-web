@@ -10,6 +10,7 @@ export default async function Nav() {
   const headersList = await headers()
   const pathname = headersList.get('x-invoke-path') ?? headersList.get('next-url') ?? ''
   const isHomepage = pathname === '/' || pathname === ''
+  const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/onboarding')
 
   return (
     <nav style={{
@@ -58,8 +59,8 @@ export default async function Nav() {
         </div>
       )}
 
-      {/* Right: Explore + Account / Sign in */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      {/* Right: Explore + Account / Sign in — hidden on auth pages */}
+      <div style={{ display: isAuthPage ? 'none' : 'flex', alignItems: 'center', gap: '16px' }}>
         <ExploreOverlay />
         {user ? (
           <Link href="/account" style={{
