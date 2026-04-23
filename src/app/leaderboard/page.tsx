@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import LeaderboardClient from './LeaderboardClient'
 
@@ -29,9 +30,15 @@ export default async function LeaderboardPage() {
 
   return (
     <main style={{ minHeight: '100vh', padding: '80px 32px 120px', maxWidth: '800px', margin: '0 auto' }}>
-      <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '14px' }}>
-        Hall of Records
-      </p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase' }}>
+          Hall of Records
+        </p>
+        <Link href="/winners" style={{ fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.3)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', textDecoration: 'none', transition: 'color 0.15s ease' }}
+          onMouseEnter={undefined}>
+          All Winners →
+        </Link>
+      </div>
       <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: '72px', letterSpacing: '0.02em', lineHeight: 1, marginBottom: '16px' }}>
         LEADERBOARD
       </h1>

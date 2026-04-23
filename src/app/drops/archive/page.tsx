@@ -56,9 +56,26 @@ export default async function ArchivePage() {
       <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '16px' }}>
         Every Drop. Every Winner.
       </p>
-      <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: 'clamp(48px, 8vw, 80px)', letterSpacing: '0.02em', lineHeight: 1, marginBottom: '40px' }}>
-        THE ARCHIVE
-      </h1>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px', marginBottom: '40px' }}>
+        <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: 'clamp(48px, 8vw, 80px)', letterSpacing: '0.02em', lineHeight: 1 }}>
+          THE ARCHIVE
+        </h1>
+        <Link
+          href="/winners"
+          style={{
+            fontFamily: 'var(--font-dm-mono)',
+            color: 'rgba(245,237,224,0.3)',
+            fontSize: '9px',
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            textDecoration: 'none',
+            paddingBottom: '6px',
+            flexShrink: 0,
+          }}
+        >
+          All Winners →
+        </Link>
+      </div>
 
       {/* Current drop card */}
       <Link href="/drops" style={{ textDecoration: 'none', display: 'block', marginBottom: '56px' }}>

@@ -6,9 +6,12 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image() {
+  // Fetch Anton from Google Fonts CDN — try woff2 first, fall back to woff
   const antonFont = await fetch(
-    'https://fonts.gstatic.com/s/anton/v25/1Ptgg87LROyAm3Kz-C8CSw.woff'
-  ).then(r => r.arrayBuffer())
+    'https://fonts.gstatic.com/s/anton/v25/1Ptgg87LROyAm3K8-C8CSw.woff2'
+  ).then(r => r.arrayBuffer()).catch(() =>
+    fetch('https://fonts.gstatic.com/s/anton/v25/1Ptgg87LROyAm3Kz-C8CSw.woff').then(r => r.arrayBuffer())
+  )
 
   return new ImageResponse(
     (
