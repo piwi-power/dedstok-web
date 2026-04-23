@@ -6,7 +6,6 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image() {
-  // Load Anton (the actual brand wordmark font)
   const antonFont = await fetch(
     'https://fonts.gstatic.com/s/anton/v25/1Ptgg87LROyAm3Kz-C8CSw.woff'
   ).then(r => r.arrayBuffer())
@@ -15,7 +14,7 @@ export default async function Image() {
     (
       <div
         style={{
-          background: '#0c0a09',
+          background: '#080604',
           width: '100%',
           height: '100%',
           display: 'flex',
@@ -25,40 +24,40 @@ export default async function Image() {
           position: 'relative',
         }}
       >
-        {/* Top gold bar */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: '#ca8a04', display: 'flex' }} />
+        {/* Corner brackets */}
+        <div style={{ position: 'absolute', top: 40, left: 40, width: 28, height: 28, borderTop: '1px solid rgba(202,138,4,0.45)', borderLeft: '1px solid rgba(202,138,4,0.45)', display: 'flex' }} />
+        <div style={{ position: 'absolute', top: 40, right: 40, width: 28, height: 28, borderTop: '1px solid rgba(202,138,4,0.45)', borderRight: '1px solid rgba(202,138,4,0.45)', display: 'flex' }} />
+        <div style={{ position: 'absolute', bottom: 40, left: 40, width: 28, height: 28, borderBottom: '1px solid rgba(202,138,4,0.45)', borderLeft: '1px solid rgba(202,138,4,0.45)', display: 'flex' }} />
+        <div style={{ position: 'absolute', bottom: 40, right: 40, width: 28, height: 28, borderBottom: '1px solid rgba(202,138,4,0.45)', borderRight: '1px solid rgba(202,138,4,0.45)', display: 'flex' }} />
 
-        {/* Wordmark */}
+        {/* Gold accent line */}
+        <div style={{ width: 48, height: 1, background: 'rgba(202,138,4,0.5)', marginBottom: 32, display: 'flex' }} />
+
+        {/* Wordmark — cream, Anton */}
         <div style={{
-          color: '#ca8a04',
-          fontSize: 148,
-          letterSpacing: '0.06em',
+          color: '#f5ede0',
+          fontSize: 136,
+          letterSpacing: '0.08em',
           textTransform: 'uppercase',
           fontFamily: 'Anton',
           lineHeight: 1,
-          marginBottom: 36,
+          marginBottom: 32,
           display: 'flex',
         }}>
           DEDSTOK
         </div>
 
-        {/* Divider */}
-        <div style={{ width: 64, height: 2, background: 'rgba(202,138,4,0.45)', marginBottom: 36, display: 'flex' }} />
-
-        {/* Tagline */}
+        {/* Tagline — gold */}
         <div style={{
-          color: 'rgba(245,237,224,0.42)',
-          fontSize: 28,
-          letterSpacing: '0.38em',
+          color: '#CA8A04',
+          fontSize: 16,
+          letterSpacing: '0.42em',
           textTransform: 'uppercase',
           fontFamily: 'Anton',
           display: 'flex',
         }}>
-          One Drop. One Winner. Every Week.
+          ONE DROP. ONE WINNER. EVERY WEEK.
         </div>
-
-        {/* Bottom gold bar */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '4px', background: '#ca8a04', display: 'flex' }} />
       </div>
     ),
     {
