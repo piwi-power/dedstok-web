@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
         destination: '/studio/structure',
         permanent: false,
       },
+      // Redirect Vercel subdomain to the canonical domain
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'dedstok-web.vercel.app' }],
+        destination: 'https://dedstok.xyz/:path*',
+        permanent: true,
+      },
     ]
   },
 
