@@ -111,7 +111,7 @@ export const metadata: Metadata = {
   },
   description:
     'A weekly raffle for curated streetwear grails. One item, one winner, pure luck. Based in Lebanon.',
-  metadataBase: new URL('https://dedstok.xyz'),
+  metadataBase: new URL('https://www.dedstok.xyz'),
   openGraph: {
     siteName: 'DEDSTOK',
     type: 'website',
