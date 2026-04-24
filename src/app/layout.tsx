@@ -117,7 +117,7 @@ export const metadata: Metadata = {
     type: 'website',
     title: 'DEDSTOK — One Drop. One Winner. Every Week.',
     description: 'A weekly raffle for curated streetwear grails. One item, one winner, pure luck. Based in Lebanon.',
-    url: 'https://dedstok.xyz',
+    url: 'https://www.dedstok.xyz',
   },
   twitter: {
     card: 'summary_large_image',
