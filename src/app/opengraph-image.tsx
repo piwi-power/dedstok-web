@@ -3,12 +3,13 @@ import { readFile } from 'fs/promises'
 import { join } from 'path'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 export const alt = 'DEDSTOK — One Drop. One Winner. Every Week.'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image() {
-  const antonFont = await readFile(join(process.cwd(), 'public/fonts/anton.woff2'))
+  const antonFont = await readFile(join(process.cwd(), 'public/fonts/anton.ttf'))
 
   return new ImageResponse(
     (
