@@ -26,10 +26,10 @@ export default async function Image() {
         }}
       >
         {/* Corner brackets */}
-        <div style={{ position: 'absolute', top: 40, left: 40, width: 28, height: 28, borderTop: '1px solid rgba(202,138,4,0.45)', borderLeft: '1px solid rgba(202,138,4,0.45)', display: 'flex' }} />
-        <div style={{ position: 'absolute', top: 40, right: 40, width: 28, height: 28, borderTop: '1px solid rgba(202,138,4,0.45)', borderRight: '1px solid rgba(202,138,4,0.45)', display: 'flex' }} />
-        <div style={{ position: 'absolute', bottom: 40, left: 40, width: 28, height: 28, borderBottom: '1px solid rgba(202,138,4,0.45)', borderLeft: '1px solid rgba(202,138,4,0.45)', display: 'flex' }} />
-        <div style={{ position: 'absolute', bottom: 40, right: 40, width: 28, height: 28, borderBottom: '1px solid rgba(202,138,4,0.45)', borderRight: '1px solid rgba(202,138,4,0.45)', display: 'flex' }} />
+        <div style={{ position: 'absolute', top: 40, left: 40, width: 36, height: 36, borderTop: '2px solid #CA8A04', borderLeft: '2px solid #CA8A04', display: 'flex' }} />
+        <div style={{ position: 'absolute', top: 40, right: 40, width: 36, height: 36, borderTop: '2px solid #CA8A04', borderRight: '2px solid #CA8A04', display: 'flex' }} />
+        <div style={{ position: 'absolute', bottom: 40, left: 40, width: 36, height: 36, borderBottom: '2px solid #CA8A04', borderLeft: '2px solid #CA8A04', display: 'flex' }} />
+        <div style={{ position: 'absolute', bottom: 40, right: 40, width: 36, height: 36, borderBottom: '2px solid #CA8A04', borderRight: '2px solid #CA8A04', display: 'flex' }} />
 
         {/* Gold accent line */}
         <div style={{ width: 48, height: 1, background: 'rgba(202,138,4,0.5)', marginBottom: 32, display: 'flex' }} />
@@ -51,8 +51,8 @@ export default async function Image() {
         {/* Tagline */}
         <div style={{
           color: '#CA8A04',
-          fontSize: 16,
-          letterSpacing: '0.42em',
+          fontSize: 28,
+          letterSpacing: '0.38em',
           textTransform: 'uppercase',
           fontFamily: 'Anton',
           display: 'flex',
