@@ -1,17 +1,14 @@
 import { ImageResponse } from 'next/og'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 export const alt = 'DEDSTOK — One Drop. One Winner. Every Week.'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image() {
-  // Fetch Anton from Google Fonts CDN — try woff2 first, fall back to woff
-  const antonFont = await fetch(
-    'https://fonts.gstatic.com/s/anton/v25/1Ptgg87LROyAm3K8-C8CSw.woff2'
-  ).then(r => r.arrayBuffer()).catch(() =>
-    fetch('https://fonts.gstatic.com/s/anton/v25/1Ptgg87LROyAm3Kz-C8CSw.woff').then(r => r.arrayBuffer())
-  )
+  const antonFont = await readFile(join(process.cwd(), 'public/fonts/anton.woff2'))
 
   return new ImageResponse(
     (
@@ -36,7 +33,7 @@ export default async function Image() {
         {/* Gold accent line */}
         <div style={{ width: 48, height: 1, background: 'rgba(202,138,4,0.5)', marginBottom: 32, display: 'flex' }} />
 
-        {/* Wordmark — cream, Anton */}
+        {/* Wordmark */}
         <div style={{
           color: '#f5ede0',
           fontSize: 136,
@@ -50,7 +47,7 @@ export default async function Image() {
           DEDSTOK
         </div>
 
-        {/* Tagline — gold */}
+        {/* Tagline */}
         <div style={{
           color: '#CA8A04',
           fontSize: 16,
