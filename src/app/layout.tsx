@@ -111,13 +111,13 @@ export const metadata: Metadata = {
   },
   description:
     'A weekly raffle for curated streetwear grails. One item, one winner, pure luck. Based in Lebanon.',
-  metadataBase: new URL('https://www.dedstok.xyz'),
+  metadataBase: new URL('https://dedstok.xyz'),
   openGraph: {
     siteName: 'DEDSTOK',
     type: 'website',
     title: 'DEDSTOK — One Drop. One Winner. Every Week.',
     description: 'A weekly raffle for curated streetwear grails. One item, one winner, pure luck. Based in Lebanon.',
-    url: 'https://www.dedstok.xyz',
+    url: 'https://dedstok.xyz',
   },
   twitter: {
     card: 'summary_large_image',
