@@ -20,6 +20,17 @@ export default async function OnboardingPage({ searchParams }: Props) {
 
   if (!user) redirect('/login')
 
+  // Already onboarded — skip the form entirely
+  const { data: profile } = await supabase
+    .from('users')
+    .select('username, phone_verified')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.username && profile?.phone_verified) {
+    redirect(next ?? '/')
+  }
+
   return (
     <main style={{
       background: 'var(--void)',

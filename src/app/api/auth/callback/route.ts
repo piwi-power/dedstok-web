@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
 import { createServiceClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -11,7 +11,26 @@ export async function GET(request: NextRequest) {
   const ref = searchParams.get('ref') // referral code from signup link
 
   if (code) {
-    const supabase = await createClient()
+    // Collect cookies emitted by exchangeCodeForSession so we can attach
+    // them to the redirect response. Using cookies() from next/headers and
+    // then returning a new NextResponse.redirect() loses them — that's the
+    // mobile OAuth bug. We collect here and apply below.
+    const collectedCookies: Array<{ name: string; value: string; options: Record<string, unknown> }> = []
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder',
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll() },
+          setAll(cookiesToSet) {
+            // Don't write to next/headers here — collect instead
+            cookiesToSet.forEach(c => collectedCookies.push(c as typeof collectedCookies[0]))
+          },
+        },
+      }
+    )
+
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.user) {
@@ -58,13 +77,21 @@ export async function GET(request: NextRequest) {
         .single()
 
       const needsOnboarding = !profile?.username || !profile?.phone_verified
-      if (needsOnboarding) {
-        const onboardUrl = new URL(`${origin}/onboarding`)
-        onboardUrl.searchParams.set('next', next)
-        return NextResponse.redirect(onboardUrl.toString())
-      }
 
-      return NextResponse.redirect(`${origin}${next}`)
+      const redirectUrl = needsOnboarding
+        ? `${origin}/onboarding?next=${encodeURIComponent(next)}`
+        : `${origin}${next}`
+
+      const response = NextResponse.redirect(redirectUrl)
+
+      // Attach the session cookies to the redirect response so the browser
+      // stores them. Without this, mobile browsers never receive the session.
+      collectedCookies.forEach(({ name, value, options }) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        response.cookies.set(name, value, options as any)
+      })
+
+      return response
     }
   }
 

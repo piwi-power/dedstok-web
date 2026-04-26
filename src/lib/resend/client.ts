@@ -11,4 +11,4 @@ export function getResend(): Resend {
 }
 
 export const FROM_EMAIL =
-  process.env.RESEND_FROM_EMAIL ?? 'noreply@dedstok.com'
+  process.env.RESEND_FROM_EMAIL ?? 'DEDSTOK <support@dedstok.xyz>'

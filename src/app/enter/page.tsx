@@ -32,14 +32,20 @@ export default async function EnterPage({
       .single(),
     supabase
       .from('users')
-      .select('points_balance, phone_verified')
+      .select('points_balance, phone_verified, username')
       .eq('id', user.id)
       .single(),
   ])
 
-  // Phone gate — redirect before rendering anything
+  const returnUrl = `/enter?drop=${slug}&spots=${spotsCount}&id=${id}${code ? `&code=${code}` : ''}`
+
+  // Onboarding gate — username missing means Google OAuth user skipped setup
+  if (!userRecord?.username) {
+    redirect(`/onboarding?next=${encodeURIComponent(returnUrl)}`)
+  }
+
+  // Phone gate — email/password users who skipped phone verification
   if (!userRecord?.phone_verified) {
-    const returnUrl = `/enter?drop=${slug}&spots=${spotsCount}&id=${id}${code ? `&code=${code}` : ''}`
     redirect(`/account/verify-phone?return=${encodeURIComponent(returnUrl)}`)
   }
 
