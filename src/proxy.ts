@@ -5,6 +5,17 @@ import { NextResponse, type NextRequest } from 'next/server'
 const PROTECTED_ROUTES = ['/account', '/enter']
 
 export async function proxy(request: NextRequest) {
+  // If a Supabase OAuth code lands on any page other than the callback route,
+  // forward it to the callback handler so the session is established correctly.
+  // This happens when the redirect URL isn't in Supabase's allowlist and
+  // Supabase falls back to the site root.
+  const code = request.nextUrl.searchParams.get('code')
+  if (code && !request.nextUrl.pathname.startsWith('/api/auth/callback')) {
+    const callbackUrl = request.nextUrl.clone()
+    callbackUrl.pathname = '/api/auth/callback'
+    return NextResponse.redirect(callbackUrl)
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(

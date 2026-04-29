@@ -170,8 +170,8 @@ export default async function RootLayout({
           <div style={isAdmin || isHomepage || isLinks ? {} : { paddingTop: '64px' }}>
             {children}
           </div>
-          {/* Copyright bar — renders on every page except admin */}
-          {!isAdmin && <CopyrightBar />}
+          {/* Copyright bar — all pages except admin and homepage */}
+          {!isAdmin && !isHomepage && !isLinks && <CopyrightBar />}
         </ClientProviders>
       </body>
     </html>
