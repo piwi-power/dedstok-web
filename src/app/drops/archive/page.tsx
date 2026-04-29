@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
   title: 'Archive — DEDSTOK',
@@ -50,6 +51,7 @@ export default async function ArchivePage() {
   }
 
   return (
+    <>
     <main style={{ minHeight: '100vh', padding: '80px 32px 120px', maxWidth: '1000px', margin: '0 auto' }}>
 
       {/* Header */}
@@ -212,5 +214,7 @@ export default async function ArchivePage() {
         </div>
       )}
     </main>
+    <Footer />
+    </>
   )
 }

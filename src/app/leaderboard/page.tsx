@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import LeaderboardClient from './LeaderboardClient'
+import Footer from '@/components/Footer'
 
 export default async function LeaderboardPage() {
   const supabase = await createClient()
@@ -29,6 +30,7 @@ export default async function LeaderboardPage() {
   const lastMonthName = lastMonth.toLocaleString('en-US', { month: 'long' })
 
   return (
+    <>
     <main style={{ minHeight: '100vh', padding: '80px 32px 120px', maxWidth: '800px', margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase' }}>
@@ -55,5 +57,7 @@ export default async function LeaderboardPage() {
         currentUserId={user?.id ?? null}
       />
     </main>
+    <Footer />
+    </>
   )
 }

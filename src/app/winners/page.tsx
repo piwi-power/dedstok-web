@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import Footer from '@/components/Footer'
 import WinnerCopyHash from './WinnerCopyHash'
 import BackButton from './BackButton'
 
@@ -32,6 +33,7 @@ export default async function WinnersPage() {
   const totalDrops  = winners?.length ?? 0
 
   return (
+    <>
     <main style={{ minHeight: '100vh', padding: '56px 32px 120px', maxWidth: '900px', margin: '0 auto' }}>
 
       <BackButton />
@@ -188,5 +190,7 @@ export default async function WinnersPage() {
         </div>
       )}
     </main>
+    <Footer />
+    </>
   )
 }

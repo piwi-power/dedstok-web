@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import './globals.css'
 import Nav from '@/components/Nav'
 import ClientProviders from '@/components/ClientProviders'
+import CopyrightBar from '@/components/CopyrightBar'
 
 const bodoni = Bodoni_Moda({
   variable: '--font-bodoni',
@@ -139,6 +140,7 @@ export default async function RootLayout({
   const pathname = headersList.get('x-invoke-path') ?? headersList.get('next-url') ?? ''
   const isAdmin = pathname.startsWith('/admin')
   const isHomepage = pathname === '/' || pathname === ''
+  const isLinks = pathname === '/links'
 
   return (
     <html
@@ -161,12 +163,15 @@ export default async function RootLayout({
     >
       <body className="min-h-full bg-[var(--bg)] text-[var(--cream)] antialiased">
         <ClientProviders>
-          {!isAdmin && <Nav />}
+          {!isAdmin && !isLinks && <Nav />}
           {/* Homepage: room fills the full viewport, nav floats over it transparently.
+              Links page: full-screen branded, no nav.
               All other pages: 64px offset below the fixed nav (nav height = 64px). */}
-          <div style={isAdmin || isHomepage ? {} : { paddingTop: '64px' }}>
+          <div style={isAdmin || isHomepage || isLinks ? {} : { paddingTop: '64px' }}>
             {children}
           </div>
+          {/* Copyright bar — renders on every page except admin */}
+          {!isAdmin && <CopyrightBar />}
         </ClientProviders>
       </body>
     </html>
