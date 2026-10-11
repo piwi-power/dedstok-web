@@ -568,28 +568,17 @@ export default function AuthForm({
     setLoading(true)
     setError(null)
 
-    // Resolve identifier → email
-    const res = await fetch('/api/auth/resolve-identifier', {
+    // Identifier resolution + sign-in happen server-side; session arrives as cookies
+    const res = await fetch('/api/auth/sign-in', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier }),
+      body: JSON.stringify({ identifier, password: siPassword }),
     })
-    const resolved = await res.json()
-
-    if (!res.ok || !resolved.email) {
-      setError(resolved.error ?? 'No account found with that email, username, or number')
-      setLoading(false)
-      return
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email: resolved.email,
-      password: siPassword,
-    })
+    const data = await res.json()
 
     setLoading(false)
-    if (error) {
-      setError('Incorrect password. Try again.')
+    if (!res.ok || !data.success) {
+      setError(data.error ?? 'Sign in failed. Try again.')
       return
     }
 

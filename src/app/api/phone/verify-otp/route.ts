@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { verifyOtp } from '@/lib/otp'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -20,27 +21,13 @@ export async function POST(request: NextRequest) {
 
   const service = createServiceClient()
 
-  // Find valid OTP
-  const { data: otp } = await service
-    .from('phone_otps')
-    .select('id, expires_at')
-    .eq('phone', phone)
-    .eq('code', code)
-    .eq('used', false)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
-
-  if (!otp) {
-    return NextResponse.json({ success: false, error: 'Invalid code' }, { status: 400 })
-  }
-
-  if (new Date(otp.expires_at) < new Date()) {
-    return NextResponse.json({ success: false, error: 'Code expired' }, { status: 400 })
+  const otp = await verifyOtp(service, phone, String(code))
+  if (!otp.ok) {
+    return NextResponse.json({ success: false, error: otp.error }, { status: otp.status })
   }
 
   // Mark OTP used
-  await service.from('phone_otps').update({ used: true }).eq('id', otp.id)
+  await service.from('phone_otps').update({ used: true }).eq('id', otp.otpId)
 
   // Update user record
   const { error } = await service

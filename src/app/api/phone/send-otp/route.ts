@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { getTwilio, TWILIO_FROM } from '@/lib/twilio/client'
+import { sendOtp, getClientIp } from '@/lib/otp'
 
 // E.164 format validator — e.g. +96170123456
 const E164_RE = /^\+[1-9]\d{6,14}$/
@@ -42,29 +42,9 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Invalidate any previous unused OTPs for this phone
-  await service
-    .from('phone_otps')
-    .update({ used: true })
-    .eq('phone', phone)
-    .eq('used', false)
-
-  // Generate 6-digit code
-  const code = String(Math.floor(100000 + Math.random() * 900000))
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 min
-
-  await service.from('phone_otps').insert({ phone, code, expires_at: expiresAt })
-
-  // Send via Twilio
-  try {
-    await getTwilio().messages.create({
-      from: TWILIO_FROM,
-      to: phone,
-      body: `Your DEDSTOK verification code is ${code}. Valid for 10 minutes.`,
-    })
-  } catch (err) {
-    console.error('[send-otp] Twilio error:', err)
-    return NextResponse.json({ success: false, error: 'Failed to send SMS' }, { status: 500 })
+  const sent = await sendOtp(service, phone, getClientIp(request), 'send-otp')
+  if (!sent.ok) {
+    return NextResponse.json({ success: false, error: sent.error }, { status: sent.status })
   }
 
   return NextResponse.json({ success: true })
