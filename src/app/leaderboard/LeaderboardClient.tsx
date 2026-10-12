@@ -27,7 +27,7 @@ function maskEmail(email: string) {
 }
 
 function ShareButtons({ rank, points, referralCode }: { rank: number; points: number; referralCode: string }) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok.xyz'
   const referralUrl = `${siteUrl}/?ref=${referralCode}`
   const text = `I'm ranked #${rank} on the DEDSTOK leaderboard with ${points} STOK points. One drop. One winner. Every week.`
   const [igMsg, setIgMsg] = useState<string | null>(null)

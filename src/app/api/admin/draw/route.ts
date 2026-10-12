@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
 
   if (winnerUser?.email) {
     const ticketId = String(winningIndex + 1).padStart(4, '0')
-    const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok-web.vercel.app'}/verify/${drop_id}`
+    const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok.xyz'}/verify/${drop_id}`
     const quote = pickQuote()
 
     try {
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
       </div>
       <div style="border-top:1px solid rgba(245,237,224,0.06);padding:20px 32px;">
         <p style="color:rgba(245,237,224,0.18);font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;letter-spacing:0.2em;margin:0 0 4px;text-transform:uppercase;">One drop. One winner. Every week.</p>
-        <p style="color:rgba(245,237,224,0.1);font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;margin:0;">dedstok.com</p>
+        <p style="color:rgba(245,237,224,0.1);font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;margin:0;">dedstok.xyz</p>
       </div>
       <div style="background-color:#CA8A04;height:3px;font-size:3px;line-height:3px;">&nbsp;</div>
     </div>

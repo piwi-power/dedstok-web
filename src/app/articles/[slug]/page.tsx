@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok.com'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok.xyz'
 
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params

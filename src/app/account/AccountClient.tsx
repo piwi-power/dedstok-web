@@ -293,7 +293,7 @@ export default function AccountClient({
 
   // Copy referral link
   const [copied, setCopied] = useState(false)
-  const referralLink = referralCode ? `${typeof window !== 'undefined' ? window.location.origin : 'https://dedstok.com'}/login?ref=${referralCode}&tab=signup` : null
+  const referralLink = referralCode ? `${typeof window !== 'undefined' ? window.location.origin : 'https://dedstok.xyz'}/login?ref=${referralCode}&tab=signup` : null
 
   async function handleSendPhoneOtp() {
     setPhoneError(null)

@@ -32,7 +32,7 @@ function buildEmailHtml(ticketNumbers: number[], pointsEarned: number): string {
       </div>
       <div style="border-top:1px solid rgba(245,237,224,0.06);padding:20px 32px;">
         <p style="color:rgba(245,237,224,0.18);font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;letter-spacing:0.2em;margin:0 0 4px;text-transform:uppercase;">One drop. One winner. Every week.</p>
-        <p style="color:rgba(245,237,224,0.1);font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;margin:0;">dedstok.com</p>
+        <p style="color:rgba(245,237,224,0.1);font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;margin:0;">dedstok.xyz</p>
       </div>
       <div style="background-color:#CA8A04;height:2px;font-size:2px;line-height:2px;">&nbsp;</div>
     </div>

@@ -8,7 +8,7 @@ interface Props {
 
 export default function ReferralCopy({ code }: Props) {
   const [copied, setCopied] = useState(false)
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dedstok.xyz'
   const referralUrl = `${siteUrl}/?ref=${code}`
 
   function copy() {
