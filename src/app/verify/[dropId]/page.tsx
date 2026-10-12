@@ -6,21 +6,49 @@ import CopyButton from '@/components/CopyButton'
 
 export const dynamic = 'force-dynamic'
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 interface Props {
   params: Promise<{ dropId: string }>
 }
 
 export default async function VerifyPage({ params }: Props) {
-  const { dropId } = await params
+  const { dropId: idOrSlug } = await params
   const supabase = await createClient()
+
+  // Accept either the drop's UUID or its slug (/verify/beirren-hoodie)
+  const { data: drop } = await supabase
+    .from('drops')
+    .select('id, item_name, draw_date')
+    .eq(UUID_RE.test(idOrSlug) ? 'id' : 'slug', idOrSlug)
+    .maybeSingle()
+
+  if (!drop) notFound()
 
   const { data: winner } = await supabase
     .from('winners')
     .select('id, drawn_at, total_tickets, winning_ticket, verification_hash, draw_inputs, announced')
-    .eq('drop_id', dropId)
-    .single()
+    .eq('drop_id', drop.id)
+    .maybeSingle()
 
-  if (!winner) notFound()
+  if (!winner) {
+    return (
+      <main style={{ minHeight: '100vh', padding: '80px 24px 120px', maxWidth: '760px', margin: '0 auto' }}>
+        <BackButton href="/drops/archive" />
+        <p style={{ fontFamily: 'var(--font-dm-mono)', color: 'var(--gold)', fontSize: '9px', letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '16px' }}>
+          Draw Verification
+        </p>
+        <h1 style={{ fontFamily: 'var(--font-anton)', color: 'var(--cream)', fontSize: '56px', letterSpacing: '0.02em', lineHeight: 1, marginBottom: '16px' }}>
+          NOT DRAWN YET
+        </h1>
+        <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.5)', fontSize: '14px', lineHeight: 1.7, maxWidth: '580px' }}>
+          {drop.item_name} hasn&apos;t been drawn. The draw is scheduled for{' '}
+          {new Date(drop.draw_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Beirut' })}.
+          The full verification record will appear here the moment the winner is picked.
+        </p>
+      </main>
+    )
+  }
 
   const inputs = winner.draw_inputs as {
     drop_id: string
