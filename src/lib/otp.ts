@@ -1,7 +1,7 @@
 import { randomInt } from 'crypto'
 import type { NextRequest } from 'next/server'
 import type { createServiceClient } from '@/lib/supabase/server'
-import { getTwilio, TWILIO_FROM } from '@/lib/twilio/client'
+import { sendCode } from '@/lib/notify'
 
 type ServiceClient = ReturnType<typeof createServiceClient>
 
@@ -26,7 +26,7 @@ export function maskPhone(phone: string): string {
   return phone.slice(0, -4).replace(/\d/g, '*') + phone.slice(-4)
 }
 
-// Generate, store and text a 6-digit code, enforcing per-phone and per-IP limits
+// Generate, store and send a 6-digit code (WhatsApp or SMS), enforcing per-phone and per-IP limits
 export async function sendOtp(
   service: ServiceClient,
   phone: string,
@@ -68,14 +68,10 @@ export async function sendOtp(
   await service.from('phone_otps').insert({ phone, code, expires_at: expiresAt, ip })
 
   try {
-    await getTwilio().messages.create({
-      from: TWILIO_FROM,
-      to: phone,
-      body: `Your DEDSTOK code is ${code}. Valid for 10 minutes.`,
-    })
+    await sendCode(phone, code)
   } catch (err) {
-    console.error(`[${logTag}] Twilio error:`, err)
-    return { ok: false, status: 500, error: 'Failed to send SMS' }
+    console.error(`[${logTag}] Send code error:`, err)
+    return { ok: false, status: 500, error: 'Failed to send code' }
   }
 
   return { ok: true }

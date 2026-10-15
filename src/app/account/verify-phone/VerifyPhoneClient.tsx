@@ -71,7 +71,7 @@ export default function VerifyPhoneClient({ returnTo }: Props) {
               Verify your number
             </h1>
             <p style={{ fontFamily: 'var(--font-jost)', color: 'rgba(245,237,224,0.42)', fontSize: '13px', lineHeight: 1.6, marginBottom: '40px' }}>
-              Required to enter drops and receive your winner notification by SMS. One number per account.
+              Required to enter drops and receive your winner notification by WhatsApp or SMS. One number per account.
             </p>
 
             <label style={{ display: 'block', fontFamily: 'var(--font-dm-mono)', color: 'rgba(245,237,224,0.35)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '10px' }}>

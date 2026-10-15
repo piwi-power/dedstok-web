@@ -74,7 +74,7 @@ const RULES = [
     n: '07',
     title: 'Winner Notification',
     body: [
-      'The winner is notified via email and SMS immediately after the draw.',
+      'The winner is notified via email and WhatsApp (or SMS) immediately after the draw.',
       'The notification includes: winning ticket number, total ticket pool size, verification hash, and a link to verify the draw.',
       'The winner must respond within 48 hours to claim the prize. Response to support@dedstok.xyz or via the account page.',
       'If no response is received within 48 hours, the prize is forfeited and a re-draw occurs from the same entry pool.',

@@ -397,7 +397,7 @@ export default function AccountClient({
         {phoneStep === 'enter' && (
           <div>
             <p style={{ fontFamily: 'var(--font-jost)', fontSize: '13px', color: 'rgba(245,237,224,0.45)', marginBottom: '24px', lineHeight: 1.5 }}>
-              Enter your new number. A verification code will be sent via SMS.
+              Enter your new number. A verification code will be sent via WhatsApp or SMS.
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
               <button type="button" onClick={() => setCountryModalOpen(true)}

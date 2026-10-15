@@ -72,7 +72,7 @@ const faqData: FAQSection[] = [
       },
       {
         q: 'What happens when I win?',
-        a: 'You get an email and SMS immediately after the draw. The email contains your winning ticket number, a verification hash, a link to verify the draw, and a quote from our library. Reply or contact support@dedstok.xyz to arrange shipping.',
+        a: 'You get an email and a WhatsApp message (or SMS) immediately after the draw. The email contains your winning ticket number, a verification hash, a link to verify the draw, and a quote from our library. Reply or contact support@dedstok.xyz to arrange shipping.',
       },
     ],
   },

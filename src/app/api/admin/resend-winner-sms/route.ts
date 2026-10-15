@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { getTwilio, TWILIO_FROM } from '@/lib/twilio/client'
+import { sendWinnerNotice } from '@/lib/notify'
 import { cookies } from 'next/headers'
 
 export const runtime = 'nodejs'
@@ -34,11 +34,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await getTwilio().messages.create({
-      from: TWILIO_FROM,
-      to: winnerUser.phone,
-      body: `DEDSTOK: You won this week's drop. Ticket ${(winner.winning_ticket as number) + 1} of ${winner.total_tickets}. Check your email for next steps.`,
-    })
+    await sendWinnerNotice(winnerUser.phone, winner.winning_ticket as number, winner.total_tickets as number)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     console.error('[resend-winner-sms]', msg)

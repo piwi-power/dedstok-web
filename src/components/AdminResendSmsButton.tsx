@@ -29,7 +29,7 @@ export default function AdminResendSmsButton({ winnerId }: Props) {
   }
 
   if (done) {
-    return <p style={{ color: '#22c55e', fontFamily: 'sans-serif', fontSize: '11px' }}>SMS sent</p>
+    return <p style={{ color: '#22c55e', fontFamily: 'sans-serif', fontSize: '11px' }}>Message sent</p>
   }
 
   return (
@@ -52,7 +52,7 @@ export default function AdminResendSmsButton({ winnerId }: Props) {
           whiteSpace: 'nowrap',
         }}
       >
-        {loading ? 'Sending...' : 'Resend SMS'}
+        {loading ? 'Sending...' : 'Resend WhatsApp/SMS'}
       </button>
     </div>
   )

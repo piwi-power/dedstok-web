@@ -57,7 +57,7 @@ export default function AdminDrawButton({ dropId, entryCount }: Props) {
             {result.verification_hash.slice(0, 32)}...
           </p>
           <p style={{ color: 'rgba(245,237,224,0.4)', fontFamily: 'sans-serif', fontSize: '11px', marginTop: '8px' }}>
-            Email + SMS sent. Announce below when ready.
+            Email + WhatsApp/SMS sent. Announce below when ready.
           </p>
         </div>
       </div>

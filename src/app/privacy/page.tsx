@@ -25,7 +25,7 @@ const SECTIONS = [
     title: 'How We Use Your Data',
     content: [
       'To operate the service: authenticate you, process entries, assign tickets, and run draws.',
-      'To notify you: confirm entries, announce draw results, and send winner notifications via email and SMS.',
+      'To notify you: confirm entries, announce draw results, and send winner notifications via email and WhatsApp or SMS.',
       'To maintain the leaderboard and referral/creator systems.',
       'To detect and prevent fraud, duplicate accounts, and manipulation.',
       'We do not sell your data. We do not use your data for advertising.',
@@ -39,7 +39,7 @@ const SECTIONS = [
       'Stripe (stripe.com) — Payment processing. We pass your payment to Stripe. We do not see, store, or process your card number. Subject to Stripe\'s Privacy Policy.',
       'Supabase (supabase.com) — Database and authentication. Your account data, entries, and points are stored in Supabase. Subject to Supabase\'s Privacy Policy.',
       'Resend (resend.com) — Transactional email. Used to send entry confirmations, winner notifications, and account emails.',
-      'Twilio (twilio.com) — SMS delivery. Used to send OTP codes and winner SMS notifications. Your phone number is shared with Twilio for this purpose.',
+      'Meta Platforms (WhatsApp Business) and Twilio (twilio.com): message delivery. Used to send verification codes and winner notifications by WhatsApp, or by SMS as a fallback. Your phone number is shared with these providers for this purpose.',
       'Vercel (vercel.com) — Hosting and infrastructure. Your requests are served through Vercel\'s network.',
       'We only share data with these services to the minimum extent necessary to operate DEDSTOK.',
     ],
@@ -75,7 +75,7 @@ const SECTIONS = [
       'Deletion: You can delete your account directly from your account page. This removes your personal data permanently.',
       'Correction: Contact support@dedstok.xyz to correct inaccurate data.',
       'Data portability: Contact us to request an export of your personal data.',
-      'Withdrawal of consent: You may opt out of SMS notifications by contacting support. Note that some transactional SMS (e.g. OTP codes) are required to use the service.',
+      'Withdrawal of consent: You may opt out of WhatsApp and SMS notifications by contacting support. Note that some transactional messages (e.g. verification codes) are required to use the service.',
     ],
   },
   {

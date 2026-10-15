@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { getResend, FROM_EMAIL } from '@/lib/resend/client'
-import { getTwilio, TWILIO_FROM } from '@/lib/twilio/client'
+import { sendWinnerNotice } from '@/lib/notify'
 import { createHash, randomInt } from 'crypto'
 
 export const runtime = 'nodejs'
@@ -196,16 +196,12 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // 11. Winner SMS
+  // 11. Winner message (WhatsApp or SMS)
   if (winnerUser?.phone) {
     try {
-      await getTwilio().messages.create({
-        from: TWILIO_FROM,
-        to: winnerUser.phone,
-        body: `DEDSTOK: You won this week's drop. Ticket ${winningTicket + 1} of ${totalTickets}. Check your email for next steps.`,
-      })
+      await sendWinnerNotice(winnerUser.phone, winningTicket, totalTickets)
     } catch (err) {
-      console.error('[draw] Winner SMS failed:', err)
+      console.error('[draw] Winner message failed:', err)
     }
   }
 
